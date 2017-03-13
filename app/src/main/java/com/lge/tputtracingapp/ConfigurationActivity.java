@@ -23,7 +23,7 @@ public class ConfigurationActivity extends Activity {
 
     private Button mBtnMonitoringController;
 
-    private MonitoringService mMonitoringService;
+    private MonitoringService mLoggingService;
     private boolean mIsServiceBound;
 
     private LoggingStateChangedListener mLoggingStateChangedListener = new LoggingStateChangedListener() {
@@ -34,28 +34,28 @@ public class ConfigurationActivity extends Activity {
         }
     };
 
-    private OnClickListener mStartMontoringOnClickListner = new OnClickListener() {
+    private OnClickListener mStartLoggingOnClickListner = new OnClickListener() {
 
         @Override
         public void onClick(View v) {
-            if (ConfigurationActivity.this.mMonitoringService.isMonitoringInProgress()) {
+            if (ConfigurationActivity.this.mLoggingService.isMonitoringInProgress()) {
                 Toast.makeText(ConfigurationActivity.this, "Already monitoring...", Toast.LENGTH_SHORT).show();
             } else {
                 Log.d(TAG, "start monitoring");
-                ConfigurationActivity.this.mMonitoringService.startMonitoring();
+                ConfigurationActivity.this.mLoggingService.startMonitoring();
             }
         }
     };
 
-    private OnClickListener mStopMonitoringOnClickListener = new OnClickListener() {
+    private OnClickListener mStopLoggingOnClickListener = new OnClickListener() {
 
         @Override
         public void onClick(View v) {
-            if (!ConfigurationActivity.this.mMonitoringService.isMonitoringInProgress()) {
+            if (!ConfigurationActivity.this.mLoggingService.isMonitoringInProgress()) {
                 Toast.makeText(ConfigurationActivity.this, "No monitoring is in progress...", Toast.LENGTH_SHORT).show();
             } else {
                 Log.d(TAG, "stop monitoring");
-                ConfigurationActivity.this.mMonitoringService.stopMonitoring();
+                ConfigurationActivity.this.mLoggingService.stopMonitoring();
             }
         }
     };
@@ -66,13 +66,13 @@ public class ConfigurationActivity extends Activity {
         public void onServiceConnected(ComponentName className, IBinder service) {
             Log.d(TAG, "onServiceConnected() : " + className.toString());
 
-            ConfigurationActivity.this.mMonitoringService = ((MonitoringService.ServiceBinder) service).getService();
+            ConfigurationActivity.this.mLoggingService = ((MonitoringService.ServiceBinder) service).getService();
             ConfigurationActivity.this.mIsServiceBound = true;
 
             ConfigurationActivity.this.mBtnMonitoringController = (Button) findViewById(R.id.btn_start_service);
             ConfigurationActivity.this.refreshMonitoringBtn();
 
-            ConfigurationActivity.this.mMonitoringService.setOnLoggingStateChangedListener(mLoggingStateChangedListener);
+            ConfigurationActivity.this.mLoggingService.setOnLoggingStateChangedListener(mLoggingStateChangedListener);
 
             Log.d(TAG, "Service binding complteted");
         }
@@ -84,14 +84,14 @@ public class ConfigurationActivity extends Activity {
     };
 
     private void refreshMonitoringBtn() {
-        if (this.mMonitoringService.isMonitoringInProgress()) { // if monitoring is in running state
+        if (this.mLoggingService.isMonitoringInProgress()) { // if monitoring is in running state
             // need to set the btn property to stop monitoring set.
             this.mBtnMonitoringController.setText("Stop Monitoring"); // set the text
-            this.mBtnMonitoringController.setOnClickListener(this.mStopMonitoringOnClickListener);
+            this.mBtnMonitoringController.setOnClickListener(this.mStopLoggingOnClickListener);
         } else {
             // otherwise,
             this.mBtnMonitoringController.setText("Start Monitoring");
-            this.mBtnMonitoringController.setOnClickListener(this.mStartMontoringOnClickListner);
+            this.mBtnMonitoringController.setOnClickListener(this.mStartLoggingOnClickListner);
         }
     }
 
