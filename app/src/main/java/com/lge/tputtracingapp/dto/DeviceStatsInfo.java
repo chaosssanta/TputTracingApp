@@ -2,7 +2,7 @@ package com.lge.tputtracingapp.dto;
 
 import java.util.ArrayList;
 
-public class DeviceStatsInfoForSegment {
+public class DeviceStatsInfo {
 
     private long mTimeStamp;
 
@@ -15,11 +15,11 @@ public class DeviceStatsInfoForSegment {
     public ArrayList<Integer> mCpuFrequencyList;
     public int mCpuTemperature;
 
-    public DeviceStatsInfoForSegment() {
+    public DeviceStatsInfo() {
         this.mCpuFrequencyList = new ArrayList<>();
     }
 
-    public DeviceStatsInfoForSegment(long mTxBytes, long mRxBytes, ArrayList<Integer> mCpuFreqList, int mCpuTemperature) {
+    public DeviceStatsInfo(long mTxBytes, long mRxBytes, ArrayList<Integer> mCpuFreqList, int mCpuTemperature) {
         this.mTxBytes = mTxBytes;
         this.mRxBytes = mRxBytes;
         this.mCpuFreqList = mCpuFreqList;

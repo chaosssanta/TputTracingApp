@@ -1,6 +1,6 @@
 package com.lge.tputtracingapp.service;
 
-import com.lge.tputtracingapp.dto.DeviceStatsInfoForSegment;
+import com.lge.tputtracingapp.dto.DeviceStatsInfo;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
 import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
@@ -54,7 +54,7 @@ public class MonitoringService extends Service {
                 break;
                 
             case EVENT_LOG_NOW:
-                DeviceStatsInfoForSegment seg = new DeviceStatsInfoForSegment();
+                DeviceStatsInfo seg = new DeviceStatsInfo();
                 seg.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
                 seg.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
                 seg.mCpuTemperature = CPUStatsReader.getThermalInfo("/sys/class/hwmon/hwmon2/device/xo_therm");
