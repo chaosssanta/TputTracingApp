@@ -3,6 +3,11 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
+    signingConfigs {
+        debug {
+            storeFile file("C:\\Users\\user\\.android\\platform.jks")
+        }
+    }
     defaultConfig {
         applicationId "com.lge.tputtracingapp"
         minSdkVersion 23
