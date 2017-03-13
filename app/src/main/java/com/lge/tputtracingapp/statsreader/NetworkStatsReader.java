@@ -1,4 +1,4 @@
-package com.lge.tputtracingapp.stats;
+package com.lge.tputtracingapp.statsreader;
 
 import android.net.TrafficStats;
 

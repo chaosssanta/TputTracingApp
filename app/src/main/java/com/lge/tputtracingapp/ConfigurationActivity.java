@@ -74,7 +74,7 @@ public class ConfigurationActivity extends Activity {
 
             ConfigurationActivity.this.mLoggingService.setOnLoggingStateChangedListener(mLoggingStateChangedListener);
 
-            Log.d(TAG, "Service binding complteted");
+            Log.d(TAG, "Service binding completed");
         }
 
         @Override
@@ -86,11 +86,11 @@ public class ConfigurationActivity extends Activity {
     private void refreshMonitoringBtn() {
         if (this.mLoggingService.isMonitoringInProgress()) { // if monitoring is in running state
             // need to set the btn property to stop monitoring set.
-            this.mBtnMonitoringController.setText("Stop Monitoring"); // set the text
+            this.mBtnMonitoringController.setText("Stop Logging"); // set the text
             this.mBtnMonitoringController.setOnClickListener(this.mStopLoggingOnClickListener);
         } else {
             // otherwise,
-            this.mBtnMonitoringController.setText("Start Monitoring");
+            this.mBtnMonitoringController.setText("Start Logging");
             this.mBtnMonitoringController.setOnClickListener(this.mStartLoggingOnClickListner);
         }
     }
