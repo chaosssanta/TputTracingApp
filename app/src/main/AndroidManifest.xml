@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.lge.tputtracingapp.service.MonitoringService" >
+        <service android:name="com.lge.tputtracingapp.service.DeviceLoggingService" >
             <action android:name="com.lge.data.START_MONITOR"/>
         </service>
     </application>

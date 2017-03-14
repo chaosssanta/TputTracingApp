@@ -2,7 +2,7 @@ package com.lge.tputtracingapp;
 
 import com.android.LGSetupWizard.R;
 import com.lge.tputtracingapp.service.LoggingStateChangedListener;
-import com.lge.tputtracingapp.service.MonitoringService;
+import com.lge.tputtracingapp.service.DeviceLoggingService;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,7 +33,7 @@ public class ConfigurationActivity extends Activity {
     private TextView mTxtViewProgressResult;
 
 
-    private MonitoringService mMonitoringService;
+    private DeviceLoggingService mDeviceLoggingService;
     private boolean mIsServiceBound;
 
     private LoggingStateChangedListener mLoggingStateChangedListener = new LoggingStateChangedListener() {
@@ -47,27 +48,28 @@ public class ConfigurationActivity extends Activity {
 
         @Override
         public void onClick(View v) {
-            if (ConfigurationActivity.this.mMonitoringService.isMonitoringInProgress()) {
+            if (ConfigurationActivity.this.mDeviceLoggingService.isMonitoringInProgress()) {
                 Toast.makeText(ConfigurationActivity.this, "Already monitoring...", Toast.LENGTH_SHORT).show();
             } else {
                 String temp;
 
                 temp = mEditTextPackageName.getText().toString();
-                String packageName = (temp == null) ?  mEditTextPackageName.getHint().toString() : temp;
+                Log.d(TAG, temp);
+                String packageName = (TextUtils.isEmpty(temp)) ?  mEditTextPackageName.getHint().toString() : temp;
 
                 temp = mEditTextInterval.getText().toString();
-                int interval = (temp == null) ? Integer.valueOf(mEditTextInterval.getHint().toString()) : Integer.valueOf(temp);
+                int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTextInterval.getHint().toString()) : Integer.valueOf(temp);
 
                 temp = mEditTextCPUClockPath.getText().toString();
-                String cpuClockFilePath = (temp == null)  ? mEditTextCPUClockPath.getHint().toString() : temp;
+                String cpuClockFilePath = (TextUtils.isEmpty(temp))  ? mEditTextCPUClockPath.getHint().toString() : temp;
 
                 temp = mEditTextCPUTemperaturePath.getText().toString();
-                String cpuThermalFilePath = (temp == null) ? mEditTextCPUTemperaturePath.getHint().toString() : temp;
+                String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTextCPUTemperaturePath.getHint().toString() : temp;
 
                 temp = mEditTextCPUCoreCount.getText().toString();
-                int cpuCount = (temp == null) ? Integer.valueOf(mEditTextCPUCoreCount.getHint().toString()) : Integer.valueOf(temp);
+                int cpuCount = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTextCPUCoreCount.getHint().toString()) : Integer.valueOf(temp);
 
-                ConfigurationActivity.this.mMonitoringService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath, cpuCount);
+                ConfigurationActivity.this.mDeviceLoggingService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath, cpuCount);
             }
         }
     };
@@ -76,11 +78,11 @@ public class ConfigurationActivity extends Activity {
 
         @Override
         public void onClick(View v) {
-            if (!ConfigurationActivity.this.mMonitoringService.isMonitoringInProgress()) {
+            if (!ConfigurationActivity.this.mDeviceLoggingService.isMonitoringInProgress()) {
                 Toast.makeText(ConfigurationActivity.this, "No monitoring is in progress...", Toast.LENGTH_SHORT).show();
             } else {
                 Log.d(TAG, "stop monitoring");
-                ConfigurationActivity.this.mMonitoringService.stopLogging();
+                ConfigurationActivity.this.mDeviceLoggingService.stopLogging();
             }
         }
     };
@@ -91,12 +93,12 @@ public class ConfigurationActivity extends Activity {
         public void onServiceConnected(ComponentName className, IBinder service) {
             Log.d(TAG, "onServiceConnected() : " + className.toString());
 
-            ConfigurationActivity.this.mMonitoringService = ((MonitoringService.ServiceBinder) service).getService();
+            ConfigurationActivity.this.mDeviceLoggingService = ((DeviceLoggingService.ServiceBinder) service).getService();
             ConfigurationActivity.this.mIsServiceBound = true;
 
             ConfigurationActivity.this.refreshMonitoringBtn();
 
-            ConfigurationActivity.this.mMonitoringService.setLoggingStateChangedListener(mLoggingStateChangedListener);
+            ConfigurationActivity.this.mDeviceLoggingService.setLoggingStateChangedListener(mLoggingStateChangedListener);
 
             Log.d(TAG, "Service binding completed.");
         }
@@ -108,7 +110,7 @@ public class ConfigurationActivity extends Activity {
     };
 
     private void refreshMonitoringBtn() {
-        if (this.mMonitoringService.isMonitoringInProgress()) { // if monitoring is in running state
+        if (this.mDeviceLoggingService.isMonitoringInProgress()) { // if monitoring is in running state
             // need to set the btn property to stop monitoring set.
             this.mBtnMonitoringController.setText("Stop Monitoring"); // set the text
             this.mBtnMonitoringController.setOnClickListener(this.mStopMonitoringOnClickListener);
@@ -126,9 +128,9 @@ public class ConfigurationActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         // start the logging service at application start time.
-        /*Intent startIntent = new Intent(this, MonitoringService.class);
+        /*Intent startIntent = new Intent(this, DeviceLoggingService.class);
         startIntent.putExtra("package_name", "com.google.android.youtube");*/
-        this.bindService(new Intent(this, MonitoringService.class), mConnection, Context.BIND_AUTO_CREATE);
+        this.bindService(new Intent(this, DeviceLoggingService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override

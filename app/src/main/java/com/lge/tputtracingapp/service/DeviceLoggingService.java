@@ -20,17 +20,17 @@ import lombok.experimental.Accessors;
 import java.util.ArrayList;
 
 @Accessors(prefix = "m")
-public class MonitoringService extends Service {
+public class DeviceLoggingService extends Service {
 
-    private static String TAG = MonitoringService.class.getSimpleName();
+    private static String TAG = DeviceLoggingService.class.getSimpleName();
 
     private static final int EVENT_LOG_NOW = 0x10;
     private static final int EVENT_STOP_LOGGING = 0x11;
     private static final int EVENT_START_LOGGING = 0x12;
         
     public class ServiceBinder extends Binder {
-        public MonitoringService getService() {
-            return MonitoringService.this;
+        public DeviceLoggingService getService() {
+            return DeviceLoggingService.this;
         }
     }
     
@@ -90,8 +90,8 @@ public class MonitoringService extends Service {
     private IBinder mServiceBinder;
     
     // constructor
-    public MonitoringService() {
-        Log.d(TAG, "MonitoringService()");
+    public DeviceLoggingService() {
+        Log.d(TAG, "DeviceLoggingService()");
         this.mServiceBinder = new ServiceBinder();
         this.mLoggingInterval = 1000;
     }
@@ -107,7 +107,7 @@ public class MonitoringService extends Service {
         msg.what = EVENT_START_LOGGING;
 
         setTargetPackageName(targetPackageName);
-        setTargetUid(MonitoringService.getUidByPackageName(this, this.mTargetPackageName));
+        setTargetUid(DeviceLoggingService.getUidByPackageName(this, this.mTargetPackageName));
         setLoggingInterval(loggingInterval);
         setCPUClockFilePath(cpuClockFilePath);
         setCPUTemperatureFilePath(thermalFilePath);
