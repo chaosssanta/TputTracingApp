@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import lombok.Setter;
@@ -24,6 +25,7 @@ public class ConfigurationActivity extends Activity {
     private static String TAG = "DeviceStatsMonitor";
 
     private Button mBtnMonitoringController;
+    private EditText mEditTextPackageName;
 
     private MonitoringService mMonitoringService;
     private boolean mIsServiceBound;
