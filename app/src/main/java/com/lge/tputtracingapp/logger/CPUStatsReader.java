@@ -1,6 +1,4 @@
-package com.lge.tputtracingapp.statsreader;
-
-import android.util.Log;
+package com.lge.tputtracingapp.logger;
 
 import java.io.File;
 import java.io.FileFilter;

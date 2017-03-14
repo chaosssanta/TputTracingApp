@@ -17,6 +17,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
+import lombok.Setter;
+
 public class ConfigurationActivity extends Activity {
 
     private static String TAG = "DeviceStatsMonitor";
@@ -93,6 +95,7 @@ public class ConfigurationActivity extends Activity {
             this.mBtnMonitoringController.setText("Start Monitoring");
             this.mBtnMonitoringController.setOnClickListener(this.mStartMontoringOnClickListner);
         }
+        this.mBtnMonitoringController.setEnabled(true);
     }
 
     @Override
@@ -103,6 +106,14 @@ public class ConfigurationActivity extends Activity {
         Intent startIntent = new Intent(this, MonitoringService.class);
         startIntent.putExtra("package_name", "com.google.android.youtube");
         this.bindService(startIntent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        this.mBtnMonitoringController = (Button) findViewById(R.id.btn_start_service);
+        this.mEditTextPackageName = (EditText) findViewById(R.id.editTxt_interval);
     }
 
     @Override

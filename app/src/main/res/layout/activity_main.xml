@@ -4,10 +4,80 @@
     android:layout_height="match_parent"
     tools:context="com.lge.tputtracingapp.ConfigurationActivity" >
 
+    <EditText
+        android:id="@+id/editTxt_interval"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="1000"
+        android:layout_below="@+id/editTxt_package_name"
+        android:layout_toEndOf="@+id/textView2" />
+
+    <EditText
+        android:id="@+id/editTxt_package_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/textView2"
+        android:hint="com.android.youtube" />
+
     <Button
         android:id="@+id/btn_start_service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Service" />
+        android:text="Binding Log Service..."
+        android:enabled="false"
+        android:layout_below="@+id/editTxt_package_name"
+        android:layout_alignParentEnd="true"
+        android:layout_alignBottom="@+id/textView" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="ms"
+        android:layout_alignBottom="@+id/editTxt_interval"
+        android:layout_toEndOf="@+id/editTxt_interval"
+        android:layout_below="@+id/editTxt_package_name" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text="Interval : "
+        android:layout_below="@+id/textView2"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/editTxt_interval"
+        android:layout_alignBottom="@+id/editTxt_interval" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:gravity="center"
+        android:text="Package Name : "
+        android:layout_above="@+id/editTxt_interval" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView3"
+        android:layout_marginTop="24dp"
+        android:layout_toStartOf="@+id/editTxt_interval"
+        android:text="Result" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView5"
+        android:text="TextView"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
