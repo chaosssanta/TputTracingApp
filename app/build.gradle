@@ -26,6 +26,7 @@ android {
 
 dependencies {
     provided "org.projectlombok:lombok:1.16.12"
+    provided 'org.glassfish:javax.annotation:10.0-b28'
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
