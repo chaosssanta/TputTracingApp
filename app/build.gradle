@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     signingConfigs {
         debug {
-            storeFile file("D:\\Projects_For_AndroidStudio\\SignedKey_For_TputTracingApp\\platform.jks")
+            storeFile file("C:\\Users\\user\\.android\\platform.jks")
         }
     }
     defaultConfig {

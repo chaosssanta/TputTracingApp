@@ -50,17 +50,24 @@ public class ConfigurationActivity extends Activity {
             if (ConfigurationActivity.this.mMonitoringService.isMonitoringInProgress()) {
                 Toast.makeText(ConfigurationActivity.this, "Already monitoring...", Toast.LENGTH_SHORT).show();
             } else {
-                String packageName = mEditTextPackageName.getText().toString();
-                int interval = Integer.valueOf(mEditTextInterval.getText().toString());
-                String cpuClockFilePath = mEditTextCPUClockPath.getText().toString();
-                String cpuThermalFilePath = mEditTextCPUTemperaturePath.getText().toString();
-                int cpuCount = Integer.valueOf(mEditTextCPUCoreCount.getText().toString());
+                String temp;
 
-                if (packageName != null) {
-                    ConfigurationActivity.this.mMonitoringService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath, cpuCount);
-                } else {
-                    Toast.makeText(ConfigurationActivity.this, "Package Name should be specified.", Toast.LENGTH_SHORT);
-                }
+                temp = mEditTextPackageName.getText().toString();
+                String packageName = (temp == null) ?  mEditTextPackageName.getHint().toString() : temp;
+
+                temp = mEditTextInterval.getText().toString();
+                int interval = (temp == null) ? Integer.valueOf(mEditTextInterval.getHint().toString()) : Integer.valueOf(temp);
+
+                temp = mEditTextCPUClockPath.getText().toString();
+                String cpuClockFilePath = (temp == null)  ? mEditTextCPUClockPath.getHint().toString() : temp;
+
+                temp = mEditTextCPUTemperaturePath.getText().toString();
+                String cpuThermalFilePath = (temp == null) ? mEditTextCPUTemperaturePath.getHint().toString() : temp;
+
+                temp = mEditTextCPUCoreCount.getText().toString();
+                int cpuCount = (temp == null) ? Integer.valueOf(mEditTextCPUCoreCount.getHint().toString()) : Integer.valueOf(temp);
+
+                ConfigurationActivity.this.mMonitoringService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath, cpuCount);
             }
         }
     };
