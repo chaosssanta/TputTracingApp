@@ -138,7 +138,7 @@ public class ConfigurationActivity extends Activity {
         super.onResume();
 
         this.mBtnMonitoringController = (Button) findViewById(R.id.btn_start_service);
-        this.mEditTextPackageName = (EditText) findViewById(R.id.editTxt_interval);
+        this.mEditTextPackageName = (EditText) findViewById(R.id.editTxt_package_name);
         this.mEditTextInterval = (EditText) findViewById(R.id.editTxt_interval);
         this.mEditTextCPUCoreCount = (EditText) findViewById(R.id.editText_cpu_count);
         this.mEditTextCPUClockPath = (EditText) findViewById(R.id.editText_cpu_path);
