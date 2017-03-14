@@ -50,8 +50,17 @@ public class ConfigurationActivity extends Activity {
             if (ConfigurationActivity.this.mMonitoringService.isMonitoringInProgress()) {
                 Toast.makeText(ConfigurationActivity.this, "Already monitoring...", Toast.LENGTH_SHORT).show();
             } else {
-                Log.d(TAG, "start monitoring");
-                ConfigurationActivity.this.mMonitoringService.startMonitoring();
+                String packageName = mEditTextPackageName.getText().toString();
+                int interval = Integer.valueOf(mEditTextInterval.getText().toString());
+                String cpuClockFilePath = mEditTextCPUClockPath.getText().toString();
+                String cpuThermalFilePath = mEditTextCPUTemperaturePath.getText().toString();
+                int cpuCount = Integer.valueOf(mEditTextCPUCoreCount.getText().toString());
+
+                if (packageName != null) {
+                    ConfigurationActivity.this.mMonitoringService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath, cpuCount);
+                } else {
+                    Toast.makeText(ConfigurationActivity.this, "Package Name should be specified.", Toast.LENGTH_SHORT);
+                }
             }
         }
     };
@@ -64,7 +73,7 @@ public class ConfigurationActivity extends Activity {
                 Toast.makeText(ConfigurationActivity.this, "No monitoring is in progress...", Toast.LENGTH_SHORT).show();
             } else {
                 Log.d(TAG, "stop monitoring");
-                ConfigurationActivity.this.mMonitoringService.stopMonitoring();
+                ConfigurationActivity.this.mMonitoringService.stopLogging();
             }
         }
     };
@@ -109,9 +118,10 @@ public class ConfigurationActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Intent startIntent = new Intent(this, MonitoringService.class);
-        startIntent.putExtra("package_name", "com.google.android.youtube");
-        this.bindService(startIntent, mConnection, Context.BIND_AUTO_CREATE);
+        // start the logging service at application start time.
+        /*Intent startIntent = new Intent(this, MonitoringService.class);
+        startIntent.putExtra("package_name", "com.google.android.youtube");*/
+        this.bindService(new Intent(this, MonitoringService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override

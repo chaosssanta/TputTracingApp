@@ -60,7 +60,7 @@ public class MonitoringService extends Service {
                 DeviceStatsInfo seg = new DeviceStatsInfo();
                 seg.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
                 seg.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
-                seg.setCpuTemperature(CPUStatsReader.getThermalInfo("/sys/class/hwmon/hwmon2/device/xo_therm"));
+                seg.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
 
                 ArrayList<Integer> tmpList = new ArrayList<Integer>();
                 tmpList.add(101010);
@@ -71,7 +71,7 @@ public class MonitoringService extends Service {
 
                 Log.d(TAG, seg.toString());
 
-                sendEmptyMessageDelayed(EVENT_LOG_NOW, mMonitoringInterval);
+                sendEmptyMessageDelayed(EVENT_LOG_NOW, mLoggingInterval);
                 break;
             default:
                 break;
@@ -79,17 +79,21 @@ public class MonitoringService extends Service {
         }
     };
 
-    @Setter private int mMonitoringInterval;
+    @Setter private int mLoggingInterval;
     @Setter private String mTargetPackageName;
     @Setter private int mTargetUid;
+    @Setter private String mCPUClockFilePath;
+    @Setter private String mCPUTemperatureFilePath;
+    @Setter private int mCPUCoreCount;
     @Setter private LoggingStateChangedListener mLoggingStateChangedListener;
+
     private IBinder mServiceBinder;
     
     // constructor
     public MonitoringService() {
         Log.d(TAG, "MonitoringService()");
         this.mServiceBinder = new ServiceBinder();
-        this.mMonitoringInterval = 1000;
+        this.mLoggingInterval = 1000;
     }
 
     @Override
@@ -98,13 +102,28 @@ public class MonitoringService extends Service {
     }
     
     // monitoring controller
-    public void startMonitoring() {
+    public void startLogging(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int cpuCoreCount) {
         Message msg = this.mServiceLogicHandler.obtainMessage();
         msg.what = EVENT_START_LOGGING;
+
+        setTargetPackageName(targetPackageName);
+        setTargetUid(MonitoringService.getUidByPackageName(this, this.mTargetPackageName));
+        setLoggingInterval(loggingInterval);
+        setCPUClockFilePath(cpuClockFilePath);
+        setCPUTemperatureFilePath(thermalFilePath);
+        setCPUCoreCount(cpuCoreCount);
+
+        Log.d(TAG, "Start Logging based on the following information :");
+        Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
+        Log.d(TAG, "TargetUid : " + this.mTargetUid);
+        Log.d(TAG, "CPU Temperature file path : " + this.mCPUTemperatureFilePath);
+        Log.d(TAG, "CPU clock file path : " + this.mCPUClockFilePath);
+        Log.d(TAG, "Num of cores : " + this.mCPUCoreCount);
+
         this.mServiceLogicHandler.sendMessage(msg);
     }
     
-    public void stopMonitoring() {
+    public void stopLogging() {
         Message msg = this.mServiceLogicHandler.obtainMessage();
         msg.what = EVENT_STOP_LOGGING;
         this.mServiceLogicHandler.sendMessage(msg);
@@ -121,12 +140,6 @@ public class MonitoringService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind(Intent)");
-        
-        setTargetPackageName(intent.getStringExtra("package_name"));
-        setTargetUid(MonitoringService.getUidByPackageName(this, this.mTargetPackageName));
-
-        Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
-        Log.d(TAG, "TargetUid : " + this.mTargetUid);
         return this.mServiceBinder;
     }
 
