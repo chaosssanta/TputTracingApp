@@ -139,7 +139,7 @@ public class MonitoringService extends Service {
         Log.d(TAG, "onBind(Intent)");
         
         setPackageName(intent.getStringExtra("package_name"));
-        setTargetUid(MonitoringService.getUIDbyPackageName(this, this.mTargetPackageName));
+        setTargetUid(MonitoringService.getUidByPackageName(this, this.mTargetPackageName));
 
         Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
         Log.d(TAG, "TargetUid : " + this.mTargetUid);
@@ -147,7 +147,7 @@ public class MonitoringService extends Service {
     }
 
     // static method
-    private static int getUIDbyPackageName(Context context, String packageName) {
+    private static int getUidByPackageName(Context context, String packageName) {
         try {
             return context.getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA).uid;
         } catch (NameNotFoundException e) {
