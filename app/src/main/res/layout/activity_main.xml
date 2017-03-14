@@ -57,7 +57,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_toEndOf="@+id/textView2"
-        android:hint="com.android.youtube" />
+        android:hint="com.google.android.youtube" />
 
     <Button
         android:id="@+id/btn_start_service"
