@@ -30,7 +30,7 @@
         android:id="@+id/editText_cpu_path"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="1000"
+        android:hint="/sys/devices/system/cpu/"
         android:layout_below="@+id/editTxt_interval"
         android:layout_alignParentEnd="true"
         android:layout_toEndOf="@+id/textView3" />
