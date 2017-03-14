@@ -105,7 +105,7 @@ public class MonitoringService extends Service {
         this.mTargetPackageName = packageName;
     }
     
-    public void setmTargetUid(int mTargetUid) {
+    public void setTargetUid(int mTargetUid) {
         this.mTargetUid = mTargetUid;
     }
     
@@ -139,7 +139,7 @@ public class MonitoringService extends Service {
         Log.d(TAG, "onBind(Intent)");
         
         setPackageName(intent.getStringExtra("package_name"));
-        setmTargetUid(MonitoringService.getUIDbyPackageName(this, this.mTargetPackageName));        
+        setTargetUid(MonitoringService.getUIDbyPackageName(this, this.mTargetPackageName));
 
         Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
         Log.d(TAG, "TargetUid : " + this.mTargetUid);
