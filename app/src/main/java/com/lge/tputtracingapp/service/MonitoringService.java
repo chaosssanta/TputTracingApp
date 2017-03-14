@@ -14,9 +14,12 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 
+@Accessors(prefix = "m")
 public class MonitoringService extends Service {
 
     private static String TAG = MonitoringService.class.getSimpleName();
@@ -76,12 +79,10 @@ public class MonitoringService extends Service {
         }
     };
 
-    private int mMonitoringInterval;
-    private String mTargetPackageName;
-    private int mTargetUid;
-    
-    private LoggingStateChangedListener mLoggingStateChangedListener;
-    
+    @Setter private int mMonitoringInterval;
+    @Setter private String mTargetPackageName;
+    @Setter private int mTargetUid;
+    @Setter private LoggingStateChangedListener mLoggingStateChangedListener;
     private IBinder mServiceBinder;
     
     // constructor
@@ -94,23 +95,6 @@ public class MonitoringService extends Service {
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate()");
-    }
-
-    // setters
-    public void setMonitoringInterval(int monitoringInterval) {
-        this.mMonitoringInterval = monitoringInterval;
-    }
-    
-    public void setPackageName(String packageName) {
-        this.mTargetPackageName = packageName;
-    }
-    
-    public void setTargetUid(int mTargetUid) {
-        this.mTargetUid = mTargetUid;
-    }
-    
-    public void setOnLoggingStateChangedListener(LoggingStateChangedListener l) {
-        this.mLoggingStateChangedListener = l;
     }
     
     // monitoring controller
@@ -138,7 +122,7 @@ public class MonitoringService extends Service {
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind(Intent)");
         
-        setPackageName(intent.getStringExtra("package_name"));
+        setTargetPackageName(intent.getStringExtra("package_name"));
         setTargetUid(MonitoringService.getUidByPackageName(this, this.mTargetPackageName));
 
         Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
