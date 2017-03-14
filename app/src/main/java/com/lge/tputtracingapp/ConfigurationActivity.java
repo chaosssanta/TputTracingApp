@@ -72,7 +72,7 @@ public class ConfigurationActivity extends Activity {
             ConfigurationActivity.this.mBtnMonitoringController = (Button) findViewById(R.id.btn_start_service);
             ConfigurationActivity.this.refreshMonitoringBtn();
 
-            ConfigurationActivity.this.mMonitoringService.setOnLoggingStateChangedListener(mLoggingStateChangedListener);
+            ConfigurationActivity.this.mMonitoringService.setLoggingStateChangedListener(mLoggingStateChangedListener);
 
             Log.d(TAG, "Service binding completed.");
         }

@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     signingConfigs {
         debug {
-            storeFile file("C:\\Users\\user\\.android\\platform.jks")
+            storeFile file("D:\\Projects_For_AndroidStudio\\SignedKey_For_TputTracingApp\\platform.jks")
         }
     }
     defaultConfig {
@@ -25,6 +25,7 @@ android {
 }
 
 dependencies {
+    provided "org.projectlombok:lombok:1.16.12"
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
