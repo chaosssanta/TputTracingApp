@@ -74,7 +74,7 @@ public class ConfigurationActivity extends Activity {
 
             ConfigurationActivity.this.mMonitoringService.setOnLoggingStateChangedListener(mLoggingStateChangedListener);
 
-            Log.d(TAG, "Service binding complteted");
+            Log.d(TAG, "Service binding completed.");
         }
 
         @Override
