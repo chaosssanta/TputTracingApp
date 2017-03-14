@@ -60,14 +60,14 @@ public class MonitoringService extends Service {
                 DeviceStatsInfo seg = new DeviceStatsInfo();
                 seg.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
                 seg.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
-                seg.mCpuTemperature = CPUStatsReader.getThermalInfo("/sys/class/hwmon/hwmon2/device/xo_therm");
+                seg.setCpuTemperature(CPUStatsReader.getThermalInfo("/sys/class/hwmon/hwmon2/device/xo_therm"));
 
                 ArrayList<Integer> tmpList = new ArrayList<Integer>();
                 tmpList.add(101010);
                 tmpList.add(333333);
                 tmpList.add(454454);
 
-                seg.mCpuFrequencyList = tmpList;
+                seg.setCpuFrequencyList(tmpList);
 
                 Log.d(TAG, seg.toString());
 

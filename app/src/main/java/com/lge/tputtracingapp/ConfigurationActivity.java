@@ -16,9 +16,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
-
-import lombok.Setter;
 
 public class ConfigurationActivity extends Activity {
 
@@ -26,6 +25,12 @@ public class ConfigurationActivity extends Activity {
 
     private Button mBtnMonitoringController;
     private EditText mEditTextPackageName;
+    private EditText mEditTextInterval;
+    private EditText mEditTextCPUClockPath;
+    private EditText mEditTextCPUCoreCount;
+    private EditText mEditTextCPUTemperaturePath;
+    private TextView mTxtViewProgressResult;
+
 
     private MonitoringService mMonitoringService;
     private boolean mIsServiceBound;
@@ -38,7 +43,7 @@ public class ConfigurationActivity extends Activity {
         }
     };
 
-    private OnClickListener mStartMontoringOnClickListner = new OnClickListener() {
+    private OnClickListener mStartLoggingOnClickListener = new OnClickListener() {
 
         @Override
         public void onClick(View v) {
@@ -73,7 +78,6 @@ public class ConfigurationActivity extends Activity {
             ConfigurationActivity.this.mMonitoringService = ((MonitoringService.ServiceBinder) service).getService();
             ConfigurationActivity.this.mIsServiceBound = true;
 
-            ConfigurationActivity.this.mBtnMonitoringController = (Button) findViewById(R.id.btn_start_service);
             ConfigurationActivity.this.refreshMonitoringBtn();
 
             ConfigurationActivity.this.mMonitoringService.setLoggingStateChangedListener(mLoggingStateChangedListener);
@@ -95,7 +99,7 @@ public class ConfigurationActivity extends Activity {
         } else {
             // otherwise,
             this.mBtnMonitoringController.setText("Start Monitoring");
-            this.mBtnMonitoringController.setOnClickListener(this.mStartMontoringOnClickListner);
+            this.mBtnMonitoringController.setOnClickListener(this.mStartLoggingOnClickListener);
         }
         this.mBtnMonitoringController.setEnabled(true);
     }
@@ -116,6 +120,11 @@ public class ConfigurationActivity extends Activity {
 
         this.mBtnMonitoringController = (Button) findViewById(R.id.btn_start_service);
         this.mEditTextPackageName = (EditText) findViewById(R.id.editTxt_interval);
+        this.mEditTextInterval = (EditText) findViewById(R.id.editTxt_interval);
+        this.mEditTextCPUCoreCount = (EditText) findViewById(R.id.editText_cpu_count);
+        this.mEditTextCPUClockPath = (EditText) findViewById(R.id.editText_cpu_path);
+        this.mEditTextCPUTemperaturePath = (EditText) findViewById(R.id.editText_thermal_path);
+        this.mTxtViewProgressResult = (TextView) findViewById(R.id.textView_progress_result);
     }
 
     @Override

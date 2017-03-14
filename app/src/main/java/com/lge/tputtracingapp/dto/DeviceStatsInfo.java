@@ -3,6 +3,8 @@ package com.lge.tputtracingapp.dto;
 import java.util.ArrayList;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -10,15 +12,15 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 public class DeviceStatsInfo {
 
-    private long mTimeStamp;
+    @Setter @Getter private long mTimeStamp;
 
     /* Network statsreader */
-    @Setter private long mTxBytes;
-    @Setter private long mRxBytes;
+    @Setter @Getter private long mTxBytes;
+    @Setter @Getter private long mRxBytes;
 
     /* CPU Stats */
-    public ArrayList<Integer> mCpuFrequencyList;
-    public int mCpuTemperature;
+    @Setter @Getter private ArrayList<Integer> mCpuFrequencyList;
+    @Setter @Getter private int mCpuTemperature;
 
     public DeviceStatsInfo() {
         this.mCpuFrequencyList = new ArrayList<>();
