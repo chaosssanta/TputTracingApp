@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -22,6 +23,22 @@ public class CPUStatsReader {
         HashMap<Integer, Integer> ret = new HashMap<Integer, Integer>();
 
         return ret;
+    }
+
+    private File[] getCPUs() {
+        class CpuFilter implements FileFilter {
+            @Override
+            public boolean accept(File path) {
+                if (Pattern.matches("cpu[0-9]+", path.getName())) {
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        File dir = new File("/sys/devices/system/cpu/");
+        File[] files = dir.listFiles(new CpuFilter());
+        return files;
     }
 
     private static File getHwmonDir() {

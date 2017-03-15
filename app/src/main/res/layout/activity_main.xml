@@ -2,38 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.lge.tputtracingapp.ConfigurationActivity" >
-
-    <TextView
-        android:id="@+id/textView9"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/editText_thermal_path"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView4"
-        android:layout_toStartOf="@+id/editTxt_interval"
-        android:text="CPU path :"
-        android:textAlignment="viewEnd"
-        android:gravity="center_vertical"/>
-
-    <EditText
-        android:id="@+id/editText_thermal_path"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/editText_cpu_path"
-        android:layout_toEndOf="@+id/textView9"
-        android:hint="/sys/class/hwmon/hwmon2/device/xo_therm"
-        android:singleLine="true" />
-
-    <EditText
-        android:id="@+id/editText_cpu_path"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="/sys/devices/system/cpu/"
-        android:layout_below="@+id/editTxt_interval"
-        android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@+id/textView3" />
+    tools:context="com.lge.tputtracingapp.ConfigurationActivity">
 
     <EditText
         android:id="@+id/editText_cpu_count"
@@ -47,9 +16,9 @@
         android:id="@+id/editTxt_interval"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="1000"
         android:layout_below="@+id/editTxt_package_name"
-        android:layout_toEndOf="@+id/textView2" />
+        android:layout_toEndOf="@+id/textView2"
+        android:hint="1000" />
 
     <EditText
         android:id="@+id/editTxt_package_name"
@@ -63,20 +32,20 @@
         android:id="@+id/btn_start_service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Binding Log Service..."
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/fl_thermal_selection"
         android:enabled="false"
-        android:layout_below="@+id/editText_thermal_path"
-        android:layout_alignParentEnd="true" />
+        android:text="Binding Log Service..." />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="ms"
-        android:layout_alignBottom="@+id/editTxt_interval"
+        android:layout_above="@+id/ll_chipset_selection"
+        android:layout_below="@+id/editTxt_package_name"
         android:layout_toEndOf="@+id/editTxt_interval"
-        android:layout_below="@+id/editTxt_package_name" />
+        android:gravity="center"
+        android:text="ms" />
 
     <TextView
         android:id="@+id/textView3"
@@ -86,26 +55,25 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/textView2"
         android:layout_toStartOf="@+id/editTxt_interval"
-        android:text="Interval : "
-        android:textAlignment="viewEnd"
-        android:gravity="center_vertical"/>
+        android:gravity="right|center_vertical"
+        android:text="Interval : " />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/editTxt_interval"
         android:layout_alignParentTop="true"
         android:gravity="center"
-        android:text="Package Name : "
-        android:layout_above="@+id/editTxt_interval" />
+        android:text="Package Name : " />
 
     <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Result"
+        android:layout_above="@+id/textView_progress_result"
         android:layout_alignParentStart="true"
-        android:layout_alignBottom="@+id/btn_start_service" />
+        android:text="Result" />
 
     <TextView
         android:id="@+id/textView_progress_result"
@@ -114,41 +82,149 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView5"
+        android:layout_below="@+id/btn_start_service"
         android:text="TextView" />
 
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="CPU Count : "
-        android:gravity="center_vertical"
+        android:layout_alignBottom="@+id/editText_cpu_count"
         android:layout_below="@+id/editTxt_package_name"
-        android:layout_toEndOf="@+id/textView"
         android:layout_marginStart="19dp"
-        android:layout_alignBottom="@+id/editText_cpu_count" />
+        android:layout_toEndOf="@+id/textView"
+        android:gravity="center_vertical"
+        android:text="CPU Count : " />
 
-    <TextView
-        android:id="@+id/textView7"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/ll_chipset_selection"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/editText_thermal_path"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView9"
-        android:layout_toStartOf="@+id/editText_cpu_path"
-        android:text="Thermal Path : "
-        android:textAlignment="viewEnd"
-        android:gravity="center_vertical"/>
+        android:layout_below="@+id/editTxt_interval"
+        android:orientation="horizontal"
+        android:paddingTop="10dp">
 
-    <TextView
-        android:id="@+id/textView8"
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="106dp"
+            android:layout_height="match_parent"
+            android:gravity="right|center_vertical"
+            android:text="Choose your chipset vendor"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <RadioGroup
+                android:id="@+id/radioGroup2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill_horizontal"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/radioButton_chipset_qct"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="QCT" />
+
+                <RadioButton
+                    android:id="@+id/radioButton_chipset_mtk"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MTK" />
+
+                <RadioButton
+                    android:id="@+id/radioButton_chipset_manual"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#ffffffff"
+                    android:text="Manual" />
+
+            </RadioGroup>
+
+            <EditText
+                android:id="@+id/editText_cpu_path"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:hint="/sys/devices/system/cpu/"
+                android:inputType="text"
+                android:lines="1"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/fl_thermal_selection"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Thermal path : "
-        android:layout_below="@+id/textView7"
-        android:layout_alignParentStart="true"
-        android:layout_alignBottom="@+id/editText_cpu_path"
-        android:layout_toStartOf="@+id/editText_cpu_path"
-        android:gravity="center"/>
+        android:layout_below="@+id/ll_chipset_selection"
+        android:orientation="horizontal"
+        android:paddingTop="10dp">
+
+        <TextView
+            android:id="@+id/textView_thermal_group"
+            android:layout_width="107dp"
+            android:layout_height="match_parent"
+            android:gravity="right|center_vertical"
+            android:text="Preferred thermal option"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <RadioGroup
+                android:id="@+id/radioGroup_thermal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill_horizontal"
+                android:orientation="horizontal"
+                android:weightSum="1">
+
+                <RadioButton
+                    android:id="@+id/radioButton_xo_therm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="xo_therm" />
+
+                <RadioButton
+                    android:id="@+id/radioButton_vts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="vts" />
+
+
+                <RadioButton
+                    android:id="@+id/radioButton_thermal_manual"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Manual" />
+
+            </RadioGroup>
+
+            <EditText
+                android:id="@+id/editText_thermal_path"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:hint="/sys/class/hwmon/hwmon2/device/xo_therm"
+                android:inputType="text"
+                android:lines="1"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
 
 </RelativeLayout>

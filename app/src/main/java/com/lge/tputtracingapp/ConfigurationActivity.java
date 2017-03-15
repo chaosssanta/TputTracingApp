@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +33,13 @@ public class ConfigurationActivity extends Activity {
     private EditText mEditTextCPUTemperaturePath;
     private TextView mTxtViewProgressResult;
 
+    private RadioButton mRdoBtnChipsetVendorQCT;
+    private RadioButton mRdoBtnChipsetVendorMTK;
+    private RadioButton mRdoBtnChipsetVendorManual;
+
+    private RadioButton mRdoButtonThermalXoThermal;
+    private RadioButton mRdoButtonThermalVts;
+    private RadioButton mRdoButtonThermalManual;
 
     private DeviceLoggingService mDeviceLoggingService;
     private boolean mIsServiceBound;
