@@ -5,6 +5,7 @@ import com.lge.tputtracingapp.service.LoggingStateChangedListener;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -22,11 +23,11 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
+public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener {
 
     private static String TAG = "DeviceStatsMonitor";
 
-    private Button mBtnMonitoringController;
+    private Button mBtnLoggingController;
     private EditText mEditTxtPackageName;
     private EditText mEditTxtInterval;
 
@@ -57,12 +58,35 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         @Override
         public void onClick(View v) {
-            if (!ConfigurationActivity.this.mDeviceLoggingService.isMonitoringInProgress()) {
-                Toast.makeText(ConfigurationActivity.this, "No monitoring is in progress...", Toast.LENGTH_SHORT).show();
-            } else {
-                Log.d(TAG, "stop monitoring");
-                ConfigurationActivity.this.mDeviceLoggingService.stopLogging();
-            }
+            stopService(new Intent(ConfigurationActivity.this, DeviceLoggingService.class));
+            refreshMonitoringBtn();
+        }
+    };
+
+    private OnClickListener mStartMonitoringOnClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            String temp = mEditTxtPackageName.getText().toString();
+            String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
+
+            temp = mEditTxtInterval.getText().toString();
+            int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(temp);
+
+            temp = mEditTxtCPUClockPath.getText().toString();
+            String cpuClockFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUClockPath.getHint().toString() : temp;
+
+            temp = mEditTxtCPUTemperaturePath.getText().toString();
+            String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
+
+            Intent startIntent = new Intent(ConfigurationActivity.this, DeviceLoggingService.class);
+            startIntent.setAction("com.lge.data.START_LOGGING");
+            startIntent.putExtra("package_name", packageName);
+            startIntent.putExtra("interval", interval);
+            startIntent.putExtra("cpu_file_path", cpuClockFilePath);
+            startIntent.putExtra("thermal_file_path", cpuThermalFilePath);
+            startService(startIntent);
+
+            refreshMonitoringBtn();
         }
     };
 
@@ -85,41 +109,36 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             ConfigurationActivity.this.mIsServiceBound = false;
+            refreshMonitoringBtn();
         }
     };
 
     private void refreshMonitoringBtn() {
-        if (this.mDeviceLoggingService.isMonitoringInProgress()) { // if monitoring is in running state
+
+        if (this.isMyServiceRunning(DeviceLoggingService.class)) {
             // need to set the btn property to stop monitoring set.
-            this.mBtnMonitoringController.setText("Stop   Logging"); // set the text
-            this.mBtnMonitoringController.setOnClickListener(this.mStopMonitoringOnClickListener);
+            this.mBtnLoggingController.setText("Stop   Logging"); // set the text
+            this.mBtnLoggingController.setOnClickListener(this.mStopMonitoringOnClickListener);
         } else {
             // otherwise,
-            this.mBtnMonitoringController.setText("Start Logging");
-            this.mBtnMonitoringController.setOnClickListener(this);
+            this.mBtnLoggingController.setText("Start Logging");
+            this.mBtnLoggingController.setOnClickListener(this.mStartMonitoringOnClickListener);
         }
-        this.mBtnMonitoringController.setEnabled(true);
+        this.mBtnLoggingController.setEnabled(true);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        this.bindService(new Intent(this, DeviceLoggingService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume()");
+        //this.bindService(new Intent(this, DeviceLoggingService.class), mConnection, Context.BIND_AUTO_CREATE);
         this.initUIControls();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        this.unbindService(mConnection);
-        Log.d(TAG, "Unbinding Service.");
     }
 
     @Override
@@ -145,7 +164,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     }
 
     private void initUIControls() {
-        this.mBtnMonitoringController = (Button) findViewById(R.id.btn_start_service);
+        this.mBtnLoggingController = (Button) findViewById(R.id.btn_start_service);
+
         this.mEditTxtPackageName = (EditText) findViewById(R.id.editTxt_package_name);
         this.mEditTxtInterval = (EditText) findViewById(R.id.editTxt_interval);
         this.mTxtViewProgressResult = (TextView) findViewById(R.id.textView_progress_result);
@@ -166,26 +186,18 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         this.mRdoBtnThermalManual.setOnCheckedChangeListener(this);
         this.mRdoBtnThermalXoThermal.setChecked(true);
+
+        this.refreshMonitoringBtn();
     }
 
-    @Override
-    public void onClick(View view) {
-        if (ConfigurationActivity.this.mDeviceLoggingService.isMonitoringInProgress()) {
-            Toast.makeText(ConfigurationActivity.this, "Already monitoring...", Toast.LENGTH_SHORT).show();
-        } else {
-            String temp = mEditTxtPackageName.getText().toString();
-            String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 
-            temp = mEditTxtInterval.getText().toString();
-            int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(temp);
-
-            temp = mEditTxtCPUClockPath.getText().toString();
-            String cpuClockFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUClockPath.getHint().toString() : temp;
-
-            temp = mEditTxtCPUTemperaturePath.getText().toString();
-            String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
-
-            ConfigurationActivity.this.mDeviceLoggingService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
         }
+        return false;
     }
 }

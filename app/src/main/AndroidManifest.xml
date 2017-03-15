@@ -22,7 +22,7 @@
         </activity>
 
         <service android:name="com.lge.tputtracingapp.service.DeviceLoggingService" >
-            <action android:name="com.lge.data.START_MONITOR"/>
+            <action android:name="com.lge.data.START_LOGGING"/>
         </service>
     </application>
 

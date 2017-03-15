@@ -13,7 +13,10 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.annotation.IntDef;
 import android.util.Log;
+
+import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -33,7 +36,7 @@ public class DeviceLoggingService extends Service {
             return DeviceLoggingService.this;
         }
     }
-    
+
     private Handler mServiceLogicHandler = new Handler() {
 
         @Override
@@ -86,12 +89,9 @@ public class DeviceLoggingService extends Service {
     @Setter private String mCPUTemperatureFilePath;
     @Setter private LoggingStateChangedListener mLoggingStateChangedListener;
 
-    private IBinder mServiceBinder;
-    
     // constructor
     public DeviceLoggingService() {
         Log.d(TAG, "DeviceLoggingService()");
-        this.mServiceBinder = new ServiceBinder();
         this.mLoggingInterval = 1000;
     }
 
@@ -99,9 +99,25 @@ public class DeviceLoggingService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate()");
     }
-    
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        startLogging(intent.getStringExtra("package_name"), intent.getIntExtra("interval", 1000), intent.getStringExtra("cpu_file_path"), intent.getStringExtra("thermal_file_path"));
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy()");
+        if (this.mServiceLogicHandler.hasMessages(EVENT_LOG_NOW)) {
+            this.mServiceLogicHandler.removeMessages(EVENT_LOG_NOW);
+        }
+        this.mServiceLogicHandler.sendEmptyMessage(EVENT_STOP_LOGGING);
+        super.onDestroy();
+    }
+
     // monitoring controller
-    public void startLogging(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath) {
+    private void startLogging(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath) {
         Message msg = this.mServiceLogicHandler.obtainMessage();
         msg.what = EVENT_START_LOGGING;
 
@@ -119,25 +135,10 @@ public class DeviceLoggingService extends Service {
 
         this.mServiceLogicHandler.sendMessage(msg);
     }
-    
-    public void stopLogging() {
-        Message msg = this.mServiceLogicHandler.obtainMessage();
-        msg.what = EVENT_STOP_LOGGING;
-        this.mServiceLogicHandler.sendMessage(msg);
-    }
-    
-    public boolean isMonitoringInProgress() {
-        if (this.mServiceLogicHandler.hasMessages(EVENT_LOG_NOW)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind(Intent)");
-        return this.mServiceBinder;
+        return null;
     }
 
     // static method
