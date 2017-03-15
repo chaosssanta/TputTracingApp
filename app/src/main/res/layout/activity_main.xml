@@ -5,14 +5,6 @@
     tools:context="com.lge.tputtracingapp.ConfigurationActivity">
 
     <EditText
-        android:id="@+id/editText_cpu_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editTxt_package_name"
-        android:layout_toEndOf="@+id/textView4"
-        android:hint="4" />
-
-    <EditText
         android:id="@+id/editTxt_interval"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -71,9 +63,9 @@
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/textView_progress_result"
         android:layout_alignParentStart="true"
-        android:text="Result" />
+        android:text="Result"
+        android:layout_below="@+id/btn_start_service" />
 
     <TextView
         android:id="@+id/textView_progress_result"
@@ -82,19 +74,8 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/btn_start_service"
-        android:text="TextView" />
-
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/editText_cpu_count"
-        android:layout_below="@+id/editTxt_package_name"
-        android:layout_marginStart="19dp"
-        android:layout_toEndOf="@+id/textView"
-        android:gravity="center_vertical"
-        android:text="CPU Count : " />
+        android:text="TextView"
+        android:layout_below="@+id/textView5" />
 
     <LinearLayout
         android:id="@+id/ll_chipset_selection"
@@ -109,7 +90,7 @@
             android:layout_width="106dp"
             android:layout_height="match_parent"
             android:gravity="right|center_vertical"
-            android:text="Choose your chipset vendor"/>
+            android:text="Chipset vendor" />
 
         <LinearLayout
             android:layout_width="match_parent"

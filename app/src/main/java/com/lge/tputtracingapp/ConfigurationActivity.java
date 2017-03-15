@@ -16,30 +16,31 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ConfigurationActivity extends Activity {
+public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener {
 
     private static String TAG = "DeviceStatsMonitor";
 
     private Button mBtnMonitoringController;
-    private EditText mEditTextPackageName;
-    private EditText mEditTextInterval;
-    private EditText mEditTextCPUClockPath;
-    private EditText mEditTextCPUCoreCount;
-    private EditText mEditTextCPUTemperaturePath;
-    private TextView mTxtViewProgressResult;
+    private EditText mEditTxtPackageName;
+    private EditText mEditTxtInterval;
 
     private RadioButton mRdoBtnChipsetVendorQCT;
     private RadioButton mRdoBtnChipsetVendorMTK;
     private RadioButton mRdoBtnChipsetVendorManual;
+    private EditText mEditTxtCPUClockPath;
 
-    private RadioButton mRdoButtonThermalXoThermal;
-    private RadioButton mRdoButtonThermalVts;
-    private RadioButton mRdoButtonThermalManual;
+    private RadioButton mRdoBtnThermalXoThermal;
+    private RadioButton mRdoBtnThermalVts;
+    private RadioButton mRdoBtnThermalManual;
+    private EditText mEditTxtCPUTemperaturePath;
+
+    private TextView mTxtViewProgressResult;
 
     private DeviceLoggingService mDeviceLoggingService;
     private boolean mIsServiceBound;
@@ -59,25 +60,19 @@ public class ConfigurationActivity extends Activity {
             if (ConfigurationActivity.this.mDeviceLoggingService.isMonitoringInProgress()) {
                 Toast.makeText(ConfigurationActivity.this, "Already monitoring...", Toast.LENGTH_SHORT).show();
             } else {
-                String temp;
+                String temp = mEditTxtPackageName.getText().toString();
+                String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
 
-                temp = mEditTextPackageName.getText().toString();
-                Log.d(TAG, temp);
-                String packageName = (TextUtils.isEmpty(temp)) ?  mEditTextPackageName.getHint().toString() : temp;
+                temp = mEditTxtInterval.getText().toString();
+                int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(temp);
 
-                temp = mEditTextInterval.getText().toString();
-                int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTextInterval.getHint().toString()) : Integer.valueOf(temp);
+                temp = mEditTxtCPUClockPath.getText().toString();
+                String cpuClockFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUClockPath.getHint().toString() : temp;
 
-                temp = mEditTextCPUClockPath.getText().toString();
-                String cpuClockFilePath = (TextUtils.isEmpty(temp))  ? mEditTextCPUClockPath.getHint().toString() : temp;
+                temp = mEditTxtCPUTemperaturePath.getText().toString();
+                String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
 
-                temp = mEditTextCPUTemperaturePath.getText().toString();
-                String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTextCPUTemperaturePath.getHint().toString() : temp;
-
-                temp = mEditTextCPUCoreCount.getText().toString();
-                int cpuCount = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTextCPUCoreCount.getHint().toString()) : Integer.valueOf(temp);
-
-                ConfigurationActivity.this.mDeviceLoggingService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath, cpuCount);
+                ConfigurationActivity.this.mDeviceLoggingService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath);
             }
         }
     };
@@ -120,11 +115,11 @@ public class ConfigurationActivity extends Activity {
     private void refreshMonitoringBtn() {
         if (this.mDeviceLoggingService.isMonitoringInProgress()) { // if monitoring is in running state
             // need to set the btn property to stop monitoring set.
-            this.mBtnMonitoringController.setText("Stop Monitoring"); // set the text
+            this.mBtnMonitoringController.setText("Stop Logging"); // set the text
             this.mBtnMonitoringController.setOnClickListener(this.mStopMonitoringOnClickListener);
         } else {
             // otherwise,
-            this.mBtnMonitoringController.setText("Start Monitoring");
+            this.mBtnMonitoringController.setText("Start Logging");
             this.mBtnMonitoringController.setOnClickListener(this.mStartLoggingOnClickListener);
         }
         this.mBtnMonitoringController.setEnabled(true);
@@ -135,23 +130,13 @@ public class ConfigurationActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // start the logging service at application start time.
-        /*Intent startIntent = new Intent(this, DeviceLoggingService.class);
-        startIntent.putExtra("package_name", "com.google.android.youtube");*/
         this.bindService(new Intent(this, DeviceLoggingService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        this.mBtnMonitoringController = (Button) findViewById(R.id.btn_start_service);
-        this.mEditTextPackageName = (EditText) findViewById(R.id.editTxt_package_name);
-        this.mEditTextInterval = (EditText) findViewById(R.id.editTxt_interval);
-        this.mEditTextCPUCoreCount = (EditText) findViewById(R.id.editText_cpu_count);
-        this.mEditTextCPUClockPath = (EditText) findViewById(R.id.editText_cpu_path);
-        this.mEditTextCPUTemperaturePath = (EditText) findViewById(R.id.editText_thermal_path);
-        this.mTxtViewProgressResult = (TextView) findViewById(R.id.textView_progress_result);
+        this.initUIControls();
     }
 
     @Override
@@ -159,5 +144,53 @@ public class ConfigurationActivity extends Activity {
         super.onDestroy();
         this.unbindService(mConnection);
         Log.d(TAG, "Unbinding Service.");
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+        switch (compoundButton.getId()) {
+            case R.id.radioButton_chipset_manual:
+                if (isChecked) {
+                    this.mEditTxtCPUClockPath.setVisibility(View.VISIBLE);
+                } else {
+                    this.mEditTxtCPUClockPath.setVisibility(View.GONE);
+                }
+                break;
+            case R.id.radioButton_thermal_manual:
+                if (isChecked) {
+                    this.mEditTxtCPUTemperaturePath.setVisibility(View.VISIBLE);
+                } else {
+                    this.mEditTxtCPUTemperaturePath.setVisibility(View.GONE);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void initUIControls() {
+        this.mBtnMonitoringController = (Button) findViewById(R.id.btn_start_service);
+        this.mEditTxtPackageName = (EditText) findViewById(R.id.editTxt_package_name);
+        this.mEditTxtInterval = (EditText) findViewById(R.id.editTxt_interval);
+        this.mTxtViewProgressResult = (TextView) findViewById(R.id.textView_progress_result);
+
+        this.mRdoBtnChipsetVendorQCT = (RadioButton) findViewById(R.id.radioButton_chipset_qct);
+        this.mRdoBtnChipsetVendorMTK = (RadioButton) findViewById(R.id.radioButton_chipset_mtk);
+        this.mRdoBtnChipsetVendorManual = (RadioButton) findViewById(R.id.radioButton_chipset_manual);
+        this.mEditTxtCPUClockPath = (EditText) findViewById(R.id.editText_cpu_path);
+
+        this.mRdoBtnThermalXoThermal = (RadioButton) findViewById(R.id.radioButton_xo_therm);
+        this.mRdoBtnThermalVts = (RadioButton) findViewById(R.id.radioButton_vts);
+        this.mRdoBtnThermalManual = (RadioButton) findViewById(R.id.radioButton_thermal_manual);
+        this.mEditTxtCPUTemperaturePath = (EditText) findViewById(R.id.editText_thermal_path);
+
+        // listener setup
+        this.mRdoBtnChipsetVendorManual.setOnCheckedChangeListener(this);
+        this.mRdoBtnChipsetVendorManual.setChecked(true);
+        this.mRdoBtnChipsetVendorQCT.setChecked(true);
+
+        this.mRdoBtnThermalManual.setOnCheckedChangeListener(this);
+        this.mRdoBtnThermalManual.setChecked(true);
+        this.mRdoBtnThermalXoThermal.setChecked(true);
     }
 }

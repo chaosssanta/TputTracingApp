@@ -84,7 +84,6 @@ public class DeviceLoggingService extends Service {
     @Setter private int mTargetUid;
     @Setter private String mCPUClockFilePath;
     @Setter private String mCPUTemperatureFilePath;
-    @Setter private int mCPUCoreCount;
     @Setter private LoggingStateChangedListener mLoggingStateChangedListener;
 
     private IBinder mServiceBinder;
@@ -102,7 +101,7 @@ public class DeviceLoggingService extends Service {
     }
     
     // monitoring controller
-    public void startLogging(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int cpuCoreCount) {
+    public void startLogging(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath) {
         Message msg = this.mServiceLogicHandler.obtainMessage();
         msg.what = EVENT_START_LOGGING;
 
@@ -111,14 +110,12 @@ public class DeviceLoggingService extends Service {
         setLoggingInterval(loggingInterval);
         setCPUClockFilePath(cpuClockFilePath);
         setCPUTemperatureFilePath(thermalFilePath);
-        setCPUCoreCount(cpuCoreCount);
 
         Log.d(TAG, "Start Logging based on the following information :");
         Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
         Log.d(TAG, "TargetUid : " + this.mTargetUid);
         Log.d(TAG, "CPU Temperature file path : " + this.mCPUTemperatureFilePath);
         Log.d(TAG, "CPU clock file path : " + this.mCPUClockFilePath);
-        Log.d(TAG, "Num of cores : " + this.mCPUCoreCount);
 
         this.mServiceLogicHandler.sendMessage(msg);
     }
