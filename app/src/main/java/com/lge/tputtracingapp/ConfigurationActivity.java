@@ -115,7 +115,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private void refreshMonitoringBtn() {
         if (this.mDeviceLoggingService.isMonitoringInProgress()) { // if monitoring is in running state
             // need to set the btn property to stop monitoring set.
-            this.mBtnMonitoringController.setText("Stop Logging"); // set the text
+            this.mBtnMonitoringController.setText("Stop   Logging"); // set the text
             this.mBtnMonitoringController.setOnClickListener(this.mStopMonitoringOnClickListener);
         } else {
             // otherwise,
