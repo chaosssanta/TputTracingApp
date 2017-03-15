@@ -64,8 +64,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:text="Result"
-        android:layout_below="@+id/btn_start_service" />
+        android:layout_below="@+id/btn_start_service"
+        android:text="Result" />
 
     <TextView
         android:id="@+id/textView_progress_result"
@@ -74,8 +74,8 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:text="TextView"
-        android:layout_below="@+id/textView5" />
+        android:layout_below="@+id/textView5"
+        android:text="TextView" />
 
     <LinearLayout
         android:id="@+id/ll_chipset_selection"
@@ -135,7 +135,8 @@
                 android:lines="1"
                 android:maxLines="1"
                 android:scrollHorizontally="true"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone"/>
 
         </LinearLayout>
 
@@ -156,7 +157,7 @@
             android:layout_width="107dp"
             android:layout_height="match_parent"
             android:gravity="right|center_vertical"
-            android:text="Preferred thermal option"/>
+            android:text="Thermal option" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -202,7 +203,8 @@
                 android:lines="1"
                 android:maxLines="1"
                 android:scrollHorizontally="true"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone"/>
 
         </LinearLayout>
     </LinearLayout>

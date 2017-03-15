@@ -22,7 +22,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener {
+public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
 
     private static String TAG = "DeviceStatsMonitor";
 
@@ -50,30 +50,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onLoggingStateChanged(boolean isLogging) {
             refreshMonitoringBtn();
-        }
-    };
-
-    private OnClickListener mStartLoggingOnClickListener = new OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            if (ConfigurationActivity.this.mDeviceLoggingService.isMonitoringInProgress()) {
-                Toast.makeText(ConfigurationActivity.this, "Already monitoring...", Toast.LENGTH_SHORT).show();
-            } else {
-                String temp = mEditTxtPackageName.getText().toString();
-                String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
-
-                temp = mEditTxtInterval.getText().toString();
-                int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(temp);
-
-                temp = mEditTxtCPUClockPath.getText().toString();
-                String cpuClockFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUClockPath.getHint().toString() : temp;
-
-                temp = mEditTxtCPUTemperaturePath.getText().toString();
-                String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
-
-                ConfigurationActivity.this.mDeviceLoggingService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath);
-            }
         }
     };
 
@@ -120,7 +96,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         } else {
             // otherwise,
             this.mBtnMonitoringController.setText("Start Logging");
-            this.mBtnMonitoringController.setOnClickListener(this.mStartLoggingOnClickListener);
+            this.mBtnMonitoringController.setOnClickListener(this);
         }
         this.mBtnMonitoringController.setEnabled(true);
     }
@@ -186,11 +162,30 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         // listener setup
         this.mRdoBtnChipsetVendorManual.setOnCheckedChangeListener(this);
-        this.mRdoBtnChipsetVendorManual.setChecked(true);
         this.mRdoBtnChipsetVendorQCT.setChecked(true);
 
         this.mRdoBtnThermalManual.setOnCheckedChangeListener(this);
-        this.mRdoBtnThermalManual.setChecked(true);
         this.mRdoBtnThermalXoThermal.setChecked(true);
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (ConfigurationActivity.this.mDeviceLoggingService.isMonitoringInProgress()) {
+            Toast.makeText(ConfigurationActivity.this, "Already monitoring...", Toast.LENGTH_SHORT).show();
+        } else {
+            String temp = mEditTxtPackageName.getText().toString();
+            String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
+
+            temp = mEditTxtInterval.getText().toString();
+            int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(temp);
+
+            temp = mEditTxtCPUClockPath.getText().toString();
+            String cpuClockFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUClockPath.getHint().toString() : temp;
+
+            temp = mEditTxtCPUTemperaturePath.getText().toString();
+            String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
+
+            ConfigurationActivity.this.mDeviceLoggingService.startLogging(packageName, interval, cpuClockFilePath, cpuThermalFilePath);
+        }
     }
 }
