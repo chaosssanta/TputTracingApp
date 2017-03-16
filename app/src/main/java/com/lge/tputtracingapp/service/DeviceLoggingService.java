@@ -41,8 +41,6 @@ public class DeviceLoggingService extends Service {
     private static final int EVENT_LOG_NOW = 0x10;
     private static final int EVENT_STOP_LOGGING = 0x11;
     private static final int EVENT_START_LOGGING = 0x12;
-        
-
 
     private Handler mServiceLogicHandler = new Handler() {
 
@@ -99,8 +97,6 @@ public class DeviceLoggingService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate()");
     }
-
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

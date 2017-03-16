@@ -21,7 +21,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.lge.tputtracingapp.service.DeviceLoggingService" >
+        <service
+            android:name="com.lge.tputtracingapp.service.DeviceLoggingService"
+            android:process=":remote">
             <action android:name="com.lge.data.START_LOGGING"/>
         </service>
     </application>
