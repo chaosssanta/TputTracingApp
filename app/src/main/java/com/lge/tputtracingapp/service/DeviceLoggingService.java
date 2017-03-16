@@ -7,16 +7,14 @@ import com.lge.tputtracingapp.logger.NetworkStatsReader;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.annotation.IntDef;
 import android.util.Log;
 
-import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -31,11 +29,7 @@ public class DeviceLoggingService extends Service {
     private static final int EVENT_STOP_LOGGING = 0x11;
     private static final int EVENT_START_LOGGING = 0x12;
         
-    public class ServiceBinder extends Binder {
-        public DeviceLoggingService getService() {
-            return DeviceLoggingService.this;
-        }
-    }
+
 
     private Handler mServiceLogicHandler = new Handler() {
 
@@ -46,17 +40,11 @@ public class DeviceLoggingService extends Service {
                 Log.d(TAG, "EVENT_STOP_LOGGING handled");
                 if (this.hasMessages(EVENT_LOG_NOW)) {
                     removeMessages(EVENT_LOG_NOW);
-                    if (mLoggingStateChangedListener != null) {
-                        mLoggingStateChangedListener.onLoggingStateChanged(false);
-                    }
                 }
                 break;
 
             case EVENT_START_LOGGING:
                 sendEmptyMessage(EVENT_LOG_NOW);
-                if (mLoggingStateChangedListener != null) {
-                    mLoggingStateChangedListener.onLoggingStateChanged(true);
-                }
                 break;
                 
             case EVENT_LOG_NOW:
@@ -87,7 +75,6 @@ public class DeviceLoggingService extends Service {
     @Setter private int mTargetUid;
     @Setter private String mCPUClockFilePath;
     @Setter private String mCPUTemperatureFilePath;
-    @Setter private LoggingStateChangedListener mLoggingStateChangedListener;
 
     // constructor
     public DeviceLoggingService() {
@@ -100,9 +87,44 @@ public class DeviceLoggingService extends Service {
         Log.d(TAG, "onCreate()");
     }
 
+    public static final String SHARED_PREFERENCES_NAME = "device_Logging_service_pref";
+    public static final String SHARED_PREFERENCES_KEY_PACKAGE_NAME = "package_name";
+    public static final String SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME = "com.google.android.youtube";
+
+    public static final String SHARED_PREFERENCES_KEY_CPU_FILE_PATH = "thermal_file_path";
+    public static final String SHARED_PREFERENCES_DEFAULT_CPU_FILE_PATH = "";
+
+    public static final String SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH = "cpu_file_path";
+    public static final String SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH = "";
+
+    public static final String SHARED_PREFERENCES_KEY_INTERVAL = "interval";
+    public static final int SHARED_PREFERENCES_DEFAULT_INTERVAL = 1000;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        startLogging(intent.getStringExtra("package_name"), intent.getIntExtra("interval", 1000), intent.getStringExtra("cpu_file_path"), intent.getStringExtra("thermal_file_path"));
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+        String packageName, cpuFilePath, thermalFilePath;
+        int interval;
+        if (intent == null) {
+            packageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME);
+            cpuFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_FILE_PATH);
+            thermalFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
+            interval = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
+        } else {
+            packageName = intent.getStringExtra("package_name");
+            cpuFilePath = intent.getStringExtra("cpu_file_path");
+            thermalFilePath = intent.getStringExtra("thermal_file_path");
+            interval = intent.getIntExtra("interval", 1000);
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
+            editor.putString(SHARED_PREFERENCES_KEY_CPU_FILE_PATH, cpuFilePath);
+            editor.putString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, thermalFilePath);
+            editor.putInt(SHARED_PREFERENCES_KEY_INTERVAL, interval);
+            editor.commit();
+        }
+
+        startLogging(packageName, interval, cpuFilePath, thermalFilePath);
         return START_STICKY;
     }
 

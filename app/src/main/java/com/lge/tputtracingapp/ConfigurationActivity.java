@@ -1,17 +1,13 @@
 package com.lge.tputtracingapp;
 
 import com.android.LGSetupWizard.R;
-import com.lge.tputtracingapp.service.LoggingStateChangedListener;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -21,7 +17,6 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener {
 
@@ -44,15 +39,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private TextView mTxtViewProgressResult;
 
     private DeviceLoggingService mDeviceLoggingService;
-    private boolean mIsServiceBound;
-
-    private LoggingStateChangedListener mLoggingStateChangedListener = new LoggingStateChangedListener() {
-
-        @Override
-        public void onLoggingStateChanged(boolean isLogging) {
-            refreshMonitoringBtn();
-        }
-    };
 
     private OnClickListener mStopMonitoringOnClickListener = new OnClickListener() {
 
@@ -80,35 +66,12 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
             Intent startIntent = new Intent(ConfigurationActivity.this, DeviceLoggingService.class);
             startIntent.setAction("com.lge.data.START_LOGGING");
-            startIntent.putExtra("package_name", packageName);
-            startIntent.putExtra("interval", interval);
-            startIntent.putExtra("cpu_file_path", cpuClockFilePath);
-            startIntent.putExtra("thermal_file_path", cpuThermalFilePath);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_FILE_PATH, cpuClockFilePath);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
             startService(startIntent);
 
-            refreshMonitoringBtn();
-        }
-    };
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            Log.d(TAG, "onServiceConnected() : " + className.toString());
-
-            ConfigurationActivity.this.mDeviceLoggingService = ((DeviceLoggingService.ServiceBinder) service).getService();
-            ConfigurationActivity.this.mIsServiceBound = true;
-
-            ConfigurationActivity.this.refreshMonitoringBtn();
-
-            ConfigurationActivity.this.mDeviceLoggingService.setLoggingStateChangedListener(mLoggingStateChangedListener);
-
-            Log.d(TAG, "Service binding completed.");
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            ConfigurationActivity.this.mIsServiceBound = false;
             refreshMonitoringBtn();
         }
     };
@@ -130,6 +93,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreated()");
         setContentView(R.layout.activity_main);
     }
 
@@ -137,7 +101,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume()");
-        //this.bindService(new Intent(this, DeviceLoggingService.class), mConnection, Context.BIND_AUTO_CREATE);
         this.initUIControls();
     }
 
