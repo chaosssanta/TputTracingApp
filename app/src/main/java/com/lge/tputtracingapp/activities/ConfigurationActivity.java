@@ -107,12 +107,21 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
         switch (compoundButton.getId()) {
+            case R.id.radioButton_chipset_qct:
+                break;
+            case R.id.radioButton_chipset_mtk:
+                break;
             case R.id.radioButton_chipset_manual:
                 if (isChecked) {
                     this.mEditTxtCPUClockPath.setVisibility(View.VISIBLE);
                 } else {
                     this.mEditTxtCPUClockPath.setVisibility(View.GONE);
                 }
+                break;
+
+            case R.id.radioButton_thermal_xo_therm:
+                break;
+            case R.id.radioButton_thermal_vts:
                 break;
             case R.id.radioButton_thermal_manual:
                 if (isChecked) {
@@ -121,6 +130,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                     this.mEditTxtCPUTemperaturePath.setVisibility(View.GONE);
                 }
                 break;
+
             default:
                 break;
         }
@@ -138,8 +148,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mRdoBtnChipsetVendorManual = (RadioButton) findViewById(R.id.radioButton_chipset_manual);
         this.mEditTxtCPUClockPath = (EditText) findViewById(R.id.editText_cpu_path);
 
-        this.mRdoBtnThermalXoThermal = (RadioButton) findViewById(R.id.radioButton_xo_therm);
-        this.mRdoBtnThermalVts = (RadioButton) findViewById(R.id.radioButton_vts);
+        this.mRdoBtnThermalXoThermal = (RadioButton) findViewById(R.id.radioButton_thermal_xo_therm);
+        this.mRdoBtnThermalVts = (RadioButton) findViewById(R.id.radioButton_thermal_vts);
         this.mRdoBtnThermalManual = (RadioButton) findViewById(R.id.radioButton_thermal_manual);
         this.mEditTxtCPUTemperaturePath = (EditText) findViewById(R.id.editText_thermal_path);
 

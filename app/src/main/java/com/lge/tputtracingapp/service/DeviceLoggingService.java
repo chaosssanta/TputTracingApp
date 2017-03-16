@@ -26,7 +26,7 @@ public class DeviceLoggingService extends Service {
     private static String TAG = DeviceLoggingService.class.getSimpleName();
 
     public static final String SHARED_PREFERENCES_NAME = "device_Logging_service_pref";
-    
+
     public static final String SHARED_PREFERENCES_KEY_PACKAGE_NAME = "package_name";
     private static final String SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME = "com.google.android.youtube";
 
@@ -60,19 +60,22 @@ public class DeviceLoggingService extends Service {
                 break;
                 
             case EVENT_LOG_NOW:
-                DeviceStatsInfo seg = new DeviceStatsInfo();
-                seg.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
-                seg.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
-                seg.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
+                // TODO : Below codes in the EVENT_LOG_NOW codes will be replaced with DeviceStatsInfoStorage functions.
+                /*
+                * DeviceStatsInfoStorage will be a singleton class which manage the cpu, thermal, and network stats info.
+                * it will store all the data that is logged and export them on demand,
+                * Hence the below is limited only to a test purpose, and surely will be removed eventually
+                *
+                * By letting DeviceStatsInfoStorage manage actual data logging and exporting,
+                * DeviceLoggingService can be seperated from device data gathering task.
+                * */
+                DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
+                deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
+                deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
+                deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
+                deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(mCPUClockFilePath));
 
-                ArrayList<Integer> tmpList = new ArrayList<Integer>();
-                tmpList.add(101010);
-                tmpList.add(333333);
-                tmpList.add(454454);
-
-                seg.setCpuFrequencyList(tmpList);
-
-                Log.d(TAG, seg.toString());
+                Log.d(TAG, deviceStatsInfo.toString());
 
                 sendEmptyMessageDelayed(EVENT_LOG_NOW, mLoggingInterval);
                 break;

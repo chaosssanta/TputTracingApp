@@ -1,9 +1,12 @@
 package com.lge.tputtracingapp.statsreader;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -14,17 +17,25 @@ import java.util.regex.Pattern;
 public class CPUStatsReader {
     private static final String TAG = CPUStatsReader.class.getSimpleName();
 
+    private static File[] CPU_FILES;
+
     public static int getThermalInfo(String filePath) {
-        return Integer.valueOf(cmdCat(getHwmonDir().toString() + "/device/xo_therm").split(":")[1].split(" ")[0]);
+        Log.d(TAG, filePath);
+        return Integer.valueOf(cmdCat(filePath).split(":")[1].split(" ")[0]);
     }
 
-    public static HashMap<Integer, Integer> getCpuFreq(String filePath) {
-        HashMap<Integer, Integer> ret = new HashMap<Integer, Integer>();
-
+    public static ArrayList<Integer> getCpuFreq(String filePath) {
+        if (CPU_FILES == null) {
+            getCPUs();
+        }
+        ArrayList<Integer> ret = new ArrayList<>();
+        for (int i = 0; i < CPU_FILES.length; i++) {
+            ret.add(Integer.valueOf(cmdCat(CPU_FILES[i].getAbsolutePath() + "/cpufreq/scaling_cur_freq").replace("\n", "")));
+        }
         return ret;
     }
 
-    private File[] getCPUs() {
+    private static void getCPUs() {
         class CpuFilter implements FileFilter {
             @Override
             public boolean accept(File path) {
@@ -36,8 +47,10 @@ public class CPUStatsReader {
         }
 
         File dir = new File("/sys/devices/system/cpu/");
-        File[] files = dir.listFiles(new CpuFilter());
-        return files;
+        CPU_FILES = dir.listFiles(new CpuFilter());
+        for (File f: CPU_FILES) {
+            Log.d(TAG, f.toString());
+        }
     }
 
     private static File getHwmonDir() {

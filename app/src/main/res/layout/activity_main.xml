@@ -173,13 +173,13 @@
                 android:weightSum="1">
 
                 <RadioButton
-                    android:id="@+id/radioButton_xo_therm"
+                    android:id="@+id/radioButton_thermal_xo_therm"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="xo_therm" />
 
                 <RadioButton
-                    android:id="@+id/radioButton_vts"
+                    android:id="@+id/radioButton_thermal_vts"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="vts" />
