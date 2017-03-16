@@ -91,7 +91,7 @@ public class DeviceLoggingService extends Service {
     @Setter private int mTargetUid;
     @Setter private String mCPUClockFilePath;
     @Setter private String mCPUTemperatureFilePath;
-    @Setter private int mMonitoringTresholdTime;
+    @Setter private int mMonitoringThresholdTime;
 
     // constructor
     public DeviceLoggingService() {
