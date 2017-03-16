@@ -1,10 +1,9 @@
-package com.lge.tputtracingapp.logger;
+package com.lge.tputtracingapp.statsreader;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 

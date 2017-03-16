@@ -1,6 +1,4 @@
-package com.lge.tputtracingapp.logger;
-
-import com.lge.tputtracingapp.dto.DeviceStatsInfo;
+package com.lge.tputtracingapp.data;
 
 import java.util.ArrayList;
 

@@ -1,9 +1,8 @@
-package com.lge.tputtracingapp.dto;
+package com.lge.tputtracingapp.data;
 
 import java.util.ArrayList;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;

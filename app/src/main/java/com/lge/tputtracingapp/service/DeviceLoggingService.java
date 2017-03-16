@@ -1,8 +1,8 @@
 package com.lge.tputtracingapp.service;
 
-import com.lge.tputtracingapp.dto.DeviceStatsInfo;
-import com.lge.tputtracingapp.logger.CPUStatsReader;
-import com.lge.tputtracingapp.logger.NetworkStatsReader;
+import com.lge.tputtracingapp.data.DeviceStatsInfo;
+import com.lge.tputtracingapp.statsreader.CPUStatsReader;
+import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
 import android.app.Service;
 import android.content.Context;
