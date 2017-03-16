@@ -1,4 +1,4 @@
-package com.lge.tputtracingapp;
+package com.lge.tputtracingapp.activities;
 
 import com.android.LGSetupWizard.R;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
