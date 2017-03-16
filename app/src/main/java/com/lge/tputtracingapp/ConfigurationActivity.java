@@ -68,7 +68,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             startIntent.setAction("com.lge.data.START_LOGGING");
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_FILE_PATH, cpuClockFilePath);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
             startService(startIntent);
 

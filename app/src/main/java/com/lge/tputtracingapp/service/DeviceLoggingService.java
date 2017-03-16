@@ -25,6 +25,19 @@ public class DeviceLoggingService extends Service {
 
     private static String TAG = DeviceLoggingService.class.getSimpleName();
 
+    public static final String SHARED_PREFERENCES_NAME = "device_Logging_service_pref";
+    public static final String SHARED_PREFERENCES_KEY_PACKAGE_NAME = "package_name";
+    private static final String SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME = "com.google.android.youtube";
+
+    public static final String SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH = "cpu_file_path";
+    private static final String SHARED_PREFERENCES_DEFAULT_CPU_CLOCK_FILE_PATH = "/sys/devices/system/cpu/";
+
+    public static final String SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH = "thermal_file_path";
+    private static final String SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH = "/sys/class/hwmon/hwmon2/device/xo_therm";
+
+    public static final String SHARED_PREFERENCES_KEY_INTERVAL = "interval";
+    private static final int SHARED_PREFERENCES_DEFAULT_INTERVAL = 1000;
+
     private static final int EVENT_LOG_NOW = 0x10;
     private static final int EVENT_STOP_LOGGING = 0x11;
     private static final int EVENT_START_LOGGING = 0x12;
@@ -87,18 +100,7 @@ public class DeviceLoggingService extends Service {
         Log.d(TAG, "onCreate()");
     }
 
-    public static final String SHARED_PREFERENCES_NAME = "device_Logging_service_pref";
-    public static final String SHARED_PREFERENCES_KEY_PACKAGE_NAME = "package_name";
-    public static final String SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME = "com.google.android.youtube";
 
-    public static final String SHARED_PREFERENCES_KEY_CPU_FILE_PATH = "thermal_file_path";
-    public static final String SHARED_PREFERENCES_DEFAULT_CPU_FILE_PATH = "";
-
-    public static final String SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH = "cpu_file_path";
-    public static final String SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH = "";
-
-    public static final String SHARED_PREFERENCES_KEY_INTERVAL = "interval";
-    public static final int SHARED_PREFERENCES_DEFAULT_INTERVAL = 1000;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -107,18 +109,18 @@ public class DeviceLoggingService extends Service {
         int interval;
         if (intent == null) {
             packageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME);
-            cpuFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_FILE_PATH);
+            cpuFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_CLOCK_FILE_PATH);
             thermalFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
             interval = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
         } else {
-            packageName = intent.getStringExtra("package_name");
-            cpuFilePath = intent.getStringExtra("cpu_file_path");
-            thermalFilePath = intent.getStringExtra("thermal_file_path");
-            interval = intent.getIntExtra("interval", 1000);
+            packageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME);
+            cpuFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH);
+            thermalFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH);
+            interval = intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
-            editor.putString(SHARED_PREFERENCES_KEY_CPU_FILE_PATH, cpuFilePath);
+            editor.putString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuFilePath);
             editor.putString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, thermalFilePath);
             editor.putInt(SHARED_PREFERENCES_KEY_INTERVAL, interval);
             editor.commit();
