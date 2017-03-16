@@ -28,11 +28,12 @@ public class DeviceStatsInfo {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("Time : ").append(this.mTimeStamp).append("\n");
         sb.append("tx : ").append(this.mTxBytes);
         sb.append(", rx : ").append(this.mRxBytes).append("\n");
         if (this.mCpuFrequencyList != null) {
             for (int i = 0; i < this.mCpuFrequencyList.size(); ++i) {
-                sb.append("CPU [").append(i).append("]").append(this.mCpuFrequencyList.get(i)).append(" MHz\n");
+                sb.append("CPU [").append(i).append("] ").append(this.mCpuFrequencyList.get(i)).append(" MHz\n");
             }
         }
         sb.append("Temperature : ").append(this.mCpuTemperature);

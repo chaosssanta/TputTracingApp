@@ -7,7 +7,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -17,25 +16,30 @@ import java.util.regex.Pattern;
 public class CPUStatsReader {
     private static final String TAG = CPUStatsReader.class.getSimpleName();
 
-    private static File[] CPU_FILES;
+    private static int CPU_COUNT = -1;
 
+// /sys/devices/system/cpu/
     public static int getThermalInfo(String filePath) {
-        Log.d(TAG, filePath);
-        return Integer.valueOf(cmdCat(filePath).split(":")[1].split(" ")[0]);
+        try {
+            return Integer.valueOf(cmdCat(filePath).split(":")[1].split(" ")[0]);
+        } catch (IndexOutOfBoundsException e) {
+            return -1;
+        }
     }
 
     public static ArrayList<Integer> getCpuFreq(String filePath) {
-        if (CPU_FILES == null) {
-            getCPUs();
+        if (CPU_COUNT == -1) {
+            Log.d(TAG, "CPU_COUNT init");
+            CPU_COUNT = getCPUs(filePath);
         }
         ArrayList<Integer> ret = new ArrayList<>();
-        for (int i = 0; i < CPU_FILES.length; i++) {
-            ret.add(Integer.valueOf(cmdCat(CPU_FILES[i].getAbsolutePath() + "/cpufreq/scaling_cur_freq").replace("\n", "")));
+        for (int i = 0; i < CPU_COUNT; i++) {
+            ret.add(Integer.valueOf(cmdCat(filePath + "cpu" + i + "/cpufreq/scaling_cur_freq").replace("\n", "")));
         }
         return ret;
     }
 
-    private static void getCPUs() {
+    private static int getCPUs(String filePath) {
         class CpuFilter implements FileFilter {
             @Override
             public boolean accept(File path) {
@@ -46,14 +50,10 @@ public class CPUStatsReader {
             }
         }
 
-        File dir = new File("/sys/devices/system/cpu/");
-        CPU_FILES = dir.listFiles(new CpuFilter());
-        for (File f: CPU_FILES) {
-            Log.d(TAG, f.toString());
-        }
+        return new File(filePath).listFiles(new CpuFilter()).length;
     }
 
-    private static File getHwmonDir() {
+/*    private static File getHwmonDir() {
         class HwmonFilter implements FileFilter {
             @Override
             public boolean accept(File pathname) {
@@ -76,11 +76,11 @@ public class CPUStatsReader {
             }
         }
         return null;
-    }
+    }*/
 
     private static String cmdCat(String f) {
 
-        String[] command = { "cat", f };
+        String[] command = {"cat", f};
         StringBuilder cmdReturn = new StringBuilder();
 
         try {

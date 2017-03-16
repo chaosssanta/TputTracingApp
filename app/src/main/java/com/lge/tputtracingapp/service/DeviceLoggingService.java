@@ -70,11 +70,12 @@ public class DeviceLoggingService extends Service {
                 * DeviceLoggingService can be seperated from device data gathering task.
                 * */
                 DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
+                deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
                 deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
                 deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
                 deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
                 deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(mCPUClockFilePath));
-
+                Log.d(TAG, mCPUClockFilePath);
                 Log.d(TAG, deviceStatsInfo.toString());
 
                 sendEmptyMessageDelayed(EVENT_LOG_NOW, mLoggingInterval);
