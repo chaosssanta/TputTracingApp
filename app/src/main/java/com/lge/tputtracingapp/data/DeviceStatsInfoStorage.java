@@ -1,10 +1,13 @@
 package com.lge.tputtracingapp.data;
 
 import android.bluetooth.BluetoothClass;
+import android.support.annotation.NonNull;
 
 import com.lge.tputtracingapp.service.DeviceLoggingStateChangedListener;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Created by wonsik.lee on 2017-03-14.
@@ -13,12 +16,12 @@ import java.util.ArrayList;
 public class DeviceStatsInfoStorage implements DeviceLoggingStateChangedListener {
     private static final String TAG = DeviceStatsInfoStorage.class.getSimpleName();
 
-    private ArrayList<DeviceStatsInfo> mDeviceStatsList;
+    private Queue<DeviceStatsInfo> mDeviceStatsQueue;
 
     private static DeviceStatsInfoStorage mInstance;
 
     private DeviceStatsInfoStorage() {
-        this.mDeviceStatsList = new ArrayList<DeviceStatsInfo>();
+        this.mDeviceStatsQueue = new LinkedList<>();
     }
 
     public DeviceStatsInfoStorage getInstance() {
@@ -33,7 +36,7 @@ public class DeviceStatsInfoStorage implements DeviceLoggingStateChangedListener
     }
 
     public void add(DeviceStatsInfo deviceStatsInfo) {
-        this.mDeviceStatsList.add(deviceStatsInfo);
+        this.mDeviceStatsQueue.add(deviceStatsInfo);
     }
 
     @Override
@@ -46,4 +49,6 @@ public class DeviceStatsInfoStorage implements DeviceLoggingStateChangedListener
     private static String generateFileName() {
         return System.currentTimeMillis() + ".txt";
     }
+
+
 }
