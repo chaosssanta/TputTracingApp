@@ -8,9 +8,9 @@
         android:id="@+id/editTxt_interval"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:hint="1000"
         android:layout_below="@+id/editTxt_package_name"
-        android:layout_toEndOf="@+id/textView2"
-        android:hint="1000" />
+        android:layout_toEndOf="@+id/textView3" />
 
     <EditText
         android:id="@+id/editTxt_package_name"
@@ -44,11 +44,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/editTxt_interval"
-        android:layout_alignParentStart="true"
         android:layout_below="@+id/textView2"
-        android:layout_toStartOf="@+id/editTxt_interval"
         android:gravity="right|center_vertical"
-        android:text="Interval: " />
+        android:text="Interval: "
+        android:layout_toEndOf="@+id/textView5" />
 
     <TextView
         android:id="@+id/thresholdTimeTextView"
@@ -68,6 +67,14 @@
         android:layout_alignBottom="@+id/textView"
         android:layout_toEndOf="@+id/thresholdTimeTextView"
         android:hint="5000" />
+
+    <ImageButton
+        android:id="@+id/infoImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_info_outline_light_green_a200_24dp"
+        android:layout_alignTop="@+id/thresholdTimeEditText"
+        android:layout_toEndOf="@+id/thresholdTimeEditText" />
 
     <TextView
         android:id="@+id/textView2"

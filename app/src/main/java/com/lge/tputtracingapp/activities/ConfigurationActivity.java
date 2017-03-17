@@ -8,6 +8,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -15,10 +16,11 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
-public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener {
+public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
 
     private static String TAG = "DeviceStatsMonitor";
 
@@ -35,6 +37,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private RadioButton mRdoBtnThermalVts;
     private RadioButton mRdoBtnThermalManual;
     private EditText mEditTxtCPUTemperaturePath;
+
+    private ImageButton mInfoImage;
 
     private TextView mTxtViewProgressResult;
 
@@ -136,6 +140,24 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.infoImageView: {
+                showInfoDialog();
+                break;
+            }
+        }
+    }
+
+    private void showInfoDialog() {
+        AlertDialog.Builder sAlert = new AlertDialog.Builder(this);
+        sAlert.setTitle("ThresHoldTime Info.");
+        sAlert.setMessage("mDLCompleteDecisionTimeThreshold, 이름 이상해").setCancelable(false);
+        sAlert.setNeutralButton("OK", null);
+        sAlert.show();
+    }
+
     private void initUIControls() {
         this.mBtnLoggingController = (Button) findViewById(R.id.btn_start_service);
 
@@ -153,12 +175,14 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mRdoBtnThermalManual = (RadioButton) findViewById(R.id.radioButton_thermal_manual);
         this.mEditTxtCPUTemperaturePath = (EditText) findViewById(R.id.editText_thermal_path);
 
+        this.mInfoImage = (ImageButton) findViewById(R.id.infoImageView);
+
         // listener setup
         this.mRdoBtnChipsetVendorManual.setOnCheckedChangeListener(this);
         this.mRdoBtnChipsetVendorQCT.setChecked(true);
-
         this.mRdoBtnThermalManual.setOnCheckedChangeListener(this);
         this.mRdoBtnThermalXoThermal.setChecked(true);
+        this.mInfoImage.setOnClickListener(this);
 
         this.refreshMonitoringBtn();
     }
