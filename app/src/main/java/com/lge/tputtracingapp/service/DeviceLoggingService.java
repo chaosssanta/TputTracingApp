@@ -1,6 +1,7 @@
 package com.lge.tputtracingapp.service;
 
 import com.lge.tputtracingapp.data.DeviceStatsInfo;
+import com.lge.tputtracingapp.data.DeviceStatsInfoStorage;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
 import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
@@ -78,6 +79,10 @@ public class DeviceLoggingService extends Service {
                 Log.d(TAG, mCPUClockFilePath);
                 Log.d(TAG, deviceStatsInfo.toString());
 
+                DeviceStatsInfoStorage.getInstance().add(deviceStatsInfo);
+
+                Log.d(TAG, "T-put : " + DeviceStatsInfoStorage.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) + "");
+
                 sendEmptyMessageDelayed(EVENT_LOG_NOW, mLoggingInterval);
                 break;
             default:
@@ -91,7 +96,7 @@ public class DeviceLoggingService extends Service {
     @Setter private int mTargetUid;
     @Setter private String mCPUClockFilePath;
     @Setter private String mCPUTemperatureFilePath;
-    @Setter private int mDLCompleteDecisionTimeThreshold;
+    @Setter private int mDLCompleteDecisionTimeThreshold = 3;
 
     // constructor
     public DeviceLoggingService() {
