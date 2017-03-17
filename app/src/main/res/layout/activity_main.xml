@@ -66,7 +66,16 @@
         android:layout_alignBaseline="@+id/textView"
         android:layout_alignBottom="@+id/textView"
         android:layout_toEndOf="@+id/thresholdTimeTextView"
-        android:hint="5000" />
+        android:hint="5" />
+
+    <TextView
+        android:id="@+id/thresholdTimeUnit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sec"
+        android:layout_alignBaseline="@+id/thresholdTimeEditText"
+        android:layout_alignBottom="@+id/thresholdTimeEditText"
+        android:layout_toEndOf="@+id/thresholdTimeEditText" />
 
     <ImageButton
         android:id="@+id/infoImageView"
@@ -74,8 +83,9 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_info_outline_light_green_a200_24dp"
         android:background="#ffffffff"
-        android:layout_alignBottom="@+id/thresholdTimeTextView"
-        android:layout_toEndOf="@+id/thresholdTimeEditText" />
+        android:layout_marginEnd="13dp"
+        android:layout_alignBottom="@+id/thresholdTimeUnit"
+        android:layout_alignParentEnd="true" />
 
     <TextView
         android:id="@+id/textView2"
