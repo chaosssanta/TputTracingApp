@@ -39,6 +39,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private EditText mEditTxtCPUTemperaturePath;
 
     private ImageButton mInfoImage;
+    private EditText mThresholdTimeEditText;
 
     private TextView mTxtViewProgressResult;
 
@@ -68,12 +69,16 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             temp = mEditTxtCPUTemperaturePath.getText().toString();
             String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
 
+            temp = mThresholdTimeEditText.getText().toString();
+            int sThresholdTime = (TextUtils.isEmpty(temp))? Integer.valueOf(mThresholdTimeEditText.getHint().toString()) : Integer.valueOf(temp);
+
             Intent startIntent = new Intent(ConfigurationActivity.this, DeviceLoggingService.class);
             startIntent.setAction("com.lge.data.START_LOGGING");
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_THRESHOLD_TIME, sThresholdTime);
             startService(startIntent);
 
             refreshMonitoringBtn();
