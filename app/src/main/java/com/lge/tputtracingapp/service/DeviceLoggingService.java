@@ -1,7 +1,7 @@
 package com.lge.tputtracingapp.service;
 
 import com.lge.tputtracingapp.data.DeviceStatsInfo;
-import com.lge.tputtracingapp.data.DeviceStatsInfoStorage;
+import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
 import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
@@ -18,8 +18,6 @@ import android.util.Log;
 
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.util.ArrayList;
 
 @Accessors(prefix = "m")
 public class DeviceLoggingService extends Service {
@@ -64,13 +62,13 @@ public class DeviceLoggingService extends Service {
                 break;
                 
             case EVENT_LOG_NOW:
-                // TODO : Below codes in the EVENT_LOG_NOW codes will be replaced with DeviceStatsInfoStorage functions.
+                // TODO : Below codes in the EVENT_LOG_NOW codes will be replaced with DeviceStatsInfoStorageManager functions.
                 /*
-                * DeviceStatsInfoStorage will be a singleton class which manage the cpu, thermal, and network stats info.
+                * DeviceStatsInfoStorageManager will be a singleton class which manage the cpu, thermal, and network stats info.
                 * it will store all the data that is logged and export them on demand,
                 * Hence the below is limited only to a test purpose, and surely will be removed eventually
                 *
-                * By letting DeviceStatsInfoStorage manage actual data logging and exporting,
+                * By letting DeviceStatsInfoStorageManager manage actual data logging and exporting,
                 * DeviceLoggingService can be seperated from device data gathering task.
                 * */
                 DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
@@ -82,9 +80,9 @@ public class DeviceLoggingService extends Service {
                 Log.d(TAG, mCPUClockFilePath);
                 Log.d(TAG, deviceStatsInfo.toString());
 
-                DeviceStatsInfoStorage.getInstance().add(deviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance().add(deviceStatsInfo);
 
-                Log.d(TAG, "T-put : " + DeviceStatsInfoStorage.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) + "");
+                Log.d(TAG, "T-put : " + DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) + "");
 
                 sendEmptyMessageDelayed(EVENT_LOG_NOW, mLoggingInterval);
                 break;

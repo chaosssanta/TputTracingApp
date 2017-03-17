@@ -10,20 +10,20 @@ import java.util.LinkedList;
  * Created by wonsik.lee on 2017-03-14.
  */
 
-public class DeviceStatsInfoStorage implements DeviceLoggingStateChangedListener {
-    private static final String TAG = DeviceStatsInfoStorage.class.getSimpleName();
+public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedListener {
+    private static final String TAG = DeviceStatsInfoStorageManager.class.getSimpleName();
 
     private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
 
-    private static DeviceStatsInfoStorage mInstance;
+    private static DeviceStatsInfoStorageManager mInstance;
 
-    private DeviceStatsInfoStorage() {
+    private DeviceStatsInfoStorageManager() {
         this.mDeviceStatsRecordList = new LinkedList<>();
     }
 
-    public static DeviceStatsInfoStorage getInstance() {
+    public static DeviceStatsInfoStorageManager getInstance() {
         if (mInstance == null) {
-            mInstance = new DeviceStatsInfoStorage();
+            mInstance = new DeviceStatsInfoStorageManager();
         }
         return mInstance;
     }
