@@ -78,7 +78,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_THRESHOLD_TIME, sThresholdTime);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
             startService(startIntent);
 
             refreshMonitoringBtn();
