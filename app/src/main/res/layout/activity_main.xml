@@ -73,7 +73,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_info_outline_light_green_a200_24dp"
-        android:layout_alignTop="@+id/thresholdTimeEditText"
+        android:background="#ffffffff"
+        android:layout_alignBottom="@+id/thresholdTimeTextView"
         android:layout_toEndOf="@+id/thresholdTimeEditText" />
 
     <TextView
