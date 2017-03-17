@@ -16,9 +16,9 @@
         android:id="@+id/editTxt_package_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="com.google.android.youtube"
         android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@+id/textView2" />
+        android:layout_toEndOf="@+id/textView2"
+        android:hint="com.benchbee.AST" />
 
     <Button
         android:id="@+id/btn_start_service"
