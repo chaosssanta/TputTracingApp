@@ -83,7 +83,9 @@ public class DeviceLoggingService extends Service {
                 DeviceStatsInfoStorageManager.getInstance().add(deviceStatsInfo);
 
                 Log.d(TAG, "T-put : " + DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) + "");
-
+                if ("".equals("끝"))  {
+                    DeviceStatsInfoStorageManager.getInstance().exportToFile("");
+                }
                 sendEmptyMessageDelayed(EVENT_LOG_NOW, mLoggingInterval);
                 break;
             default:

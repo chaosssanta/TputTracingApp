@@ -29,7 +29,15 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     public void exportToFile(String fileName) {
+        final LinkedList<DeviceStatsInfo> targetList = this.mDeviceStatsRecordList;
+        this.mDeviceStatsRecordList = new LinkedList<>();
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // TODO : write to file here by chaossannta
+            }
+        }).start();
     }
 
     public void add(DeviceStatsInfo deviceStatsInfo) {
@@ -46,7 +54,6 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     public float getAvgTputForTheLatestSeconds(int seconds, int intervalInMilliseconds) {
         Log.d(TAG, "getAvgTputForTheLastSeconds(int, int) : " + seconds + ", " + intervalInMilliseconds);
-
         int startIndex = this.mDeviceStatsRecordList.size() - (seconds * 1000 / intervalInMilliseconds + 1);
         if (startIndex < 0) {
             startIndex = 0;
