@@ -178,6 +178,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mRdoBtnThermalVts = (RadioButton) findViewById(R.id.radioButton_thermal_vts);
         this.mRdoBtnThermalManual = (RadioButton) findViewById(R.id.radioButton_thermal_manual);
         this.mEditTxtCPUTemperaturePath = (EditText) findViewById(R.id.editText_thermal_path);
+        this.mThresholdTimeEditText = (EditText) findViewById(R.id.thresholdTimeEditText);
 
         this.mInfoImage = (ImageButton) findViewById(R.id.infoImageView);
 
