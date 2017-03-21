@@ -56,6 +56,7 @@ public class DeviceLoggingService extends Service {
 
             switch (msg.what) {
             case EVENT_START_MONITORING:
+                Log.d(TAG, "EVENT_START_MONITORING handled");
                 sendEmptyMessage(EVENT_GET_CURRENT_STATS_INFO);
                 break;
 
@@ -72,16 +73,19 @@ public class DeviceLoggingService extends Service {
                 break;
 
             case EVENT_START_LOGGING:
+                Log.d(TAG, "EVENT_START_LOGGING");
                 DeviceStatsInfoStorageManager.getInstance().add((DeviceStatsInfo) msg.obj);
                 sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
                 break;
 
             case EVENT_STOP_LOGGING:
+                Log.d(TAG, "EVENT_STOP_LOGGING");
                 DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
                 sendEmptyMessageDelayed(EVENT_START_MONITORING, mLoggingInterval);
                 break;
 
             case EVENT_LOG_CURRENT_STATS_INFO: {
+                Log.d(TAG, "EVENT_LOG_CURRENT_STATS_INFO");
                 DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
                 deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
                 deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
@@ -104,6 +108,7 @@ public class DeviceLoggingService extends Service {
                 break;
             }
             case EVENT_GET_CURRENT_STATS_INFO: {
+                Log.d(TAG, "EVENT_GET_CURRENT_STATS_INFO");
                 // TODO : Below codes in the EVENT_GET_CURRENT_STATS_INFO codes will be replaced with DeviceStatsInfoStorageManager functions.
 
                 DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
@@ -196,7 +201,7 @@ public class DeviceLoggingService extends Service {
     // monitoring controller
     private void startLogging(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath) {
         Message msg = this.mServiceLogicHandler.obtainMessage();
-        msg.what = EVENT_START_LOGGING;
+        msg.what = EVENT_START_MONITORING;
 
         setTargetPackageName(targetPackageName);
         setTargetUid(DeviceLoggingService.getUidByPackageName(this, this.mTargetPackageName));
