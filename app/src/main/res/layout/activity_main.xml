@@ -72,10 +72,10 @@
         android:id="@+id/thresholdTimeUnit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sec"
         android:layout_alignBaseline="@+id/thresholdTimeEditText"
         android:layout_alignBottom="@+id/thresholdTimeEditText"
-        android:layout_toEndOf="@+id/thresholdTimeEditText" />
+        android:layout_toEndOf="@+id/thresholdTimeEditText"
+        android:text="Secs" />
 
     <ImageButton
         android:id="@+id/infoImageView"

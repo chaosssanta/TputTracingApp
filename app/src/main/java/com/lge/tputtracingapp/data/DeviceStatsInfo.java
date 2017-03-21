@@ -1,5 +1,7 @@
 package com.lge.tputtracingapp.data;
 
+import android.os.CpuUsageInfo;
+
 import java.util.ArrayList;
 
 import lombok.AllArgsConstructor;
@@ -20,6 +22,7 @@ public class DeviceStatsInfo {
     /* CPU Stats */
     @Setter @Getter private ArrayList<Integer> mCpuFrequencyList;
     @Setter @Getter private int mCpuTemperature;
+    @Setter @Getter private int mCpuUsage;
 
     public DeviceStatsInfo() {
         this.mCpuFrequencyList = new ArrayList<>();
@@ -36,7 +39,8 @@ public class DeviceStatsInfo {
                 sb.append("CPU [").append(i).append("] ").append(this.mCpuFrequencyList.get(i)).append(" MHz\n");
             }
         }
-        sb.append("Temperature : ").append(this.mCpuTemperature);
+        sb.append("Temperature : ").append(this.mCpuTemperature).append("\n");
+        sb.append("Usage : ").append(this.mCpuUsage).append(" %");
 
         return sb.toString();
     }

@@ -17,6 +17,10 @@ public class CPUStatsReader {
     private static final String TAG = CPUStatsReader.class.getSimpleName();
 
     private static int CPU_COUNT = -1;
+    //private static String[] sVMCmd = {"/system/xbin/bash", "-c", "top -n 1 -m 1"};
+    private static String[] sCmdBase = {"/system/xbin/bash", "-c"};
+
+    private static String sTop_1 = "top -n 1 -m 1";
 
 // /sys/devices/system/cpu/
     public static int getThermalInfo(String filePath) {
@@ -53,30 +57,75 @@ public class CPUStatsReader {
         return new File(filePath).listFiles(new CpuFilter()).length;
     }
 
-/*    private static File getHwmonDir() {
-        class HwmonFilter implements FileFilter {
-            @Override
-            public boolean accept(File pathname) {
-                if ((Pattern.matches("hwmon[0-9]+", pathname.getName())) || Pattern.matches("hwmon[10-19]+", pathname.getName())) {
-                    return true;
+
+    static ProcessBuilder sGetTopProcessBuilder = new ProcessBuilder("/system/xbin/bash", "-c", "top -n 1 -m 1");
+
+    public static int getCpuUsage() {
+        InputStream is = null;
+        Process p = null;
+
+        StringBuilder sb = new StringBuilder();
+        try {
+            p = sGetTopProcessBuilder.start();
+            is = p.getInputStream();
+
+            int value = -1;
+            while ((value = is.read()) != -1) {
+                sb.append((char)value);
+            }
+            value = -1;
+            while ((value = is.read()) != -1) {
+                sb.append((char)value);
+            }
+        } catch (IOException exp) {
+            exp.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                return false;
+            }
+
+            if (p != null) {
+                p.destroy();
             }
         }
 
-        File dir = new File("/sys/class/hwmon/");
-        File[] files = dir.listFiles(new HwmonFilter());
-        String cmd = null;
-        String ret = null;
-        for (File file : files) {
-            cmd = file + "/device/xo_therm";
-            ret = cmdCat(cmd);
-            if (ret != null && ret.contains("Result:")) {
-                return file;
+        String ret = sb.toString();
+        int sum = 0;
+
+        String[] parsingTargetArray = ret.split("\n");
+        for (String s: parsingTargetArray[0].split(",")) {
+            if (s.contains("User") || s.contains("System") || s.contains("IOW") || s.contains("IRQ")) {
+                String[] tmp = s.split(" ");
+                String target = tmp[tmp.length - 1].replace("%", "");
+
+                try {
+                    sum += Integer.valueOf(target);
+                } catch (NumberFormatException e) {
+                    sum += 0;
+                }
             }
         }
-        return null;
-    }*/
+
+
+        /*int topUsage = 0;
+        for (int i = 1; i != parsingTargetArray.length; ++i) {
+            String s = parsingTargetArray[i];
+            if (s.contains("system")  && s.contains("top")) {
+                String asdf = s.replaceAll("\\s{2,}", " ").trim();
+               // Log.d(TAG, "top process : " + asdf);
+                String[] tmp = asdf.split(" ");
+                String topUsageString = tmp[4].replace("%", "");
+                //Log.d(TAG, "top : " + topUsageString);
+                topUsage = Integer.valueOf(topUsageString);
+                break;
+            }
+        }*/
+        return sum;
+    }
 
     private static String cmdCat(String f) {
 

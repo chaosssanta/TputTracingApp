@@ -1,10 +1,5 @@
 package com.lge.tputtracingapp.service;
 
-import com.lge.tputtracingapp.data.DeviceStatsInfo;
-import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
-import com.lge.tputtracingapp.statsreader.CPUStatsReader;
-import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
-
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +10,11 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+
+import com.lge.tputtracingapp.data.DeviceStatsInfo;
+import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
+import com.lge.tputtracingapp.statsreader.CPUStatsReader;
+import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -73,11 +73,12 @@ public class DeviceLoggingService extends Service {
                 * */
                 DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
                 deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
-                deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
+               deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
                 deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
                 deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
                 deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(mCPUClockFilePath));
-                Log.d(TAG, mCPUClockFilePath);
+                deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
+
                 Log.d(TAG, deviceStatsInfo.toString());
 
                 DeviceStatsInfoStorageManager.getInstance().add(deviceStatsInfo);
