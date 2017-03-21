@@ -71,6 +71,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 fos.flush();
             }
             fos.close();
+            this.flushStoredData();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -106,5 +107,9 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     private static String generateFileName() {
         return System.currentTimeMillis() + ".txt";
+    }
+
+    private void flushStoredData() {
+        this.mDeviceStatsRecordList.clear();
     }
 }

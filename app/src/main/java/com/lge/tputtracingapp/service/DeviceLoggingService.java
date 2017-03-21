@@ -16,6 +16,7 @@ import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
 import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -41,39 +42,49 @@ public class DeviceLoggingService extends Service {
     public static final String SHARED_PREFERENCES_KEY_THRESHOLD_TIME = "threshold_time";
     private static final int SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME = 5;
 
-    private static final int EVENT_LOG_NOW = 0x10;
-    private static final int EVENT_STOP_LOGGING = 0x11;
+    private static final int EVENT_START_MONITORING = 0x10;
+    private static final int EVENT_STOP_MONITORING = 0x11;
     private static final int EVENT_START_LOGGING = 0x12;
+    private static final int EVENT_STOP_LOGGING = 0x13;
+    private static final int EVENT_GET_CURRENT_STATS_INFO = 0x15;
+    private static final int EVENT_LOG_CURRENT_STATS_INFO = 0x16;
 
     private Handler mServiceLogicHandler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
+
             switch (msg.what) {
-            case EVENT_STOP_LOGGING:
-                Log.d(TAG, "EVENT_STOP_LOGGING handled");
-                if (this.hasMessages(EVENT_LOG_NOW)) {
-                    removeMessages(EVENT_LOG_NOW);
-                }
+            case EVENT_START_MONITORING:
+                sendEmptyMessage(EVENT_GET_CURRENT_STATS_INFO);
+                break;
+
+            case EVENT_STOP_MONITORING:
+                Log.d(TAG, "EVENT_STOP_MONITORING handled");
+                // remove all messages
+                removeMessages(EVENT_START_MONITORING);
+                removeMessages(EVENT_START_LOGGING);
+                removeMessages(EVENT_STOP_LOGGING);
+                removeMessages(EVENT_GET_CURRENT_STATS_INFO);
+                removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
+
+                DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
                 break;
 
             case EVENT_START_LOGGING:
-                sendEmptyMessage(EVENT_LOG_NOW);
+                DeviceStatsInfoStorageManager.getInstance().add((DeviceStatsInfo) msg.obj);
+                sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
                 break;
-                
-            case EVENT_LOG_NOW:
-                // TODO : Below codes in the EVENT_LOG_NOW codes will be replaced with DeviceStatsInfoStorageManager functions.
-                /*
-                * DeviceStatsInfoStorageManager will be a singleton class which manage the cpu, thermal, and network stats info.
-                * it will store all the data that is logged and export them on demand,
-                * Hence the below is limited only to a test purpose, and surely will be removed eventually
-                *
-                * By letting DeviceStatsInfoStorageManager manage actual data logging and exporting,
-                * DeviceLoggingService can be seperated from device data gathering task.
-                * */
+
+            case EVENT_STOP_LOGGING:
+                DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
+                sendEmptyMessageDelayed(EVENT_START_MONITORING, mLoggingInterval);
+                break;
+
+            case EVENT_LOG_CURRENT_STATS_INFO: {
                 DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
                 deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
-               deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
+                deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
                 deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
                 deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
                 deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(mCPUClockFilePath));
@@ -84,11 +95,39 @@ public class DeviceLoggingService extends Service {
                 DeviceStatsInfoStorageManager.getInstance().add(deviceStatsInfo);
 
                 Log.d(TAG, "T-put : " + DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) + "");
-                if ("".equals("끝"))  {
-                    DeviceStatsInfoStorageManager.getInstance().exportToFile("");
+                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) < 5.0) {
+                    sendEmptyMessage(EVENT_STOP_LOGGING);
+                } else {
+                    sendEmptyMessage(EVENT_LOG_CURRENT_STATS_INFO);
                 }
-                sendEmptyMessageDelayed(EVENT_LOG_NOW, mLoggingInterval);
+
                 break;
+            }
+            case EVENT_GET_CURRENT_STATS_INFO: {
+                // TODO : Below codes in the EVENT_GET_CURRENT_STATS_INFO codes will be replaced with DeviceStatsInfoStorageManager functions.
+
+                DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
+                deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
+                deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
+                deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
+                deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
+                deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(mCPUClockFilePath));
+                deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
+
+                Log.d(TAG, deviceStatsInfo.toString());
+
+                // if the avg t-put exceeds threshold, it's time to start logging.
+                Log.d(TAG, "T-put : " + DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) + "");
+                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) > 5.0) {
+                    Message eventMessage = this.obtainMessage(EVENT_START_LOGGING);
+                    eventMessage.obj = deviceStatsInfo;
+                    sendMessage(eventMessage);
+                } else {
+                    sendEmptyMessageDelayed(EVENT_GET_CURRENT_STATS_INFO, mLoggingInterval);
+                }
+            }
+                break;
+
             default:
                 break;
             }
@@ -147,8 +186,8 @@ public class DeviceLoggingService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
-        if (this.mServiceLogicHandler.hasMessages(EVENT_LOG_NOW)) {
-            this.mServiceLogicHandler.removeMessages(EVENT_LOG_NOW);
+        if (this.mServiceLogicHandler.hasMessages(EVENT_GET_CURRENT_STATS_INFO)) {
+            this.mServiceLogicHandler.removeMessages(EVENT_GET_CURRENT_STATS_INFO);
         }
         this.mServiceLogicHandler.sendEmptyMessage(EVENT_STOP_LOGGING);
         super.onDestroy();
