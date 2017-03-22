@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +26,10 @@ import java.util.concurrent.Future;
 public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedListener {
     private static final String TAG = DeviceStatsInfoStorageManager.class.getSimpleName();
     private static final int TPUT_CALCULATION_UNIT_TIME = 3000;
+
+    public enum TEST_TYPE {
+        DL_TEST, UL_TEST
+    }
 
     private static DeviceStatsInfoStorageManager mInstance;
 
@@ -166,8 +171,25 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         this.mDLTPutCircularArray.addLast(d);
     }
 
-    public enum TEST_TYPE {
-        DL_TEST, UL_TEST
+    public void migrateFromTPutCalculationBufferToRecordBuffer() {
+        Log.d(TAG, "migrateFromTPutCalculationBufferToRecordBuffer()");
+
+        Log.d(TAG, "calculationBufferSIze : " + this.mDLTPutCircularArray.size());
+        Log.d(TAG, "recordBufferSize : " + this.mDeviceStatsRecordList.size());
+
+        for (int i = 0; i != this.mDLTPutCircularArray.size(); ++i) {
+            this.addToStorage(this.mDLTPutCircularArray.get(i).clone());
+        }
+
+        Log.d(TAG, "calcul ****************************");
+        for (int i = 0; i != this.mDLTPutCircularArray.size(); ++i) {
+            Log.d(TAG, this.mDLTPutCircularArray.get(i).toString());
+        }
+
+        Log.d(TAG, "record ****************************");
+        for (int i = 0; i != this.mDeviceStatsRecordList.size(); ++i) {
+            Log.d(TAG, this.mDeviceStatsRecordList.get(i).toString());
+        }
     }
 
     public float getAvgTputFromTpuCalculationBuffer(TEST_TYPE type) {

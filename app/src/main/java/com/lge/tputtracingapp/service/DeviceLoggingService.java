@@ -48,6 +48,7 @@ public class DeviceLoggingService extends Service {
     private static final int EVENT_STOP_LOGGING = 0x13;
     private static final int EVENT_GET_CURRENT_STATS_INFO = 0x15;
     private static final int EVENT_LOG_CURRENT_STATS_INFO = 0x16;
+    private static final float TPUT_THRESHOLD = 1.0f;
 
     private Handler mServiceLogicHandler = new Handler() {
 
@@ -74,6 +75,7 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_START_LOGGING:
                 Log.d(TAG, "EVENT_START_LOGGING");
+                DeviceStatsInfoStorageManager.getInstance().migrateFromTPutCalculationBufferToRecordBuffer();
                 DeviceStatsInfoStorageManager.getInstance().addToStorage((DeviceStatsInfo) msg.obj);
                 sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
                 break;
@@ -91,7 +93,7 @@ public class DeviceLoggingService extends Service {
                 DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(deviceStatsInfo);
                 DeviceStatsInfoStorageManager.getInstance().addToStorage(deviceStatsInfo);
 
-                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mTestType) < 5.0f) {
+                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mTestType) < TPUT_THRESHOLD) {
                     sendEmptyMessage(EVENT_STOP_LOGGING);
                 } else {
                     sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
@@ -106,7 +108,7 @@ public class DeviceLoggingService extends Service {
                 DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(deviceStatsInfo);
 
                 // if the avg t-put exceeds threshold, it's time to start logging.
-                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mTestType) > 5.0f) {
+                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mTestType) > TPUT_THRESHOLD) {
                     Message eventMessage = this.obtainMessage(EVENT_START_LOGGING);
                     eventMessage.obj = deviceStatsInfo;
                     sendMessage(eventMessage);
