@@ -29,11 +29,11 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private static DeviceStatsInfoStorageManager mInstance;
 
     private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
-    private CircularArray<DeviceStatsInfo> mTPutCircularArray;
+    private CircularArray<DeviceStatsInfo> mDLTPutCircularArray;
 
     private DeviceStatsInfoStorageManager() {
         this.mDeviceStatsRecordList = new LinkedList<>();
-        this.mTPutCircularArray = new CircularArray<>();
+        this.mDLTPutCircularArray = new CircularArray<>();
     }
     private ExecutorService mExecutorService = null;
 
@@ -106,21 +106,31 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     public void addToTputCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
-        if ((this.mTPutCircularArray.size() > 0) &&
-            ((this.mTPutCircularArray.getLast().getTimeStamp() - this.mTPutCircularArray.getFirst().getTimeStamp()) >= TPUT_CALCULATION_UNIT_TIME)) {
-                this.mTPutCircularArray.popFirst();
+        if ((this.mDLTPutCircularArray.size() > 0) &&
+            ((this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp()) >= TPUT_CALCULATION_UNIT_TIME)) {
+                this.mDLTPutCircularArray.popFirst();
         }
-        this.mTPutCircularArray.addLast(deviceStatsInfo);
+        this.mDLTPutCircularArray.addLast(deviceStatsInfo);
     }
 
-    public float getAvgTputFromTpuCalculationBuffer() {
+    public enum TEST_TYPE {
+        DL_TEST, UL_TEST
+    }
+
+    public float getAvgTputFromTpuCalculationBuffer(TEST_TYPE type) {
         float tput = 0.0f;
 
-        if (this.mTPutCircularArray.size() >= 0) {
-            if (this.mTPutCircularArray.getFirst().hashCode() != this.mTPutCircularArray.getLast().hashCode()) {
-                long duration = this.mTPutCircularArray.getLast().getTimeStamp() - this.mTPutCircularArray.getFirst().getTimeStamp();
-                long rxBytes = this.mTPutCircularArray.getLast().getRxBytes() - this.mTPutCircularArray.getFirst().getRxBytes();
-                tput = (rxBytes / 1024 / 1024 * 8)/(duration / 1000.0f);
+        if (this.mDLTPutCircularArray.size() >= 0) {
+            if (this.mDLTPutCircularArray.getFirst().hashCode() != this.mDLTPutCircularArray.getLast().hashCode()) {
+                long duration = this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp();
+                long bytes = 0;
+                if (type == TEST_TYPE.DL_TEST) {
+                    bytes = this.mDLTPutCircularArray.getLast().getRxBytes() - this.mDLTPutCircularArray.getFirst().getRxBytes();
+                } else {
+                    bytes = this.mDLTPutCircularArray.getLast().getTxBytes() - this.mDLTPutCircularArray.getFirst().getTxBytes();
+                }
+
+                tput = (bytes / 1024 / 1024 * 8)/(duration / 1000.0f);
             }
         }
         return tput;
