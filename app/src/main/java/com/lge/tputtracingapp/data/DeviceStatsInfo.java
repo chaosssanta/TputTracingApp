@@ -40,7 +40,7 @@ public class DeviceStatsInfo {
             }
         }
         sb.append("Temperature : ").append(this.mCpuTemperature).append("\n");
-        sb.append("Usage : ").append(this.mCpuUsage).append(" %");
+        sb.append("Usage : ").append(this.mCpuUsage).append(" %\n");
 
         return sb.toString();
     }
