@@ -65,11 +65,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         try {
             sFuture.get(); //if return value were null, it will be good.
             Log.d(TAG, "File writing is completed.");
-        } catch (InterruptedException e) {
-            Log.d(TAG, "InterruptedException, The thread is interrupted during file writing. e.getMessage: " + e.getMessage());
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            Log.d(TAG, "ExecutionException. e.getMessage: " + e.getMessage());
+        } catch (InterruptedException | ExecutionException e) {
+            Log.d(TAG, "InterruptedException or ExecutionException, e.getMessage: " + e.getMessage());
             e.printStackTrace();
         } catch (Exception e) {
             Log.d(TAG, "Exception. e.getMessage: " + e.getMessage());
@@ -92,7 +89,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         Log.d(TAG, "sIsMadeDir: " + sIsMadeDir + ", Directory path for log files: " + sDirPath + "/TputTracingApp_Logs");
 
         if (!sDir.canWrite() | !sIsMadeDir) {
-            Log.d(TAG, "Cannot make log files or fails making directory.");
+            Log.d(TAG, "Cannot write log to files or make directory.");
         }
 
         File sFile = new File(sDir, fileName);
@@ -101,9 +98,17 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         } catch (FileNotFoundException e) {
             Log.d(TAG, "FileNotFoundException, e.getMessage(): " + e.getMessage());
             e.printStackTrace();
+            return;
         } catch (Exception e) {
             Log.d(TAG, "Exception, e.getMessage(): " + e.getMessage());
             e.printStackTrace();
+            return;
+        } finally {
+            if (sFos != null) {
+                try {
+                    sFos.close();
+                } catch (IOException e){e.printStackTrace();};
+            }
         }
 
         try {
@@ -113,10 +118,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                         + ", RxBytes: " + String.valueOf(sDeviceStatsInfo.getRxBytes()) + ", CPU: " + sDeviceStatsInfo.getCpuFrequencyList().toString()
                         + ", Temp: " + sDeviceStatsInfo.getCpuTemperature() + ", Usage: " + sDeviceStatsInfo.getCpuUsage());
                 sBuffer = sIterator.next().toString().getBytes();
-                if (sFos != null) {
-                    sFos.write(sBuffer, 0, sBuffer.length);
-                    sFos.flush();
-                }
+                sFos.write(sBuffer, 0, sBuffer.length);
+                sFos.flush();
             }
             if (sFos != null)
                 sFos.close();
@@ -132,7 +135,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 try {
                     sFos.flush();
                     sFos.close();
-                } catch (IOException e) {};
+                } catch (IOException e) {e.printStackTrace();};
             }
         }
     }
