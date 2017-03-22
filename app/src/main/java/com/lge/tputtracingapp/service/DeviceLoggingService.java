@@ -89,7 +89,7 @@ public class DeviceLoggingService extends Service {
                 DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath);
 
                 DeviceStatsInfoStorageManager.getInstance().addToStorage(deviceStatsInfo);
-                DeviceStatsInfoStorageManager.getInstance().addToTputCalculationBuffer(deviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(deviceStatsInfo);
 
                 if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mTestType) < 5.0f) {
                     sendEmptyMessage(EVENT_STOP_LOGGING);
@@ -103,7 +103,7 @@ public class DeviceLoggingService extends Service {
                 Log.d(TAG, "EVENT_GET_CURRENT_STATS_INFO");
 
                 DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath);
-                DeviceStatsInfoStorageManager.getInstance().addToTputCalculationBuffer(deviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(deviceStatsInfo);
 
                 // if the avg t-put exceeds threshold, it's time to start logging.
                 if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mTestType) > 5.0f) {

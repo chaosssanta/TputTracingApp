@@ -138,7 +138,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         this.mDeviceStatsRecordList.add(deviceStatsInfo);
     }
 
-    public void addToTputCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
+    public void addToTPutCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
         if ((this.mDLTPutCircularArray.size() > 0) &&
             ((this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp()) >= TPUT_CALCULATION_UNIT_TIME)) {
                 this.mDLTPutCircularArray.popFirst();
