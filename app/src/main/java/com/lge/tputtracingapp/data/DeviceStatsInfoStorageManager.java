@@ -45,7 +45,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     public void exportToFile(final String fileName) {
-        final LinkedList<DeviceStatsInfo> targetList = this.mDeviceStatsRecordList;
+        final LinkedList<DeviceStatsInfo> sTargetList = this.mDeviceStatsRecordList;
         this.mDeviceStatsRecordList = new LinkedList<>();
 
         mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -54,13 +54,13 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                handleFileWriting(targetList, fileName);
+                handleFileWriting(sTargetList, fileName);
             }
         };
-        Future mFuture = mExecutorService.submit(run);
+        Future sFuture = mExecutorService.submit(run);
 
         try {
-            mFuture.get(); //if return value were null, it will be good.
+            sFuture.get(); //if return value were null, it will be good.
             Log.d(TAG, "File writing is completed.");
         } catch (InterruptedException e) {
             Log.d(TAG, "InterruptedException, The thread is interrupted during file writing. e.getMessage: " + e.getMessage());
@@ -72,29 +72,29 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             Log.d(TAG, "Exception. e.getMessage: " + e.getMessage());
             e.printStackTrace();
         }
-        mExecutorService.shutdown();
+        mExecutorService.shutdown(); //free thread pool.
     }
 
     private void handleFileWriting(LinkedList<DeviceStatsInfo> targetList, String fileName) {
-        String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        byte[] buffer = null;
+        String sDirPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        byte[] sBuffer = null;
         Iterator<DeviceStatsInfo> sIterator = targetList.iterator();
-        FileOutputStream fos = null;
-        boolean isMadeDir = false;
+        FileOutputStream sFos = null;
+        boolean sIsMadeDir = false;
 
-        File dir = new File(dirPath+"/TputTracingApp_Logs");
-        if (!dir.exists()) {
-            isMadeDir = dir.mkdir();
+        File sDir = new File(sDirPath+"/TputTracingApp_Logs");
+        if (!sDir.exists()) {
+            sIsMadeDir = sDir.mkdir();
         }
-        Log.d(TAG, "isMadeDir: " + isMadeDir + ", Directory path for log files: " + dirPath + "/TputTracingApp_Logs");
+        Log.d(TAG, "sIsMadeDir: " + sIsMadeDir + ", Directory path for log files: " + sDirPath + "/TputTracingApp_Logs");
 
-        if (!dir.canWrite() | !isMadeDir) {
+        if (!sDir.canWrite() | !sIsMadeDir) {
             Log.d(TAG, "Cannot make log files or fails making directory.");
         }
 
-        File file = new File(dir, fileName);
+        File sFile = new File(sDir, fileName);
         try {
-            fos = new FileOutputStream(file);
+            sFos = new FileOutputStream(sFile);
         } catch (FileNotFoundException e) {
             Log.d(TAG, "FileNotFoundException, e.getMessage(): " + e.getMessage());
             e.printStackTrace();
@@ -109,14 +109,14 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 Log.d(TAG, "TimeStamp: " + String.valueOf(sDeviceStatsInfo.getTimeStamp()) + ", TxBytes: " + String.valueOf(sDeviceStatsInfo.getTxBytes())
                         + ", RxBytes: " + String.valueOf(sDeviceStatsInfo.getRxBytes()) + ", CPU: " + sDeviceStatsInfo.getCpuFrequencyList().toString()
                         + ", Temp: " + sDeviceStatsInfo.getCpuTemperature() + ", Usage: " + sDeviceStatsInfo.getCpuUsage());
-                buffer = sIterator.next().toString().getBytes();
-                if (fos != null) {
-                    fos.write(buffer, 0, buffer.length);
-                    fos.flush();
+                sBuffer = sIterator.next().toString().getBytes();
+                if (sFos != null) {
+                    sFos.write(sBuffer, 0, sBuffer.length);
+                    sFos.flush();
                 }
             }
-            if (fos != null)
-                fos.close();
+            if (sFos != null)
+                sFos.close();
             this.flushStoredData();
         } catch (IOException e) {
             Log.d(TAG, "IOException, e.getMessage(): " + e.getMessage());
@@ -125,10 +125,10 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             Log.d(TAG, "Exception, e.getMessage(): " + e.getMessage());
             e.printStackTrace();
         } finally {
-            if (fos != null) {
+            if (sFos != null) {
                 try {
-                    fos.flush();
-                    fos.close();
+                    sFos.flush();
+                    sFos.close();
                 } catch (IOException e) {};
             }
         }
