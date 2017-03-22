@@ -4,6 +4,8 @@ import android.os.Environment;
 import android.support.v4.util.CircularArray;
 import android.util.Log;
 import com.lge.tputtracingapp.service.DeviceLoggingStateChangedListener;
+import com.lge.tputtracingapp.statsreader.CPUStatsReader;
+import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -130,6 +132,17 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         if (!b) {
             exportToFile(generateFileName());
         }
+    }
+
+    public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath) {
+        DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
+        deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
+        deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(targetUid));
+        deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(targetUid));
+        deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(cpuTemperatureFilePath));
+        deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(cpuClockFilePath));
+        deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
+        return deviceStatsInfo;
     }
 
     private static String generateFileName() {

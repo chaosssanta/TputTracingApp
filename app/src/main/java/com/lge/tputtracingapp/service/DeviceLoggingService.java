@@ -110,19 +110,10 @@ public class DeviceLoggingService extends Service {
                 Log.d(TAG, "EVENT_GET_CURRENT_STATS_INFO");
                 // TODO : Below codes in the EVENT_GET_CURRENT_STATS_INFO codes will be replaced with DeviceStatsInfoStorageManager functions.
 
-                DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
-                deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
-                deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
-                deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
-                deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
-                deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(mCPUClockFilePath));
-                deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
-
-                Log.d(TAG, deviceStatsInfo.toString());
+                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath);
                 DeviceStatsInfoStorageManager.getInstance().addToTputCalculationBuffer(deviceStatsInfo);
 
                 // if the avg t-put exceeds threshold, it's time to start logging.
-                Log.d(TAG, "T-put : " + DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer() + "");
                 if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer() > 5.0f) {
                     Message eventMessage = this.obtainMessage(EVENT_START_LOGGING);
                     eventMessage.obj = deviceStatsInfo;
@@ -184,7 +175,7 @@ public class DeviceLoggingService extends Service {
             editor.commit();
         }
 
-        startLogging(packageName, interval, cpuFilePath, thermalFilePath, thresholdTime);
+        startMonitoringDeviceStats(packageName, interval, cpuFilePath, thermalFilePath, thresholdTime);
         return START_STICKY;
     }
 
@@ -197,7 +188,7 @@ public class DeviceLoggingService extends Service {
     }
 
     // monitoring controller
-    private void startLogging(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int dlCompleteDecisionTimeThreshold) {
+    private void startMonitoringDeviceStats(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int dlCompleteDecisionTimeThreshold) {
         Message msg = this.mServiceLogicHandler.obtainMessage();
         msg.what = EVENT_START_MONITORING;
 
