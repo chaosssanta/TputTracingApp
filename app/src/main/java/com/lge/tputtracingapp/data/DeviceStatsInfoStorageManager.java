@@ -25,8 +25,13 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private static final int TPUT_CALCULATION_UNIT_TIME = 3000;
 
     private static DeviceStatsInfoStorageManager mInstance;
+
+    private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
+    private CircularArray<DeviceStatsInfo> mTPutCircularArray;
+
     private DeviceStatsInfoStorageManager() {
         this.mDeviceStatsRecordList = new LinkedList<>();
+        this.mTPutCircularArray = new CircularArray<>();
     }
     private ExecutorService mExecutorService = null;
 

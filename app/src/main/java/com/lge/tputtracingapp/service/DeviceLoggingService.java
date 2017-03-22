@@ -193,9 +193,6 @@ public class DeviceLoggingService extends Service {
         Log.d(TAG, "onDestroy()");
         this.mServiceLogicHandler.removeMessages(EVENT_GET_CURRENT_STATS_INFO);
         this.mServiceLogicHandler.removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
-
-        //this.mServiceLogicHandler.sendEmptyMessage(EVENT_STOP_LOGGING);
-        //this.mServiceLogicHandler = null;
         super.onDestroy();
     }
 
