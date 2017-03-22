@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -24,7 +24,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private DeviceStatsInfoStorageManager() {
         this.mDeviceStatsRecordList = new LinkedList<>();
     }
-    private static final Executor mExecutor = Executors.newFixedThreadPool(1);
+    private ExecutorService mExecutorService = null;
 
     public static DeviceStatsInfoStorageManager getInstance() {
         if (mInstance == null) {
@@ -37,13 +37,14 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         final LinkedList<DeviceStatsInfo> targetList = this.mDeviceStatsRecordList;
         this.mDeviceStatsRecordList = new LinkedList<>();
 
+        mExecutorService = Executors.newFixedThreadPool(1);
         Runnable run = new Runnable() {
             @Override
             public void run() {
                 handleFileWriting(targetList, fileName);
             }
         };
-        mExecutor.execute(run);
+        mExecutorService.submit(run);
     }
 
     private void handleFileWriting(LinkedList<DeviceStatsInfo> targetList, String fileName) {
@@ -72,6 +73,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             }
             fos.close();
             this.flushStoredData();
+            mExecutorService.shutdown();
         } catch (IOException e) {
             e.printStackTrace();
         }
