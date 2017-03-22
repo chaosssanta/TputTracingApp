@@ -49,6 +49,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         this.mDeviceStatsRecordList = new LinkedList<>();
 
         mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        Log.d(TAG, "available thread cnt: " + Runtime.getRuntime().availableProcessors());
+
         Runnable run = new Runnable() {
             @Override
             public void run() {
@@ -66,38 +68,69 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         } catch (ExecutionException e) {
             Log.d(TAG, "ExecutionException. e.getMessage: " + e.getMessage());
             e.printStackTrace();
+        } catch (Exception e) {
+            Log.d(TAG, "Exception. e.getMessage: " + e.getMessage());
+            e.printStackTrace();
         }
         mExecutorService.shutdown();
     }
 
     private void handleFileWriting(LinkedList<DeviceStatsInfo> targetList, String fileName) {
-        String dirPath = Environment.getExternalStorageDirectory().getPath();
+        String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath();
         byte[] buffer = null;
         Iterator<DeviceStatsInfo> sIterator = targetList.iterator();
         FileOutputStream fos = null;
+        boolean isMadeDir = false;
 
-        File dir = new File(dirPath);
+        File dir = new File(dirPath+"/TputTracingApp_Logs");
         if (!dir.exists()) {
-            dir.mkdir();
+            isMadeDir = dir.mkdir();
+        }
+        Log.d(TAG, "isMadeDir: " + isMadeDir + ", Directory path for log files: " + dirPath + "/TputTracingApp_Logs");
+
+        if (!dir.canWrite() | !isMadeDir) {
+            Log.d(TAG, "Cannot make log files or fails making directory.");
         }
 
         File file = new File(dir, fileName);
         try {
             fos = new FileOutputStream(file);
         } catch (FileNotFoundException e) {
+            Log.d(TAG, "FileNotFoundException, e.getMessage(): " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            Log.d(TAG, "Exception, e.getMessage(): " + e.getMessage());
             e.printStackTrace();
         }
 
         try {
             while (sIterator.hasNext()) {
+                DeviceStatsInfo sDeviceStatsInfo = sIterator.next();
+                Log.d(TAG, "TimeStamp: " + String.valueOf(sDeviceStatsInfo.getTimeStamp()) + ", TxBytes: " + String.valueOf(sDeviceStatsInfo.getTxBytes())
+                        + ", RxBytes: " + String.valueOf(sDeviceStatsInfo.getRxBytes()) + ", CPU: " + sDeviceStatsInfo.getCpuFrequencyList().toString()
+                        + ", Temp: " + sDeviceStatsInfo.getCpuTemperature() + ", Usage: " + sDeviceStatsInfo.getCpuUsage());
                 buffer = sIterator.next().toString().getBytes();
-                fos.write(buffer, 0, buffer.length);
-                fos.flush();
+                if (fos != null) {
+                    fos.write(buffer, 0, buffer.length);
+                    fos.flush();
+                }
             }
-            fos.close();
+            if (fos != null)
+                fos.close();
             this.flushStoredData();
         } catch (IOException e) {
+            Log.d(TAG, "IOException, e.getMessage(): " + e.getMessage());
             e.printStackTrace();
+        } catch (Exception e) {
+            Log.d(TAG, "Exception, e.getMessage(): " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.flush();
+                    fos.close();
+                } catch (IOException e) {};
+            }
         }
     }
 
