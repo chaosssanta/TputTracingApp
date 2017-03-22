@@ -85,15 +85,7 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_LOG_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_LOG_CURRENT_STATS_INFO");
-                DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
-                deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
-                deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
-                deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
-                deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
-                deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(mCPUClockFilePath));
-                deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
-
-                Log.d(TAG, deviceStatsInfo.toString());
+                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath);
 
                 DeviceStatsInfoStorageManager.getInstance().addToStorage(deviceStatsInfo);
                 DeviceStatsInfoStorageManager.getInstance().addToTputCalculationBuffer(deviceStatsInfo);
