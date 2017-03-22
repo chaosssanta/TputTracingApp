@@ -136,22 +136,6 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         }
     }
 
-    public float getAvgTputForTheLatestSeconds(int seconds, int intervalInMilliseconds) {
-        Log.d(TAG, "getAvgTputForTheLastSeconds(int, int) : " + seconds + ", " + intervalInMilliseconds);
-        int startIndex = this.mDeviceStatsRecordList.size() - (seconds * 1000 / intervalInMilliseconds + 1);
-        if (startIndex < 0) {
-            startIndex = 0;
-        }
-
-        long rxBytesSum =  this.mDeviceStatsRecordList.getLast().getRxBytes() - this.mDeviceStatsRecordList.get(startIndex).getRxBytes();
-        float time = (this.mDeviceStatsRecordList.getLast().getTimeStamp() - this.mDeviceStatsRecordList.get(startIndex).getTimeStamp()) / 1000.0f;
-
-        if (time == 0) {
-            return 0;
-        }
-        return ((rxBytesSum / 1024 / 1024 * 8) / (time));
-    }
-
     private static String generateFileName() {
         return System.currentTimeMillis() + ".txt";
     }
