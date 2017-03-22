@@ -11,7 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -23,17 +23,10 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private static final int TPUT_CALCULATION_UNIT_TIME = 3000;
 
     private static DeviceStatsInfoStorageManager mInstance;
-    private static final Executor mExecutor = Executors.newFixedThreadPool(1);
-
-    private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
-    //private Buffer mTestBuffer = new CircularFifoBuffer();
-    private CircularArray<DeviceStatsInfo> mTPutCircularArray;
-
-
     private DeviceStatsInfoStorageManager() {
         this.mDeviceStatsRecordList = new LinkedList<>();
-        this.mTPutCircularArray = new CircularArray<>();
     }
+    private ExecutorService mExecutorService = null;
 
     public static DeviceStatsInfoStorageManager getInstance() {
         if (mInstance == null) {
@@ -46,13 +39,14 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         final LinkedList<DeviceStatsInfo> targetList = this.mDeviceStatsRecordList;
         this.mDeviceStatsRecordList = new LinkedList<>();
 
+        mExecutorService = Executors.newFixedThreadPool(1);
         Runnable run = new Runnable() {
             @Override
             public void run() {
                 handleFileWriting(targetList, fileName);
             }
         };
-        mExecutor.execute(run);
+        mExecutorService.submit(run);
     }
 
     private void handleFileWriting(LinkedList<DeviceStatsInfo> targetList, String fileName) {
@@ -81,7 +75,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             }
             fos.close();
             this.flushStoredData();
-        } catch (IOException | NullPointerException e) {
+            mExecutorService.shutdown();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -126,7 +121,6 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     public float getAvgTputForTheLatestSeconds(int seconds, int intervalInMilliseconds) {
         Log.d(TAG, "getAvgTputForTheLastSeconds(int, int) : " + seconds + ", " + intervalInMilliseconds);
         int startIndex = this.mDeviceStatsRecordList.size() - (seconds * 1000 / intervalInMilliseconds + 1);
-        Log.d(TAG, "startIndex : " + startIndex);
         if (startIndex < 0) {
             startIndex = 0;
         }
