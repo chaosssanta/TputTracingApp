@@ -16,7 +16,6 @@ import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
 import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
-import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -74,7 +73,7 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_START_LOGGING:
                 Log.d(TAG, "EVENT_START_LOGGING");
-                DeviceStatsInfoStorageManager.getInstance().add((DeviceStatsInfo) msg.obj);
+                DeviceStatsInfoStorageManager.getInstance().addToStorage((DeviceStatsInfo) msg.obj);
                 sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
                 break;
 
@@ -96,13 +95,13 @@ public class DeviceLoggingService extends Service {
 
                 Log.d(TAG, deviceStatsInfo.toString());
 
-                DeviceStatsInfoStorageManager.getInstance().add(deviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance().addToStorage(deviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance().addToTputCalculationBuffer(deviceStatsInfo);
 
-                Log.d(TAG, "T-put : " + DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) + "");
-                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) < 5.0) {
+                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer() < 5.0f) {
                     sendEmptyMessage(EVENT_STOP_LOGGING);
                 } else {
-                    sendEmptyMessage(EVENT_LOG_CURRENT_STATS_INFO);
+                    sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
                 }
 
                 break;
@@ -120,10 +119,11 @@ public class DeviceLoggingService extends Service {
                 deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
 
                 Log.d(TAG, deviceStatsInfo.toString());
+                DeviceStatsInfoStorageManager.getInstance().addToTputCalculationBuffer(deviceStatsInfo);
 
                 // if the avg t-put exceeds threshold, it's time to start logging.
-                Log.d(TAG, "T-put : " + DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) + "");
-                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputForTheLatestSeconds(mDLCompleteDecisionTimeThreshold, mLoggingInterval) > 5.0) {
+                Log.d(TAG, "T-put : " + DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer() + "");
+                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer() > 5.0f) {
                     Message eventMessage = this.obtainMessage(EVENT_START_LOGGING);
                     eventMessage.obj = deviceStatsInfo;
                     sendMessage(eventMessage);
@@ -191,10 +191,11 @@ public class DeviceLoggingService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
-        if (this.mServiceLogicHandler.hasMessages(EVENT_GET_CURRENT_STATS_INFO)) {
-            this.mServiceLogicHandler.removeMessages(EVENT_GET_CURRENT_STATS_INFO);
-        }
-        this.mServiceLogicHandler.sendEmptyMessage(EVENT_STOP_LOGGING);
+        this.mServiceLogicHandler.removeMessages(EVENT_GET_CURRENT_STATS_INFO);
+        this.mServiceLogicHandler.removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
+
+        //this.mServiceLogicHandler.sendEmptyMessage(EVENT_STOP_LOGGING);
+        //this.mServiceLogicHandler = null;
         super.onDestroy();
     }
 

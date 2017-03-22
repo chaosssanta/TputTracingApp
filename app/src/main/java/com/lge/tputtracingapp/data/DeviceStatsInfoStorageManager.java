@@ -1,6 +1,7 @@
 package com.lge.tputtracingapp.data;
 
 import android.os.Environment;
+import android.support.v4.util.CircularArray;
 import android.util.Log;
 import com.lge.tputtracingapp.service.DeviceLoggingStateChangedListener;
 
@@ -21,7 +22,8 @@ import java.util.concurrent.Future;
 
 public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedListener {
     private static final String TAG = DeviceStatsInfoStorageManager.class.getSimpleName();
-    private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
+    private static final int TPUT_CALCULATION_UNIT_TIME = 3000;
+
     private static DeviceStatsInfoStorageManager mInstance;
     private DeviceStatsInfoStorageManager() {
         this.mDeviceStatsRecordList = new LinkedList<>();
@@ -92,8 +94,33 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         }
     }
 
-    public void add(DeviceStatsInfo deviceStatsInfo) {
+    public void addToStorage(DeviceStatsInfo deviceStatsInfo) {
         this.mDeviceStatsRecordList.add(deviceStatsInfo);
+    }
+
+    public void addToTputCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
+        if ((this.mTPutCircularArray.size() > 0) &&
+            ((this.mTPutCircularArray.getLast().getTimeStamp() - this.mTPutCircularArray.getFirst().getTimeStamp()) >= TPUT_CALCULATION_UNIT_TIME)) {
+                this.mTPutCircularArray.popFirst();
+        }
+        this.mTPutCircularArray.addLast(deviceStatsInfo);
+    }
+
+    public float getAvgTputFromTpuCalculationBuffer() {
+        float tput = 0.0f;
+        Log.d(TAG, "BufferSize : " + this.mTPutCircularArray.size());
+        if (this.mTPutCircularArray.size() >= 0) {
+            if (this.mTPutCircularArray.getFirst().hashCode() != this.mTPutCircularArray.getLast().hashCode()) {
+                long duration = this.mTPutCircularArray.getLast().getTimeStamp() - this.mTPutCircularArray.getFirst().getTimeStamp();
+                long rxBytes = this.mTPutCircularArray.getLast().getRxBytes() - this.mTPutCircularArray.getFirst().getRxBytes();
+                tput = (rxBytes / 1024 / 1024 * 8)/(duration / 1000.0f);
+                Log.d(TAG, "ffffffffffffffffffff");
+            } else {
+                Log.d(TAG, "asdf");
+            }
+        }
+        Log.d(TAG, "TPUT : " + tput + " Mbps");
+        return tput;
     }
 
     @Override
