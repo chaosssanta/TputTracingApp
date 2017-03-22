@@ -1,8 +1,5 @@
 package com.lge.tputtracingapp.activities;
 
-import com.android.LGSetupWizard.R;
-import com.lge.tputtracingapp.service.DeviceLoggingService;
-
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -19,6 +16,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
+
+import com.android.LGSetupWizard.R;
+import com.lge.tputtracingapp.service.DeviceLoggingService;
 
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
 
@@ -110,6 +110,11 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         super.onResume();
         Log.d(TAG, "onResume()");
         this.initUIControls();
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
     }
 
     @Override
