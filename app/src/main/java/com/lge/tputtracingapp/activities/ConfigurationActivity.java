@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -20,9 +21,11 @@ import android.widget.TextView;
 import com.android.LGSetupWizard.R;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
+import java.util.List;
+
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
 
-    private static String TAG = "DeviceStatsMonitor";
+    private static String TAG = ConfigurationActivity.class.getSimpleName();
 
     private Button mBtnLoggingController;
     private EditText mEditTxtPackageName;
