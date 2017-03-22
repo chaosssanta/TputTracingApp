@@ -31,6 +31,9 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
     private CircularArray<DeviceStatsInfo> mDLTPutCircularArray;
 
+    private long mPivotRxBytes = Long.MIN_VALUE;
+    private long mPivotTxBytes = Long.MIN_VALUE;
+
     private DeviceStatsInfoStorageManager() {
         this.mDeviceStatsRecordList = new LinkedList<>();
         this.mDLTPutCircularArray = new CircularArray<>();
@@ -135,15 +138,29 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     public void addToStorage(DeviceStatsInfo deviceStatsInfo) {
+        if (this.mDeviceStatsRecordList.size() == 0) { // if it's the first element.
+            this.mPivotTxBytes = deviceStatsInfo.getTxBytes();
+            this.mPivotRxBytes = deviceStatsInfo.getRxBytes();
+            deviceStatsInfo.setTxBytes(0);
+            deviceStatsInfo.setRxBytes(0);
+        } else {
+            long tempRx = deviceStatsInfo.getRxBytes();
+            long tempTx = deviceStatsInfo.getTxBytes();
+            deviceStatsInfo.setTxBytes(tempTx - this.mPivotTxBytes);
+            deviceStatsInfo.setRxBytes(tempRx - this.mPivotRxBytes);
+            this.mPivotTxBytes = tempTx;
+            this.mPivotRxBytes = tempRx;
+        }
         this.mDeviceStatsRecordList.add(deviceStatsInfo);
     }
 
     public void addToTPutCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
+        DeviceStatsInfo d = deviceStatsInfo.clone();
         if ((this.mDLTPutCircularArray.size() > 0) &&
             ((this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp()) >= TPUT_CALCULATION_UNIT_TIME)) {
                 this.mDLTPutCircularArray.popFirst();
         }
-        this.mDLTPutCircularArray.addLast(deviceStatsInfo);
+        this.mDLTPutCircularArray.addLast(d);
     }
 
     public enum TEST_TYPE {
@@ -166,6 +183,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 tput = (bytes / 1024 / 1024 * 8)/(duration / 1000.0f);
             }
         }
+
+        Log.d(TAG, "T-put : " + tput);
         return tput;
     }
 

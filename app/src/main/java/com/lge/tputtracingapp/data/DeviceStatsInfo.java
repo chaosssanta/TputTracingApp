@@ -42,4 +42,16 @@ public class DeviceStatsInfo {
 
         return sb.toString();
     }
+
+    @Override
+    public DeviceStatsInfo clone() {
+        DeviceStatsInfo d =  new DeviceStatsInfo();
+        d.mTimeStamp = this.mTimeStamp;
+        d.mTxBytes = this.mTxBytes;
+        d.mRxBytes = this.mRxBytes;
+        d.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
+        d.mCpuTemperature = this.mCpuTemperature;
+        d.mCpuUsage = this.mCpuUsage;
+        return d;
+    }
 }

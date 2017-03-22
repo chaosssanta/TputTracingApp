@@ -88,8 +88,8 @@ public class DeviceLoggingService extends Service {
                 Log.d(TAG, "EVENT_LOG_CURRENT_STATS_INFO");
                 DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath);
 
-                DeviceStatsInfoStorageManager.getInstance().addToStorage(deviceStatsInfo);
                 DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(deviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance().addToStorage(deviceStatsInfo);
 
                 if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mTestType) < 5.0f) {
                     sendEmptyMessage(EVENT_STOP_LOGGING);
