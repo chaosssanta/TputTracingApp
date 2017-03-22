@@ -10,8 +10,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by wonsik.lee on 2017-03-14.
@@ -37,14 +39,26 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         final LinkedList<DeviceStatsInfo> targetList = this.mDeviceStatsRecordList;
         this.mDeviceStatsRecordList = new LinkedList<>();
 
-        mExecutorService = Executors.newFixedThreadPool(1);
+        mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         Runnable run = new Runnable() {
             @Override
             public void run() {
                 handleFileWriting(targetList, fileName);
             }
         };
-        mExecutorService.submit(run);
+        Future mFuture = mExecutorService.submit(run);
+
+        try {
+            mFuture.get(); //if return value were null, it will be good.
+            Log.d(TAG, "File writing is compledted.");
+        } catch (InterruptedException e) {
+            Log.d(TAG, "InterruptedException, The thread is interrupted during file writing. e.getMessage: " + e.getMessage());
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            Log.d(TAG, "ExecutionException. e.getMessage: " + e.getMessage());
+            e.printStackTrace();
+        }
+        mExecutorService.shutdown();
     }
 
     private void handleFileWriting(LinkedList<DeviceStatsInfo> targetList, String fileName) {
@@ -73,7 +87,6 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             }
             fos.close();
             this.flushStoredData();
-            mExecutorService.shutdown();
         } catch (IOException e) {
             e.printStackTrace();
         }
