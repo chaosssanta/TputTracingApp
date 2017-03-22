@@ -113,18 +113,14 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     public float getAvgTputFromTpuCalculationBuffer() {
         float tput = 0.0f;
-        Log.d(TAG, "BufferSize : " + this.mTPutCircularArray.size());
+
         if (this.mTPutCircularArray.size() >= 0) {
             if (this.mTPutCircularArray.getFirst().hashCode() != this.mTPutCircularArray.getLast().hashCode()) {
                 long duration = this.mTPutCircularArray.getLast().getTimeStamp() - this.mTPutCircularArray.getFirst().getTimeStamp();
                 long rxBytes = this.mTPutCircularArray.getLast().getRxBytes() - this.mTPutCircularArray.getFirst().getRxBytes();
                 tput = (rxBytes / 1024 / 1024 * 8)/(duration / 1000.0f);
-                Log.d(TAG, "ffffffffffffffffffff");
-            } else {
-                Log.d(TAG, "asdf");
             }
         }
-        Log.d(TAG, "TPUT : " + tput + " Mbps");
         return tput;
     }
 
