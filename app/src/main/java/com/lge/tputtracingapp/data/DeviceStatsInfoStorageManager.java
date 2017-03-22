@@ -4,6 +4,8 @@ import android.os.Environment;
 import android.support.v4.util.CircularArray;
 import android.util.Log;
 import com.lge.tputtracingapp.service.DeviceLoggingStateChangedListener;
+import com.lge.tputtracingapp.statsreader.CPUStatsReader;
+import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -146,18 +148,14 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     public float getAvgTputFromTpuCalculationBuffer() {
         float tput = 0.0f;
-        Log.d(TAG, "BufferSize : " + this.mTPutCircularArray.size());
+
         if (this.mTPutCircularArray.size() >= 0) {
             if (this.mTPutCircularArray.getFirst().hashCode() != this.mTPutCircularArray.getLast().hashCode()) {
                 long duration = this.mTPutCircularArray.getLast().getTimeStamp() - this.mTPutCircularArray.getFirst().getTimeStamp();
                 long rxBytes = this.mTPutCircularArray.getLast().getRxBytes() - this.mTPutCircularArray.getFirst().getRxBytes();
                 tput = (rxBytes / 1024 / 1024 * 8)/(duration / 1000.0f);
-                Log.d(TAG, "ffffffffffffffffffff");
-            } else {
-                Log.d(TAG, "asdf");
             }
         }
-        Log.d(TAG, "TPUT : " + tput + " Mbps");
         return tput;
     }
 
@@ -169,20 +167,15 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         }
     }
 
-    public float getAvgTputForTheLatestSeconds(int seconds, int intervalInMilliseconds) {
-        Log.d(TAG, "getAvgTputForTheLastSeconds(int, int) : " + seconds + ", " + intervalInMilliseconds);
-        int startIndex = this.mDeviceStatsRecordList.size() - (seconds * 1000 / intervalInMilliseconds + 1);
-        if (startIndex < 0) {
-            startIndex = 0;
-        }
-
-        long rxBytesSum =  this.mDeviceStatsRecordList.getLast().getRxBytes() - this.mDeviceStatsRecordList.get(startIndex).getRxBytes();
-        float time = (this.mDeviceStatsRecordList.getLast().getTimeStamp() - this.mDeviceStatsRecordList.get(startIndex).getTimeStamp()) / 1000.0f;
-
-        if (time == 0) {
-            return 0;
-        }
-        return ((rxBytesSum / 1024 / 1024 * 8) / (time));
+    public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath) {
+        DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
+        deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
+        deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(targetUid));
+        deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(targetUid));
+        deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(cpuTemperatureFilePath));
+        deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(cpuClockFilePath));
+        deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
+        return deviceStatsInfo;
     }
 
     private static String generateFileName() {

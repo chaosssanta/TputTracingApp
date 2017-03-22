@@ -85,15 +85,7 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_LOG_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_LOG_CURRENT_STATS_INFO");
-                DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
-                deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
-                deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
-                deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
-                deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
-                deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(mCPUClockFilePath));
-                deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
-
-                Log.d(TAG, deviceStatsInfo.toString());
+                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath);
 
                 DeviceStatsInfoStorageManager.getInstance().addToStorage(deviceStatsInfo);
                 DeviceStatsInfoStorageManager.getInstance().addToTputCalculationBuffer(deviceStatsInfo);
@@ -110,19 +102,10 @@ public class DeviceLoggingService extends Service {
                 Log.d(TAG, "EVENT_GET_CURRENT_STATS_INFO");
                 // TODO : Below codes in the EVENT_GET_CURRENT_STATS_INFO codes will be replaced with DeviceStatsInfoStorageManager functions.
 
-                DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
-                deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
-                deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(mTargetUid));
-                deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(mTargetUid));
-                deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(mCPUTemperatureFilePath));
-                deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(mCPUClockFilePath));
-                deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
-
-                Log.d(TAG, deviceStatsInfo.toString());
+                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath);
                 DeviceStatsInfoStorageManager.getInstance().addToTputCalculationBuffer(deviceStatsInfo);
 
                 // if the avg t-put exceeds threshold, it's time to start logging.
-                Log.d(TAG, "T-put : " + DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer() + "");
                 if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer() > 5.0f) {
                     Message eventMessage = this.obtainMessage(EVENT_START_LOGGING);
                     eventMessage.obj = deviceStatsInfo;
@@ -161,30 +144,30 @@ public class DeviceLoggingService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         String packageName, cpuFilePath, thermalFilePath;
-        int interval, sThresholdTime;
+        int interval, thresholdTime;
         if (intent == null) {
             packageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME);
             cpuFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_CLOCK_FILE_PATH);
             thermalFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
             interval = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
-            sThresholdTime = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
+            thresholdTime = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
         } else {
             packageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME);
             cpuFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH);
             thermalFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH);
             interval = intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
-            sThresholdTime = intent.getIntExtra(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
+            thresholdTime = intent.getIntExtra(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
             editor.putString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuFilePath);
             editor.putString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, thermalFilePath);
             editor.putInt(SHARED_PREFERENCES_KEY_INTERVAL, interval);
-            editor.putInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
+            editor.putInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, thresholdTime);
             editor.commit();
         }
 
-        startLogging(packageName, interval, cpuFilePath, thermalFilePath);
+        startMonitoringDeviceStats(packageName, interval, cpuFilePath, thermalFilePath, thresholdTime);
         return START_STICKY;
     }
 
@@ -197,7 +180,7 @@ public class DeviceLoggingService extends Service {
     }
 
     // monitoring controller
-    private void startLogging(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath) {
+    private void startMonitoringDeviceStats(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int dlCompleteDecisionTimeThreshold) {
         Message msg = this.mServiceLogicHandler.obtainMessage();
         msg.what = EVENT_START_MONITORING;
 
@@ -206,12 +189,14 @@ public class DeviceLoggingService extends Service {
         setLoggingInterval(loggingInterval);
         setCPUClockFilePath(cpuClockFilePath);
         setCPUTemperatureFilePath(thermalFilePath);
+        setDLCompleteDecisionTimeThreshold(dlCompleteDecisionTimeThreshold);
 
         Log.d(TAG, "Start Logging based on the following information :");
         Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
         Log.d(TAG, "TargetUid : " + this.mTargetUid);
         Log.d(TAG, "CPU Temperature file path : " + this.mCPUTemperatureFilePath);
         Log.d(TAG, "CPU clock file path : " + this.mCPUClockFilePath);
+        Log.d(TAG, "DL Complete time threshold value : " + this.mDLCompleteDecisionTimeThreshold);
 
         this.mServiceLogicHandler.sendMessage(msg);
     }
