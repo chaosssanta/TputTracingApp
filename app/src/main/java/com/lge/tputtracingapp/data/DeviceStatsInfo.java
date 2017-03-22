@@ -1,7 +1,5 @@
 package com.lge.tputtracingapp.data;
 
-import android.os.CpuUsageInfo;
-
 import java.util.ArrayList;
 
 import lombok.AllArgsConstructor;
