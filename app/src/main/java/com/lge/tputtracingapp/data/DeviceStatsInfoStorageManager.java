@@ -52,7 +52,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
         try {
             mFuture.get(); //if return value were null, it will be good.
-            Log.d(TAG, "File writing is compledted.");
+            Log.d(TAG, "File writing is completed.");
         } catch (InterruptedException e) {
             Log.d(TAG, "InterruptedException, The thread is interrupted during file writing. e.getMessage: " + e.getMessage());
             e.printStackTrace();
