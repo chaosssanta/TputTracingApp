@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
@@ -45,6 +47,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         this.mDLTPutCircularArray = new CircularArray<>();
     }
     private ExecutorService mExecutorService = null;
+    private static SimpleDateFormat sDateTimeFormatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
 
     public static DeviceStatsInfoStorageManager getInstance() {
         if (mInstance == null) {
@@ -167,7 +170,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         sb.append(String.valueOf(cnt)).append(",")
                 .append("packageName").append(",")
                 .append("NetworkType ").append(",")
-                .append(String.valueOf(deviceStatsInfo.getTimeStamp())).append(",")
+                .append(getDate(deviceStatsInfo.getTimeStamp())).append(",")
                 .append(String.valueOf(deviceStatsInfo.getRxBytes())).append(",")
                 .append(String.valueOf(deviceStatsInfo.getTxBytes())).append(",")
                 .append(deviceStatsInfo.getCpuTemperature()).append(",")
@@ -179,6 +182,12 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 .append("\n");
 
         return sb.toString().getBytes();
+    }
+
+    private static String getDate(long milliSeconds) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(milliSeconds);
+        return sDateTimeFormatter.format(calendar.getTime());
     }
 
     public void addToStorage(DeviceStatsInfo deviceStatsInfo) {
