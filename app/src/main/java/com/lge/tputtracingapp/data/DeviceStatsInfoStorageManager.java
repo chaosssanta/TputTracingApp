@@ -146,29 +146,30 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     public void addToStorage(DeviceStatsInfo deviceStatsInfo) {
+        DeviceStatsInfo d = deviceStatsInfo.clone();
         if (this.mDeviceStatsRecordList.size() == 0) { // if it's the first element.
-            this.mPivotTxBytes = deviceStatsInfo.getTxBytes();
-            this.mPivotRxBytes = deviceStatsInfo.getRxBytes();
-            deviceStatsInfo.setTxBytes(0);
-            deviceStatsInfo.setRxBytes(0);
+            this.mPivotTxBytes = d.getTxBytes();
+            this.mPivotRxBytes = d.getRxBytes();
+            d.setTxBytes(0);
+            d.setRxBytes(0);
         } else {
-            long tempRx = deviceStatsInfo.getRxBytes();
-            long tempTx = deviceStatsInfo.getTxBytes();
-            deviceStatsInfo.setTxBytes(tempTx - this.mPivotTxBytes);
-            deviceStatsInfo.setRxBytes(tempRx - this.mPivotRxBytes);
+            long tempRx = d.getRxBytes();
+            long tempTx = d.getTxBytes();
+            d.setTxBytes(tempTx - this.mPivotTxBytes);
+            d.setRxBytes(tempRx - this.mPivotRxBytes);
             this.mPivotTxBytes = tempTx;
             this.mPivotRxBytes = tempRx;
         }
-        this.mDeviceStatsRecordList.add(deviceStatsInfo);
+        this.mDeviceStatsRecordList.add(d);
     }
 
     public void addToTPutCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
-        DeviceStatsInfo d = deviceStatsInfo.clone();
+
         if ((this.mDLTPutCircularArray.size() > 0) &&
             ((this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp()) >= TPUT_CALCULATION_UNIT_TIME)) {
                 this.mDLTPutCircularArray.popFirst();
         }
-        this.mDLTPutCircularArray.addLast(d);
+        this.mDLTPutCircularArray.addLast(deviceStatsInfo);
     }
 
     public void migrateFromTPutCalculationBufferToRecordBuffer() {
