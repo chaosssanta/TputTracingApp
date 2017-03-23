@@ -7,11 +7,13 @@ import com.lge.tputtracingapp.service.DeviceLoggingStateChangedListener;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
 import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -27,8 +29,12 @@ import java.util.concurrent.Future;
 public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedListener {
     private static final String TAG = DeviceStatsInfoStorageManager.class.getSimpleName();
     private static final int TPUT_CALCULATION_UNIT_TIME = 3000;
-    private static final String[] mColumns = {"No", "PackageName", "Network", "Time", "ReceivedBytes", "SentBytes", "Temperature", "CPU_Occupacy(%)", "CPU0_Freq", "CPU1_Freq", "CPU2_Freq", "CPU3_Freq"};
+    private static String[] mColumns = null;
     private static boolean DBG = true;
+    private static final String mLineFeed = "\n";
+    private static final String mCarriageReturn = "\r";
+    private static final String mSeperator = ",";
+    private int sCpuCnt = -1; //initializing
 
     public enum TEST_TYPE {
         DL_TEST, UL_TEST
@@ -63,6 +69,9 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         Log.d(TAG, "available thread cnt: " + Runtime.getRuntime().availableProcessors());
 
+        sCpuCnt = sTargetList.getFirst().getCpuFrequencyList().size();
+        Log.d(TAG, "sCpuCnt: " + sCpuCnt);
+
         Runnable run = new Runnable() {
             @Override
             public void run() {
@@ -86,9 +95,13 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     private void handleFileWriting(LinkedList<DeviceStatsInfo> targetList, String fileName) {
         String sDirPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        byte[] sBuffer = null;
+
         Iterator<DeviceStatsInfo> sIterator = targetList.iterator();
+
+        byte[] sBuffer = null;
         FileOutputStream sFos = null;
+        BufferedOutputStream sBos = null;
+
         boolean sIsMadeDir = false;
         StringBuilder sb = new StringBuilder();
         int cnt = 0; //initializing
@@ -101,13 +114,20 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         Log.d(TAG, "sIsMadeDir: " + sIsMadeDir + ", Directory path for log files: " + sDirPath + "/TputTracingApp_Logs");
 
         if (!sDir.canWrite()) {
-            Log.d(TAG, "Cannot write logs to files");
+            Log.d(TAG, "Cannot write logs to dir");
         }
 
         //make csv file to write raw data
         File sFile = new File(sDir, fileName+".csv");
+        boolean isExistFile = sFile.exists();
+
         try {
-            sFos = new FileOutputStream(sFile);
+            if (isExistFile)
+                sFos = new FileOutputStream(sFile, true); //add logs to already exist file
+            else
+                sFos = new FileOutputStream(sFile); //add logs to new file
+
+            sBos = new BufferedOutputStream(sFos);
         } catch (FileNotFoundException e) {
             Log.d(TAG, "FileNotFoundException, e.getMessage(): " + e.getMessage());
             e.printStackTrace();
@@ -121,20 +141,18 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         //write raw data to file created before
         try {
             //first, write columns to file.
-            sFos.write(makeColumnNameAsByte());
-            sFos.flush();
+            sBos.write(makeColumnNameAsByte());
+            sBos.flush();
 
             //second, write each row's data to file.
             while (sIterator.hasNext()) {
                 ++cnt;
                 DeviceStatsInfo sDeviceStatsInfo = sIterator.next();
                 sBuffer = getEachRowDataAsByte(sDeviceStatsInfo, cnt);
-                sFos.write(sBuffer, 0, sBuffer.length);
-                sFos.flush();
+                sBos.write(sBuffer, 0, sBuffer.length);
+                sBos.flush();
             }
             cnt = 0;
-            if (sFos != null)
-                sFos.close();
             this.flushStoredData();
         } catch (IOException e) {
             Log.d(TAG, "IOException, e.getMessage(): " + e.getMessage());
@@ -143,44 +161,60 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             Log.d(TAG, "Exception, e.getMessage(): " + e.getMessage());
             e.printStackTrace();
         } finally {
-            if (sFos != null) {
+            if (sBos != null) {
                 try {
-                    sFos.flush();
-                    sFos.close();
-                } catch (IOException e) {e.printStackTrace();};
+                    sBos.flush(); sFos.close();
+                } catch (IOException e) {e.printStackTrace();}
             }
         }
+    }
+
+    private void makeColumns() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("No").append(mSeperator)
+                .append("PackageName").append(mSeperator)
+                .append("Network").append(mSeperator)
+                .append("Direction").append(mSeperator)
+                .append("Time").append(mSeperator)
+                .append("ReceivedBytes").append(mSeperator)
+                .append("SentBytes").append(mSeperator)
+                .append("Temperature").append(mSeperator)
+                .append("CPU_Occupacy(%)").append(mSeperator);
+
+        for (int i = 0; i < sCpuCnt; i++) {
+            sb.append("CPU0_Freq" + i).append(mSeperator);
+        }
+        mColumns = sb.toString().split(mSeperator);
     }
 
     private byte[] makeColumnNameAsByte() {
         StringBuilder sColumns = new StringBuilder();
 
         for (int i=0; i<mColumns.length; i++) {
-            sColumns.append(mColumns[i]).append(",");
+            sColumns.append(mColumns[i]).append(mSeperator);
         }
-        sColumns.append("\n");
-
-        Log.d(TAG, "sColumns: " + sColumns);
+        sColumns.append(mCarriageReturn).append(mLineFeed);
         return sColumns.toString().getBytes();
     }
 
     private byte[] getEachRowDataAsByte(DeviceStatsInfo deviceStatsInfo, int cnt) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(String.valueOf(cnt)).append(",")
-                .append("packageName").append(",")
-                .append("NetworkType ").append(",")
-                //.append(getDate(deviceStatsInfo.getTimeStamp())).append(",")
-                .append(deviceStatsInfo.getTimeStamp()).append(",")
-                .append(String.valueOf(deviceStatsInfo.getRxBytes())).append(",")
-                .append(String.valueOf(deviceStatsInfo.getTxBytes())).append(",")
-                .append(deviceStatsInfo.getCpuTemperature()).append(",")
-                .append(deviceStatsInfo.getCpuUsage()).append(",")
-                .append(deviceStatsInfo.getCpuFrequencyList().get(0)).append(",")
-                .append(deviceStatsInfo.getCpuFrequencyList().get(1)).append(",")
-                .append(deviceStatsInfo.getCpuFrequencyList().get(2)).append(",")
-                .append(deviceStatsInfo.getCpuFrequencyList().get(3))
-                .append("\n");
+        sb.append(String.valueOf(cnt)).append(mSeperator)
+                .append("packageName").append(mSeperator)
+                .append("NetworkType ").append(mSeperator)
+                .append("DL").append(mSeperator)
+                //.append(getDate(deviceStatsInfo.getTimeStamp())).append(mSeperator)
+                .append(deviceStatsInfo.getTimeStamp()).append(mSeperator)
+                .append(String.valueOf(deviceStatsInfo.getRxBytes())).append(mSeperator)
+                .append(String.valueOf(deviceStatsInfo.getTxBytes())).append(mSeperator)
+                .append(deviceStatsInfo.getCpuTemperature()).append(mSeperator)
+                .append(deviceStatsInfo.getCpuUsage()).append(mSeperator);
+
+        for (int i=0; i<sCpuCnt; i++) {
+            sb.append(deviceStatsInfo.getCpuFrequencyList().get(i)).append(mSeperator);
+        }
+        sb.append(mCarriageReturn).append(mLineFeed);
 
         return sb.toString().getBytes();
     }
@@ -192,21 +226,23 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     public void addToStorage(DeviceStatsInfo deviceStatsInfo) {
-        DeviceStatsInfo d = deviceStatsInfo.clone();
-        if (this.mDeviceStatsRecordList.size() == 0) { // if it's the first element.
-            this.mPivotTxBytes = d.getTxBytes();
-            this.mPivotRxBytes = d.getRxBytes();
-            d.setTxBytes(0);
-            d.setRxBytes(0);
-        } else {
-            long tempRx = d.getRxBytes();
-            long tempTx = d.getTxBytes();
-            d.setTxBytes(tempTx - this.mPivotTxBytes);
-            d.setRxBytes(tempRx - this.mPivotRxBytes);
-            this.mPivotTxBytes = tempTx;
-            this.mPivotRxBytes = tempRx;
-        }
-        this.mDeviceStatsRecordList.add(d);
+        try {
+            DeviceStatsInfo d = deviceStatsInfo.clone();
+            if (this.mDeviceStatsRecordList.size() == 0) { // if it's the first element.
+                this.mPivotTxBytes = d.getTxBytes();
+                this.mPivotRxBytes = d.getRxBytes();
+                d.setTxBytes(0);
+                d.setRxBytes(0);
+            } else {
+                long tempRx = d.getRxBytes();
+                long tempTx = d.getTxBytes();
+                d.setTxBytes(tempTx - this.mPivotTxBytes);
+                d.setRxBytes(tempRx - this.mPivotRxBytes);
+                this.mPivotTxBytes = tempTx;
+                this.mPivotRxBytes = tempRx;
+            }
+            this.mDeviceStatsRecordList.add(d);
+        } catch(Exception e){};
     }
 
     public void addToTPutCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
@@ -225,7 +261,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         Log.d(TAG, "recordBufferSize : " + this.mDeviceStatsRecordList.size());
 
         for (int i = 0; i != this.mDLTPutCircularArray.size() - 1; ++i) {
-            this.addToStorage(this.mDLTPutCircularArray.get(i).clone());
+            try{this.addToStorage(this.mDLTPutCircularArray.get(i).clone());} catch(Exception e){}
         }
 
         Log.d(TAG, "calcul ****************************");

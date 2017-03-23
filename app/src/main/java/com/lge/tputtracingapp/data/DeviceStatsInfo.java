@@ -1,7 +1,6 @@
 package com.lge.tputtracingapp.data;
 
 import java.util.ArrayList;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,14 +43,14 @@ public class DeviceStatsInfo {
     }
 
     @Override
-    public DeviceStatsInfo clone() {
-        DeviceStatsInfo d =  new DeviceStatsInfo();
-        d.mTimeStamp = this.mTimeStamp;
-        d.mTxBytes = this.mTxBytes;
-        d.mRxBytes = this.mRxBytes;
-        d.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
-        d.mCpuTemperature = this.mCpuTemperature;
-        d.mCpuUsage = this.mCpuUsage;
-        return d;
+    public DeviceStatsInfo clone() throws CloneNotSupportedException {
+        DeviceStatsInfo cloned =  new DeviceStatsInfo();
+        cloned.mTimeStamp = this.mTimeStamp;
+        cloned.mTxBytes = this.mTxBytes;
+        cloned.mRxBytes = this.mRxBytes;
+        cloned.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
+        cloned.mCpuTemperature = this.mCpuTemperature;
+        cloned.mCpuUsage = this.mCpuUsage;
+        return cloned;
     }
 }
