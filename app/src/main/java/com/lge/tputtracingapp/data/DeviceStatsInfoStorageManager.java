@@ -178,7 +178,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         Log.d(TAG, "calculationBufferSIze : " + this.mDLTPutCircularArray.size());
         Log.d(TAG, "recordBufferSize : " + this.mDeviceStatsRecordList.size());
 
-        for (int i = 0; i != this.mDLTPutCircularArray.size(); ++i) {
+        for (int i = 0; i != this.mDLTPutCircularArray.size() - 1; ++i) {
             this.addToStorage(this.mDLTPutCircularArray.get(i).clone());
         }
 
