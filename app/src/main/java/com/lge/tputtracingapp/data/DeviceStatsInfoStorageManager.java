@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
@@ -26,6 +25,8 @@ import java.util.concurrent.Future;
 public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedListener {
     private static final String TAG = DeviceStatsInfoStorageManager.class.getSimpleName();
     private static final int TPUT_CALCULATION_UNIT_TIME = 3000;
+    private static final String[] mColumns = {"No", "PackageName", "Network", "Time", "ReceivedBytes", "SentBytes", "Temperature", "CPU_Occupacy(%)", "CPU0_Freq", "CPU1_Freq", "CPU2_Freq", "CPU3_Freq"};
+    private static boolean DBG = true;
 
     public enum TEST_TYPE {
         DL_TEST, UL_TEST
@@ -86,18 +87,22 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         Iterator<DeviceStatsInfo> sIterator = targetList.iterator();
         FileOutputStream sFos = null;
         boolean sIsMadeDir = false;
+        StringBuilder sb = new StringBuilder();
+        int cnt = 0; //initializing
 
+        //make directory
         File sDir = new File(sDirPath+"/TputTracingApp_Logs");
         if (!sDir.exists()) {
             sIsMadeDir = sDir.mkdir();
         }
         Log.d(TAG, "sIsMadeDir: " + sIsMadeDir + ", Directory path for log files: " + sDirPath + "/TputTracingApp_Logs");
 
-        if (!sDir.canWrite() | !sIsMadeDir) {
-            Log.d(TAG, "Cannot write log to files or make directory.");
+        if (!sDir.canWrite()) {
+            Log.d(TAG, "Cannot write logs to files");
         }
 
-        File sFile = new File(sDir, fileName);
+        //make csv file to write raw data
+        File sFile = new File(sDir, fileName+".csv");
         try {
             sFos = new FileOutputStream(sFile);
         } catch (FileNotFoundException e) {
@@ -108,24 +113,23 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             Log.d(TAG, "Exception, e.getMessage(): " + e.getMessage());
             e.printStackTrace();
             return;
-        } finally {
-            if (sFos != null) {
-                try {
-                    sFos.close();
-                } catch (IOException e){e.printStackTrace();};
-            }
         }
 
+        //write raw data to file created before
         try {
+            //first, write columns to file.
+            sFos.write(makeColumnNameAsByte());
+            sFos.flush();
+
+            //second, write each row's data to file.
             while (sIterator.hasNext()) {
+                ++cnt;
                 DeviceStatsInfo sDeviceStatsInfo = sIterator.next();
-                Log.d(TAG, "TimeStamp: " + String.valueOf(sDeviceStatsInfo.getTimeStamp()) + ", TxBytes: " + String.valueOf(sDeviceStatsInfo.getTxBytes())
-                        + ", RxBytes: " + String.valueOf(sDeviceStatsInfo.getRxBytes()) + ", CPU: " + sDeviceStatsInfo.getCpuFrequencyList().toString()
-                        + ", Temp: " + sDeviceStatsInfo.getCpuTemperature() + ", Usage: " + sDeviceStatsInfo.getCpuUsage());
-                sBuffer = sIterator.next().toString().getBytes();
+                sBuffer = getEachRowDataAsByte(sDeviceStatsInfo, cnt);
                 sFos.write(sBuffer, 0, sBuffer.length);
                 sFos.flush();
             }
+            cnt = 0;
             if (sFos != null)
                 sFos.close();
             this.flushStoredData();
@@ -143,6 +147,38 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 } catch (IOException e) {e.printStackTrace();};
             }
         }
+    }
+
+    private byte[] makeColumnNameAsByte() {
+        StringBuilder sColumns = new StringBuilder();
+
+        for (int i=0; i<mColumns.length; i++) {
+            sColumns.append(mColumns[i]).append(",");
+        }
+        sColumns.append("\n");
+
+        Log.d(TAG, "sColumns: " + sColumns);
+        return sColumns.toString().getBytes();
+    }
+
+    private byte[] getEachRowDataAsByte(DeviceStatsInfo deviceStatsInfo, int cnt) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.valueOf(cnt)).append(",")
+                .append("packageName").append(",")
+                .append("NetworkType ").append(",")
+                .append(String.valueOf(deviceStatsInfo.getTimeStamp())).append(",")
+                .append(String.valueOf(deviceStatsInfo.getRxBytes())).append(",")
+                .append(String.valueOf(deviceStatsInfo.getTxBytes())).append(",")
+                .append(deviceStatsInfo.getCpuTemperature()).append(",")
+                .append(deviceStatsInfo.getCpuUsage()).append(",")
+                .append(deviceStatsInfo.getCpuFrequencyList().get(0)).append(",")
+                .append(deviceStatsInfo.getCpuFrequencyList().get(1)).append(",")
+                .append(deviceStatsInfo.getCpuFrequencyList().get(2)).append(",")
+                .append(deviceStatsInfo.getCpuFrequencyList().get(3))
+                .append("\n");
+
+        return sb.toString().getBytes();
     }
 
     public void addToStorage(DeviceStatsInfo deviceStatsInfo) {
