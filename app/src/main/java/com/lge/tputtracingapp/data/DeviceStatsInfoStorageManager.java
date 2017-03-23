@@ -70,6 +70,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
         sCpuCnt = sTargetList.getFirst().getCpuFrequencyList().size();
         Log.d(TAG, "sCpuCnt: " + sCpuCnt);
+        makeColumns();
 
         Runnable run = new Runnable() {
             @Override
