@@ -33,6 +33,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private static final String mLineFeed = "\n";
     private static final String mCarriageReturn = "\r";
     private static final String mSeperator = ",";
+    private static final String mFileExtention = ".csv";
     private int sCpuCnt = -1; //initializing
 
     public enum TEST_TYPE {
@@ -117,8 +118,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             Log.d(TAG, "Cannot write logs to dir");
         }
 
-        //make csv file to write raw data
-        File sFile = new File(sDir, fileName+".csv");
+        //make file to write raw data
+        File sFile = new File(sDir, fileName + mFileExtention);
         boolean isExistFile = sFile.exists();
 
         try {
@@ -127,6 +128,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             else
                 sFos = new FileOutputStream(sFile); //add logs to new file
 
+            //to speed up file I/O
             sBos = new BufferedOutputStream(sFos);
         } catch (FileNotFoundException e) {
             Log.d(TAG, "FileNotFoundException, e.getMessage(): " + e.getMessage());
@@ -140,9 +142,11 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
         //write raw data to file created before
         try {
-            //first, write columns to file.
-            sBos.write(makeColumnNameAsByte());
-            sBos.flush();
+            if (!isExistFile) {
+                //first, write columns to file.
+                sBos.write(makeColumnNameAsByte());
+                sBos.flush();
+            }
 
             //second, write each row's data to file.
             while (sIterator.hasNext()) {
@@ -152,7 +156,6 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 sBos.write(sBuffer, 0, sBuffer.length);
                 sBos.flush();
             }
-            cnt = 0;
             this.flushStoredData();
         } catch (IOException e) {
             Log.d(TAG, "IOException, e.getMessage(): " + e.getMessage());
