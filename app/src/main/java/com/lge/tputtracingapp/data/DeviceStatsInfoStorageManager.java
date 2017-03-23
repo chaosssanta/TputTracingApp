@@ -122,6 +122,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         File sFile = new File(sDir, fileName + mFileExtention);
         boolean isExistFile = sFile.exists();
 
+        //prepare OutputStream and BufferedOutputStream to write logs to file
         try {
             if (isExistFile)
                 sFos = new FileOutputStream(sFile, true); //add logs to already exist file
@@ -140,7 +141,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             return;
         }
 
-        //write raw data to file created before
+        //write raw data using BufferedOutputStream to file created before
         try {
             if (!isExistFile) {
                 //first, write columns to file.
