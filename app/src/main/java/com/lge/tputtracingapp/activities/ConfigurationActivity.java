@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -11,16 +12,20 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.LGSetupWizard.R;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
@@ -47,6 +52,11 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private TextView mTxtViewProgressResult;
 
     private DeviceLoggingService mDeviceLoggingService;
+
+    //test start
+    private Spinner mSpinnerCustum;
+    ArrayList<String> mPackageNames = null;
+    //test end
 
     private OnClickListener mStopMonitoringOnClickListener = new OnClickListener() {
 
@@ -112,6 +122,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume()");
+        //test start
+        loadPackageNames();
+        //test end
         this.initUIControls();
     }
 
@@ -190,6 +203,11 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         this.mInfoImage = (ImageButton) findViewById(R.id.infoImageView);
 
+        //test start
+        this.mSpinnerCustum = (Spinner) findViewById(R.id.spinner_package_name);
+        setPackageNamesToSpinner();
+        //test end
+
         // listener setup
         this.mRdoBtnChipsetVendorManual.setOnCheckedChangeListener(this);
         this.mRdoBtnChipsetVendorQCT.setChecked(true);
@@ -210,4 +228,49 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
         return false;
     }
+
+    //test start
+    private void loadPackageNames() {
+        Log.d(TAG, "loadPackageNames() Entry.");
+
+        Intent appListIntent = new Intent(Intent.ACTION_MAIN, null);
+        appListIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        List<ResolveInfo> pkgAppsList = this.getPackageManager().queryIntentActivities(appListIntent, 0);
+
+        mPackageNames = new ArrayList<String>();
+
+        if (mPackageNames == null) {
+            Log.d(TAG, "mPackageNames is null.");
+            return;
+        }
+
+        for (ResolveInfo r : pkgAppsList) {
+            Log.d(TAG, "installed package: " + r.activityInfo.packageName);
+            mPackageNames.add(r.activityInfo.packageName);
+        }
+
+        //for debug
+        for (int i=0; i<mPackageNames.size(); i++) {
+            Log.d(TAG, (i+1) + ":package: " + mPackageNames.get(i));
+        }
+    }
+
+    private void setPackageNamesToSpinner() {
+        Log.d(TAG, "setPackageNamesToSpinner() Entry.");
+        CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(ConfigurationActivity.this, mPackageNames);
+        mSpinnerCustum.setAdapter(customSpinnerAdapter);
+        mSpinnerCustum.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String item = parent.getItemAtPosition(position).toString();
+                Toast.makeText(parent.getContext(), "Android Custom Spinner Example Output..." + item, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
+    //test end
 }
