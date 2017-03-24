@@ -53,10 +53,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
     private DeviceLoggingService mDeviceLoggingService;
 
-    //test start
-    private Spinner mSpinnerCustum;
+    private Spinner mSpinnerCustum = null;
     ArrayList<String> mPackageNames = null;
-    //test end
+    private String mSelectedPackageName = null;
 
     private OnClickListener mStopMonitoringOnClickListener = new OnClickListener() {
 
@@ -92,6 +91,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, mSelectedPackageName);
             startService(startIntent);
 
             refreshMonitoringBtn();
@@ -122,9 +122,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume()");
-        //test start
         loadPackageNames();
-        //test end
         this.initUIControls();
     }
 
@@ -178,7 +176,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private void showInfoDialog() {
         AlertDialog.Builder sAlert = new AlertDialog.Builder(this);
         sAlert.setTitle("ThresHoldTime Info.");
-        sAlert.setMessage("mDLCompleteDecisionTimeThreshold, 이름 이상해").setCancelable(false);
+        sAlert.setMessage("ThresHoldTIme이란? XXXXX").setCancelable(false);
         sAlert.setNeutralButton("OK", null);
         sAlert.show();
     }
@@ -203,10 +201,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         this.mInfoImage = (ImageButton) findViewById(R.id.infoImageView);
 
-        //test start
         this.mSpinnerCustum = (Spinner) findViewById(R.id.spinner_package_name);
         setPackageNamesToSpinner();
-        //test end
 
         // listener setup
         this.mRdoBtnChipsetVendorManual.setOnCheckedChangeListener(this);
@@ -239,19 +235,14 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         mPackageNames = new ArrayList<String>();
 
-        if (mPackageNames == null) {
-            Log.d(TAG, "mPackageNames is null.");
+        if (mPackageNames == null || pkgAppsList == null) {
+            Log.d(TAG, "mPackageNames or pkgAppsList is null.");
             return;
         }
 
         for (ResolveInfo r : pkgAppsList) {
             Log.d(TAG, "installed package: " + r.activityInfo.packageName);
             mPackageNames.add(r.activityInfo.packageName);
-        }
-
-        //for debug
-        for (int i=0; i<mPackageNames.size(); i++) {
-            Log.d(TAG, (i+1) + ":package: " + mPackageNames.get(i));
         }
     }
 
@@ -263,12 +254,15 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String item = parent.getItemAtPosition(position).toString();
-                Toast.makeText(parent.getContext(), "Android Custom Spinner Example Output..." + item, Toast.LENGTH_LONG).show();
+                Log.d(TAG, "Selected Item: " + item);
+                mSelectedPackageName = item;
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
+                for (int i=0; i<1000; i++) {
+                    Toast.makeText(parent.getContext(), "Monitoring할 Package를 골라주세요.", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }

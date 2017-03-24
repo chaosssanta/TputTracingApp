@@ -42,6 +42,8 @@ public class DeviceLoggingService extends Service {
     public static final String SHARED_PREFERENCES_KEY_TEST_TYPE = "test_type";
     private static final int  SHARED_PREFERENCES_DEFAULT_TEST_TYPE = 0;
 
+    public static final String SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME = "selected_package_name";
+
     private static final int EVENT_START_MONITORING = 0x10;
     private static final int EVENT_STOP_MONITORING = 0x11;
     private static final int EVENT_START_LOGGING = 0x12;
@@ -146,11 +148,12 @@ public class DeviceLoggingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-        String packageName, cpuFilePath, thermalFilePath;
+        String packageName, cpuFilePath, thermalFilePath, selectedPackageName;
         int interval, thresholdTime;
         DeviceStatsInfoStorageManager.TEST_TYPE testType;
         if (intent == null) {
             packageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME);
+            selectedPackageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, "");
             cpuFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_CLOCK_FILE_PATH);
             thermalFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
             interval = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
@@ -158,6 +161,7 @@ public class DeviceLoggingService extends Service {
             testType = (sharedPreferences.getInt(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DEFAULT_TEST_TYPE) == 0) ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST : DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
         } else {
             packageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME);
+            selectedPackageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME);
             cpuFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH);
             thermalFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH);
             interval = intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
