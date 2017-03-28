@@ -232,18 +232,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private void loadPackageNames() {
         Log.d(TAG, "loadPackageNames() Entry.");
 
-        Intent appListIntent = new Intent(Intent.ACTION_MAIN, null);
-        appListIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        List<ResolveInfo> pkgAppsList = this.getPackageManager().queryIntentActivities(appListIntent, 0);
-
-        mPackageNames = new ArrayList<String>();
-
-        if (mPackageNames == null || pkgAppsList == null) {
-            Log.d(TAG, "mPackageNames or pkgAppsList is null.");
-            return;
-        }
-
-        PriorityQueue<PackageNameInstallTime> queue = new PriorityQueue<>(pkgAppsList.size(), new Comparator<PackageNameInstallTime>() {
+        this.mPackageNames = new ArrayList<String>();
+        final List<PackageInfo> packageInfos = this.getPackageManager().getInstalledPackages(PackageManager.GET_PERMISSIONS);
+        PriorityQueue<PackageNameInstallTime> queue = new PriorityQueue<>(packageInfos.size(), new Comparator<PackageNameInstallTime>() {
             @Override
             public int compare(PackageNameInstallTime packageNameInstallTime, PackageNameInstallTime t1) {
                 if (packageNameInstallTime.installTime > t1.installTime) {
@@ -256,7 +247,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             }
         });
 
-        final List<PackageInfo> packageInfos = this.getPackageManager().getInstalledPackages(PackageManager.GET_PERMISSIONS);
         for (PackageInfo pi: packageInfos) {
             if (pi.applicationInfo.uid < 10000) {
                 continue;
