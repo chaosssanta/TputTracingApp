@@ -250,10 +250,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         final List<PackageInfo> installedList = p.getInstalledPackages(PackageManager.GET_PERMISSIONS);
 
         for (PackageInfo pa: installedList) {
-            if ("android.uid.system".equals(pa.sharedUserId)) {
-                continue;
-            }
-
             if (pa.applicationInfo.uid < 10000) {
                 continue;
             }
