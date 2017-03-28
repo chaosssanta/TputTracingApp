@@ -6,9 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
-import android.content.pm.Signature;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -28,11 +26,10 @@ import android.widget.Toast;
 import com.android.LGSetupWizard.R;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
-import java.lang.reflect.Array;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
 
@@ -246,37 +243,63 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             return;
         }
 
-        PackageManager p = this.getPackageManager();
-        final List<PackageInfo> installedList = p.getInstalledPackages(PackageManager.GET_PERMISSIONS);
+        PriorityQueue<PackageNameInstallTime> queue = new PriorityQueue<>(pkgAppsList.size(), new Comparator<PackageNameInstallTime>() {
+            @Override
+            public int compare(PackageNameInstallTime packageNameInstallTime, PackageNameInstallTime t1) {
+                if (packageNameInstallTime.installTime > t1.installTime) {
+                    return -1;
+                } else if (packageNameInstallTime.installTime == t1.installTime) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        });
 
-        for (PackageInfo pa: installedList) {
-            if (pa.applicationInfo.uid < 10000) {
+        final List<PackageInfo> packageInfos = this.getPackageManager().getInstalledPackages(PackageManager.GET_PERMISSIONS);
+        for (PackageInfo pi: packageInfos) {
+            if (pi.applicationInfo.uid < 10000) {
                 continue;
             }
 
-            String packageName = pa.applicationInfo.packageName;
+            String packageName = pi.applicationInfo.packageName;
             if (packageName.contains("com.lg") || packageName.contains("google.") || (packageName.contains("kt.") && !packageName.contains("giga")) || (packageName.contains("com.android") && !packageName.contains("chrome"))) {
                 continue;
             }
 
-            String[] requestedPermissions = pa.requestedPermissions;
+
+            String[] requestedPermissions = pi.requestedPermissions;
             if (requestedPermissions != null) {
                 for (String requestedPermission : requestedPermissions) {
                     if (requestedPermission.contains("android.permission.INTERNET")) {
-                        Log.d(TAG, "adding " + pa.packageName + ", install time : " + getDate(pa.firstInstallTime));
-                        mPackageNames.add(pa.packageName);
+                        queue.offer(new PackageNameInstallTime(pi.firstInstallTime, pi.packageName));
                         break;
                     }
                 }
             }
         }
+
+        while (queue.iterator().hasNext()) {
+            PackageNameInstallTime pnit = queue.poll();
+            Log.d(TAG, "adding " + pnit.packageName + ", install time : " + pnit.installTime);
+            mPackageNames.add(pnit.packageName);
+        }
     }
-    private static SimpleDateFormat sDateTimeFormatter = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss.SSS");
+    private class PackageNameInstallTime {
+        long installTime;
+        String packageName;
+
+        public PackageNameInstallTime(long installTime, String packageName) {
+            this.installTime = installTime;
+            this.packageName = packageName;
+        }
+    }
+    /*private static SimpleDateFormat sDateTimeFormatter = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss.SSS");
     private static String getDate(long milliSeconds) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(milliSeconds);
         return sDateTimeFormatter.format(calendar.getTime());
-    }
+    }*/
 
     private void setPackageNamesToSpinner() {
         Log.d(TAG, "setPackageNamesToSpinner() Entry.");
