@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -284,12 +283,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             this.packageName = packageName;
         }
     }
-    /*private static SimpleDateFormat sDateTimeFormatter = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss.SSS");
-    private static String getDate(long milliSeconds) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(milliSeconds);
-        return sDateTimeFormatter.format(calendar.getTime());
-    }*/
 
     private void setPackageNamesToSpinner() {
         Log.d(TAG, "setPackageNamesToSpinner() Entry.");
