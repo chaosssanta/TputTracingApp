@@ -4,8 +4,11 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
+import android.content.pm.Signature;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -25,7 +28,10 @@ import android.widget.Toast;
 import com.android.LGSetupWizard.R;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
+import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
@@ -240,10 +246,40 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             return;
         }
 
-        for (ResolveInfo r : pkgAppsList) {
-            Log.d(TAG, "installed package: " + r.activityInfo.packageName);
-            mPackageNames.add(r.activityInfo.packageName);
+        PackageManager p = this.getPackageManager();
+        final List<PackageInfo> installedList = p.getInstalledPackages(PackageManager.GET_PERMISSIONS);
+
+        for (PackageInfo pa: installedList) {
+            if ("android.uid.system".equals(pa.sharedUserId)) {
+                continue;
+            }
+
+            if (pa.applicationInfo.uid < 10000) {
+                continue;
+            }
+
+            String packageName = pa.applicationInfo.packageName;
+            if (packageName.contains("com.lg") || packageName.contains("google.") || (packageName.contains("kt.") && !packageName.contains("giga")) || (packageName.contains("com.android") && !packageName.contains("chrome"))) {
+                continue;
+            }
+
+            String[] requestedPermissions = pa.requestedPermissions;
+            if (requestedPermissions != null) {
+                for (String requestedPermission : requestedPermissions) {
+                    if (requestedPermission.contains("android.permission.INTERNET")) {
+                        Log.d(TAG, "adding " + pa.packageName + ", install time : " + getDate(pa.firstInstallTime));
+                        mPackageNames.add(pa.packageName);
+                        break;
+                    }
+                }
+            }
         }
+    }
+    private static SimpleDateFormat sDateTimeFormatter = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss.SSS");
+    private static String getDate(long milliSeconds) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(milliSeconds);
+        return sDateTimeFormatter.format(calendar.getTime());
     }
 
     private void setPackageNamesToSpinner() {
