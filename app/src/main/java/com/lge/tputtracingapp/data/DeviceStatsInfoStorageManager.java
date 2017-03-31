@@ -56,6 +56,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     @Override
     public void onLoggingStopped() {
         Log.d(TAG, "Logging Stopped");
+        this.exportToFile(this.generateFileName());
     }
 
     public enum TEST_TYPE {
