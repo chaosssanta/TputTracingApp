@@ -294,6 +294,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 String item = parent.getItemAtPosition(position).toString();
                 Log.d(TAG, "Selected Item: " + item);
                 mSelectedPackageName = item;
+                mEditTxtPackageName.setText(item);
             }
 
             @Override
