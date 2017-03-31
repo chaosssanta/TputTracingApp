@@ -14,6 +14,8 @@ import android.util.Log;
 import com.lge.tputtracingapp.data.DeviceStatsInfo;
 import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
 
+import java.util.ArrayList;
+
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -60,11 +62,19 @@ public class DeviceLoggingService extends Service {
             switch (msg.what) {
             case EVENT_START_MONITORING:
                 Log.d(TAG, "EVENT_START_MONITORING handled");
+                for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                    l.onMonitoringStarted();
+                }
                 sendEmptyMessage(EVENT_GET_CURRENT_STATS_INFO);
                 break;
 
             case EVENT_STOP_MONITORING:
                 Log.d(TAG, "EVENT_STOP_MONITORING handled");
+
+                for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                    l.onMonitoringStopped();
+                }
+
                 // remove all messages
                 removeMessages(EVENT_START_MONITORING);
                 removeMessages(EVENT_START_LOGGING);
@@ -134,10 +144,16 @@ public class DeviceLoggingService extends Service {
     @Setter private int mDLCompleteDecisionTimeThreshold = 3;
     @Setter private DeviceStatsInfoStorageManager.TEST_TYPE mTestType;
 
+    private ArrayList<DeviceLoggingStateChangedListener> mDeviceLoggingStateListenerList;
+
     // constructor
     public DeviceLoggingService() {
         Log.d(TAG, "DeviceLoggingService()");
         this.mLoggingInterval = 1000;
+    }
+
+    public void setOnLoggingStateChangedListener(DeviceLoggingStateChangedListener dlsc) {
+        this.mDeviceLoggingStateListenerList.add(dlsc);
     }
 
     @Override
@@ -177,6 +193,9 @@ public class DeviceLoggingService extends Service {
             editor.putInt(SHARED_PREFERENCES_KEY_TEST_TYPE, (testType == DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST) ? 0 : 1);
             editor.commit();
         }
+
+        this.mDeviceLoggingStateListenerList = new ArrayList<>();
+        this.setOnLoggingStateChangedListener(DeviceStatsInfoStorageManager.getInstance());
 
         startMonitoringDeviceStats(packageName, interval, cpuFilePath, thermalFilePath, thresholdTime, testType);
         return START_STICKY;

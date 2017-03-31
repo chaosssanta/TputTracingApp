@@ -3,6 +3,7 @@ package com.lge.tputtracingapp.data;
 import android.os.Environment;
 import android.support.v4.util.CircularArray;
 import android.util.Log;
+
 import com.lge.tputtracingapp.service.DeviceLoggingStateChangedListener;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
 import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
@@ -35,6 +36,27 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private static final String mSeperator = ",";
     private static final String mFileExtention = ".csv";
     private int sCpuCnt = -1; //initializing
+
+    @Override
+    public void onMonitoringStarted() {
+        Log.d(TAG, "Monitoring started ");
+    }
+
+    @Override
+    public void onMonitoringStopped() {
+        Log.d(TAG, "Monitoring started stopped");
+
+    }
+
+    @Override
+    public void onLoggingStarted() {
+        Log.d(TAG, "Logging Started");
+    }
+
+    @Override
+    public void onLoggingStopped() {
+        Log.d(TAG, "Logging Stopped");
+    }
 
     public enum TEST_TYPE {
         DL_TEST, UL_TEST
@@ -298,14 +320,6 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
         Log.d(TAG, "T-put : " + tput);
         return tput;
-    }
-
-    @Override
-    public void onDeviceLoggingStateChanged(boolean b) {
-        Log.d(TAG, "onDeviceLoggingStateChanged(boolean) : " + b);
-        if (!b) {
-            exportToFile(generateFileName());
-        }
     }
 
     public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath) {
