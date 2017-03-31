@@ -87,6 +87,11 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_START_LOGGING:
                 Log.d(TAG, "EVENT_START_LOGGING");
+
+                for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                    l.onLoggingStarted();
+                }
+
                 DeviceStatsInfoStorageManager.getInstance().migrateFromTPutCalculationBufferToRecordBuffer();
                 DeviceStatsInfoStorageManager.getInstance().addToStorage((DeviceStatsInfo) msg.obj);
                 sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
@@ -94,6 +99,10 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_STOP_LOGGING:
                 Log.d(TAG, "EVENT_STOP_LOGGING");
+
+                for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                    l.onLoggingStopped();
+                }
                 DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
                 sendEmptyMessageDelayed(EVENT_START_MONITORING, mLoggingInterval);
                 break;
