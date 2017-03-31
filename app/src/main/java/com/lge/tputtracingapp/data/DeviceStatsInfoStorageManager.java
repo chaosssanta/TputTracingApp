@@ -85,12 +85,17 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         return mInstance;
     }
 
-    public void exportToFile(final String fileName) {
+    public int exportToFile(final String fileName) {
         final LinkedList<DeviceStatsInfo> sTargetList = this.mDeviceStatsRecordList;
         this.mDeviceStatsRecordList = new LinkedList<>();
 
         mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         Log.d(TAG, "available thread cnt: " + Runtime.getRuntime().availableProcessors());
+
+        if (sTargetList == null) {
+            Log.d(TAG, "sTargetList is null.");
+            return -1;
+        }
 
         sCpuCnt = sTargetList.getFirst().getCpuFrequencyList().size();
         Log.d(TAG, "sCpuCnt: " + sCpuCnt);
@@ -115,6 +120,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             e.printStackTrace();
         }
         mExecutorService.shutdown(); //free thread pool.
+
+        return 0;
     }
 
     private void handleFileWriting(LinkedList<DeviceStatsInfo> targetList, String fileName) {
