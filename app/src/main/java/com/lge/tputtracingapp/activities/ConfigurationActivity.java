@@ -336,11 +336,13 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
                 if ("직접입력".equals(item)) {
                     mEditTxtPackageName.setText("");
+                    mEditTxtPackageName.setEnabled(true);
                     return;
                 }
 
                 mSelectedPackageName = item;
                 mEditTxtPackageName.setText(item);
+                mEditTxtPackageName.setEnabled(false);
             }
 
             @Override
