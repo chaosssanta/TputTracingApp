@@ -17,12 +17,19 @@ public class CPUStatsReader {
     private static final String TAG = CPUStatsReader.class.getSimpleName();
 
     private static int CPU_COUNT = -1;
-    //private static String[] sVMCmd = {"/system/xbin/bash", "-c", "top -n 1 -m 1"};
-    private static String[] sCmdBase = {"/system/xbin/bash", "-c"};
+    private static CpuFilter sCPU_FILE_Filter = new CpuFilter();
+    private static File[] ff = null;
 
-    private static String sTop_1 = "top -n 1 -m 1";
+    private static class CpuFilter implements FileFilter {
+        @Override
+        public boolean accept(File path) {
+            if (Pattern.matches("cpu[0-9]+", path.getName())) {
+                return true;
+            }
+            return false;
+        }
+    }
 
-// /sys/devices/system/cpu/
     public static int getThermalInfo(String filePath) {
         try {
             return Integer.valueOf(cmdCat(filePath).split(":")[1].split(" ")[0]);
@@ -31,10 +38,11 @@ public class CPUStatsReader {
         }
     }
 
-    public static ArrayList<Integer> getCpuFreq(String filePath) {
+    public static ArrayList<Integer> getCpuFreq(String filePath) throws NumberFormatException {
         if (CPU_COUNT == -1) {
-            Log.d(TAG, "CPU_COUNT init");
-            CPU_COUNT = getCPUs(filePath);
+            Log.d(TAG, "CPU_COUNT init : " + filePath);
+            CPU_COUNT = getNumOfCPUs(filePath);
+            Log.d(TAG, "CPU_COUNT : " + CPU_COUNT);
         }
         ArrayList<Integer> ret = new ArrayList<>();
         for (int i = 0; i < CPU_COUNT; i++) {
@@ -43,18 +51,25 @@ public class CPUStatsReader {
         return ret;
     }
 
-    private static int getCPUs(String filePath) {
-        class CpuFilter implements FileFilter {
-            @Override
-            public boolean accept(File path) {
-                if (Pattern.matches("cpu[0-9]+", path.getName())) {
-                    return true;
-                }
-                return false;
-            }
+    private static int getNumOfCPUs(String filePath) {
+        if (ff == null) {
+            ff = new File(filePath).listFiles(sCPU_FILE_Filter);
         }
 
-        return new File(filePath).listFiles(new CpuFilter()).length;
+        try {
+            return ff.length;
+        } catch (NullPointerException e) {
+            return -1;
+        }
+    }
+    private static final int INVALID_CPU_PATH = -1;
+
+    public static boolean isFreqPathVaild(String filePath) {
+        if (getNumOfCPUs(filePath) == INVALID_CPU_PATH) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
 

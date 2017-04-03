@@ -30,6 +30,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import static com.lge.tputtracingapp.statsreader.CPUStatsReader.isFreqPathVaild;
+
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
     private static String TAG = ConfigurationActivity.class.getSimpleName();
     private static final String mDefaultCpuInfoPath = "/sys/devices/system/cpu/";
@@ -71,6 +73,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private OnClickListener mStartMonitoringOnClickListener = new OnClickListener() {
         @Override
         public void onClick(View view) {
+            if (!areAllFieldsVaild()) {
+                Toast.makeText(ConfigurationActivity.this, "잘못된 입력 값이 있습니다.", Toast.LENGTH_SHORT).show();
+                return;
+            }
             String temp = mEditTxtPackageName.getText().toString();
             String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
 
@@ -107,6 +113,13 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             refreshMonitoringBtn();
         }
     };
+
+    private boolean areAllFieldsVaild() {
+        if (!isFreqPathVaild(this.mEditTxtCPUClockPath.getText().toString())) {
+           return false;
+        }
+        return true;
+    }
 
     private void refreshMonitoringBtn() {
         if (this.isMyServiceRunning(DeviceLoggingService.class)) {
