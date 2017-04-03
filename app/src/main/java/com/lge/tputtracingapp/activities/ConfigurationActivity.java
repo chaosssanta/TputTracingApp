@@ -356,6 +356,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mInfoImage = (ImageButton) findViewById(R.id.infoImageView);
 
         this.mSpinnerCustom = (Spinner) findViewById(R.id.spinner_package_name);
+        this.mEditTxtPackageName.setVisibility(View.GONE);
 
         this.mRdoBtnDL = (RadioButton) findViewById(R.id.radioButton_dl_direction);
         this.mRdoBtnUL = (RadioButton) findViewById(R.id.radioButton_ul_direction);
@@ -459,13 +460,15 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
                 if ("직접입력".equals(item)) {
                     mEditTxtPackageName.setText("");
-                    mEditTxtPackageName.setEnabled(true);
+                    //mEditTxtPackageName.setEnabled(true);
+                    mEditTxtPackageName.setVisibility(View.VISIBLE);
                     return;
                 }
 
                 mSelectedPackageName = item;
                 mEditTxtPackageName.setText(item);
-                mEditTxtPackageName.setEnabled(false);
+                //mEditTxtPackageName.setEnabled(false);
+                mEditTxtPackageName.setVisibility(View.GONE);
             }
 
             @Override
