@@ -84,7 +84,8 @@
         android:src="@drawable/ic_info_outline_light_green_a200_24dp"
         android:background="#ffffffff"
         android:layout_alignBottom="@+id/thresholdTimeUnit"
-        android:layout_alignParentEnd="true" />
+        android:layout_toEndOf="@+id/thresholdTimeUnit"
+        android:layout_marginStart="12dp" />
 
     <TextView
         android:id="@+id/textView2"
@@ -141,16 +142,10 @@
                 android:orientation="horizontal">
 
                 <RadioButton
-                    android:id="@+id/radioButton_chipset_qct"
+                    android:id="@+id/radioButton_chipset_default"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="QCT" />
-
-                <RadioButton
-                    android:id="@+id/radioButton_chipset_mtk"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="MTK" />
+                    android:text="Default" />
 
                 <RadioButton
                     android:id="@+id/radioButton_chipset_manual"
