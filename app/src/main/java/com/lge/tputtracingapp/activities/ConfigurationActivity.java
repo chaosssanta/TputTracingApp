@@ -23,6 +23,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.android.LGSetupWizard.R;
+import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
 import java.util.ArrayList;
@@ -49,6 +50,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private RadioButton mRdoBtnThermalVts;
     private RadioButton mRdoBtnThermalManual;
     private EditText mEditTxtCPUTemperaturePath;
+
+    private RadioButton mRdoBtnDL;
+    private RadioButton mRdoBtnUL;
+    private int mDirection;
 
     private ImageButton mInfoImage;
     private EditText mEditTxtThresholdTime;
@@ -137,6 +142,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, mSelectedPackageName);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_TEST_TYPE, mDirection);
+
             startService(startIntent);
 
             refreshMonitoringBtn();
@@ -299,6 +306,12 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                     this.mEditTxtCPUTemperaturePath.setVisibility(View.GONE);
                 }
                 break;
+            case R.id.radioButton_dl_direction:
+                mDirection = DeviceLoggingService.SHARED_PREFERENCES_DL_DIRECTION;
+                break;
+            case R.id.radioButton_ul_direction:
+                mDirection = DeviceLoggingService.SHARED_PREFERENCES_UL_DIRECTION;
+                break;
 
             default:
                 break;
@@ -343,13 +356,20 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mInfoImage = (ImageButton) findViewById(R.id.infoImageView);
 
         this.mSpinnerCustom = (Spinner) findViewById(R.id.spinner_package_name);
+
+        this.mRdoBtnDL = (RadioButton) findViewById(R.id.radioButton_dl_direction);
+        this.mRdoBtnUL = (RadioButton) findViewById(R.id.radioButton_ul_direction);
+
         setPackageNamesToSpinner();
 
         // listener setup
         this.mRdoBtnChipsetVendorDefault.setOnCheckedChangeListener(this);
         this.mRdoBtnChipsetVendorManual.setOnCheckedChangeListener(this);
-
         this.mRdoBtnChipsetVendorDefault.setChecked(true);
+
+        this.mRdoBtnDL.setOnCheckedChangeListener(this);
+        this.mRdoBtnUL.setOnCheckedChangeListener(this);
+        this.mRdoBtnDL.setChecked(true);
 
         this.mRdoBtnThermalManual.setOnCheckedChangeListener(this);
         this.mRdoBtnThermalXoThermal.setChecked(true);
@@ -410,12 +430,12 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             }
         }
 
-        mPackageNames.add("직접입력");
         while (queue.iterator().hasNext()) {
             PackageNameInstallTime pnit = queue.poll();
             Log.d(TAG, "adding " + pnit.packageName + ", install time : " + pnit.installTime);
             mPackageNames.add(pnit.packageName);
         }
+        mPackageNames.add("직접입력");
     }
     private class PackageNameInstallTime {
         long installTime;
