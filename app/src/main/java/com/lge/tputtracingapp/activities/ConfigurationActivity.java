@@ -53,7 +53,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private ImageButton mInfoImage;
     private EditText mThresholdTimeEditText;
 
-    private TextView mTxtViewProgressResult;
+//    private TextView mTxtViewProgressResult;
 
     private DeviceLoggingService mDeviceLoggingService;
 
@@ -93,16 +93,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             startIntent.setAction("com.lge.data.START_LOGGING");
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
-
-            if (mRdoBtnChipsetVendorDefault.isChecked()) {
-                mCpuInfoPath = mDefaultCpuInfoPath;
-            }  else if (mRdoBtnChipsetVendorManual.isChecked()) {
-                if (TextUtils.isEmpty(mEditTxtCPUClockPath.getText().toString()))
-                    mCpuInfoPath = mEditTxtCPUClockPath.getHint().toString();
-                else
-                    mCpuInfoPath = mEditTxtCPUClockPath.getText().toString();
-                Log.d("NHY", "mCpuInfoPath: " + mCpuInfoPath);
-            }
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, mCpuInfoPath);
 
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
@@ -156,10 +146,16 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-        Log.d(TAG, "fffffffffffffffffff");
         switch (compoundButton.getId()) {
             case R.id.radioButton_chipset_default:
-                Log.d(TAG, "adsfasdfasdfasdfasdf");
+                if (mRdoBtnChipsetVendorDefault.isChecked()) {
+                    mCpuInfoPath = mDefaultCpuInfoPath;
+                }  else if (mRdoBtnChipsetVendorManual.isChecked()) {
+                    if (TextUtils.isEmpty(mEditTxtCPUClockPath.getText().toString()))
+                        mCpuInfoPath = mEditTxtCPUClockPath.getHint().toString();
+                    else
+                        mCpuInfoPath = mEditTxtCPUClockPath.getText().toString();
+                }
                 break;
             case R.id.radioButton_chipset_manual:
                 if (isChecked) {
@@ -209,7 +205,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         this.mEditTxtPackageName = (EditText) findViewById(R.id.editTxt_package_name);
         this.mEditTxtInterval = (EditText) findViewById(R.id.editTxt_interval);
-        this.mTxtViewProgressResult = (TextView) findViewById(R.id.textView_progress_result);
+//        this.mTxtViewProgressResult = (TextView) findViewById(R.id.textView_progress_result);
 
         this.mRdoBtnChipsetVendorDefault = (RadioButton) findViewById(R.id.radioButton_chipset_default);
         this.mRdoBtnChipsetVendorManual = (RadioButton) findViewById(R.id.radioButton_chipset_manual);
@@ -291,6 +287,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             }
         }
 
+        mPackageNames.add("직접입력");
         while (queue.iterator().hasNext()) {
             PackageNameInstallTime pnit = queue.poll();
             Log.d(TAG, "adding " + pnit.packageName + ", install time : " + pnit.installTime);
@@ -316,6 +313,12 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String item = parent.getItemAtPosition(position).toString();
                 Log.d(TAG, "Selected Item: " + item);
+
+                if ("직접입력".equals(item)) {
+                    mEditTxtPackageName.setText("");
+                    return;
+                }
+
                 mSelectedPackageName = item;
                 mEditTxtPackageName.setText(item);
             }

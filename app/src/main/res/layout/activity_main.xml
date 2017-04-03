@@ -2,7 +2,50 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="start"
     tools:context="com.lge.tputtracingapp.activities.ConfigurationActivity">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Package Name : "
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <!--<LinearLayout-->
+        <!--android:id="@+id/package_selection_selection"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:layout_toEndOf="@+id/textView2"-->
+        <!--android:paddingTop="10dp">-->
+
+    <Spinner
+        android:id="@+id/spinner_package_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/textView2"
+        android:spinnerMode="dropdown" />
+    <!--</LinearLayout>-->
+
+    <EditText
+        android:id="@+id/editTxt_package_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/spinner_package_name"
+        android:layout_alignStart="@+id/spinner_package_name" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/editTxt_interval"
+        android:gravity="right|center_vertical"
+        android:text="Interval: "
+        android:layout_toEndOf="@+id/textView5"
+        android:layout_below="@+id/editTxt_package_name" />
 
     <EditText
         android:id="@+id/editTxt_interval"
@@ -11,23 +54,6 @@
         android:hint="1000"
         android:layout_below="@+id/editTxt_package_name"
         android:layout_toEndOf="@+id/textView3" />
-
-    <EditText
-        android:id="@+id/editTxt_package_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@+id/textView2"
-        android:hint="com.benchbee.AST" />
-
-    <Button
-        android:id="@+id/btn_start_service"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/fl_thermal_selection"
-        android:enabled="false"
-        android:text="Binding Log Service..." />
 
     <TextView
         android:id="@+id/textView"
@@ -38,16 +64,6 @@
         android:layout_toEndOf="@+id/editTxt_interval"
         android:gravity="center"
         android:text="ms" />
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/editTxt_interval"
-        android:layout_below="@+id/textView2"
-        android:gravity="right|center_vertical"
-        android:text="Interval: "
-        android:layout_toEndOf="@+id/textView5" />
 
     <TextView
         android:id="@+id/thresholdTimeTextView"
@@ -87,14 +103,22 @@
         android:layout_toEndOf="@+id/thresholdTimeUnit"
         android:layout_marginStart="12dp" />
 
-    <TextView
-        android:id="@+id/textView2"
+    <Button
+        android:id="@+id/btn_start_service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/editTxt_interval"
-        android:layout_alignParentTop="true"
-        android:gravity="center"
-        android:text="Package Name : " />
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/fl_thermal_selection"
+        android:enabled="false"
+        android:text="Binding Log Service..." />
+
+    <!--<TextView-->
+        <!--android:id="@+id/textView5"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentStart="true"-->
+        <!--android:layout_below="@+id/btn_start_service"-->
+        <!--android:text="Result" />-->
 
     <TextView
         android:id="@+id/textView5"
@@ -102,17 +126,17 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/btn_start_service"
-        android:text="Result" />
+        />
 
-    <TextView
-        android:id="@+id/textView_progress_result"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView5"
-        android:text="TextView" />
+    <!--<TextView-->
+        <!--android:id="@+id/textView_progress_result"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_alignParentEnd="true"-->
+        <!--android:layout_alignParentStart="true"-->
+        <!--android:layout_below="@+id/textView5"-->
+        <!--android:text="TextView" />-->
 
     <LinearLayout
         android:id="@+id/ll_chipset_selection"
@@ -170,7 +194,6 @@
                 android:visibility="gone"/>
 
         </LinearLayout>
-
 
     </LinearLayout>
 
@@ -236,21 +259,6 @@
                 android:textSize="14sp"
                 android:visibility="gone"/>
         </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/package_selection_selection"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView5"
-        android:orientation="horizontal"
-        android:paddingTop="10dp">
-
-        <Spinner
-            android:id="@+id/spinner_package_name"
-            android:spinnerMode="dropdown"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
     </LinearLayout>
 
 </RelativeLayout>
