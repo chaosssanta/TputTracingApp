@@ -287,12 +287,12 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             }
         }
 
-        mPackageNames.add("직접입력");
         while (queue.iterator().hasNext()) {
             PackageNameInstallTime pnit = queue.poll();
             Log.d(TAG, "adding " + pnit.packageName + ", install time : " + pnit.installTime);
             mPackageNames.add(pnit.packageName);
         }
+        mPackageNames.add("직접입력");
     }
     private class PackageNameInstallTime {
         long installTime;
