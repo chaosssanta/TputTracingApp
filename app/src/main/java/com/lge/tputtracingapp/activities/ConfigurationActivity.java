@@ -31,17 +31,17 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
-
     private static String TAG = ConfigurationActivity.class.getSimpleName();
+    private static final String mDefaultCpuInfoPath = "/sys/devices/system/cpu/";
 
     private Button mBtnLoggingController;
     private EditText mEditTxtPackageName;
     private EditText mEditTxtInterval;
 
-    private RadioButton mRdoBtnChipsetVendorQCT;
-    private RadioButton mRdoBtnChipsetVendorMTK;
+    private RadioButton mRdoBtnChipsetVendorDefault;
     private RadioButton mRdoBtnChipsetVendorManual;
     private EditText mEditTxtCPUClockPath;
+    private String mCpuInfoPath;
 
     private RadioButton mRdoBtnThermalXoThermal;
     private RadioButton mRdoBtnThermalVts;
@@ -77,9 +77,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             temp = mEditTxtInterval.getText().toString();
             int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(temp);
 
-            temp = mEditTxtCPUClockPath.getText().toString();
-            String cpuClockFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUClockPath.getHint().toString() : temp;
-
             temp = mEditTxtCPUTemperaturePath.getText().toString();
             String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
 
@@ -90,7 +87,18 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             startIntent.setAction("com.lge.data.START_LOGGING");
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
+
+            if (mRdoBtnChipsetVendorDefault.isChecked()) {
+                mCpuInfoPath = mDefaultCpuInfoPath;
+            }  else if (mRdoBtnChipsetVendorManual.isChecked()) {
+                if (TextUtils.isEmpty(mEditTxtCPUClockPath.getText().toString()))
+                    mCpuInfoPath = mEditTxtCPUClockPath.getHint().toString();
+                else
+                    mCpuInfoPath = mEditTxtCPUClockPath.getText().toString();
+                Log.d("NHY", "mCpuInfoPath: " + mCpuInfoPath);
+            }
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, mCpuInfoPath);
+
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, mSelectedPackageName);
@@ -136,9 +144,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
         switch (compoundButton.getId()) {
-            case R.id.radioButton_chipset_qct:
-                break;
-            case R.id.radioButton_chipset_mtk:
+            case R.id.radioButton_chipset_default:
                 break;
             case R.id.radioButton_chipset_manual:
                 if (isChecked) {
@@ -190,8 +196,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mEditTxtInterval = (EditText) findViewById(R.id.editTxt_interval);
         this.mTxtViewProgressResult = (TextView) findViewById(R.id.textView_progress_result);
 
-        this.mRdoBtnChipsetVendorQCT = (RadioButton) findViewById(R.id.radioButton_chipset_qct);
-        this.mRdoBtnChipsetVendorMTK = (RadioButton) findViewById(R.id.radioButton_chipset_mtk);
+        this.mRdoBtnChipsetVendorDefault = (RadioButton) findViewById(R.id.radioButton_chipset_default);
         this.mRdoBtnChipsetVendorManual = (RadioButton) findViewById(R.id.radioButton_chipset_manual);
         this.mEditTxtCPUClockPath = (EditText) findViewById(R.id.editText_cpu_path);
 
@@ -208,7 +213,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         // listener setup
         this.mRdoBtnChipsetVendorManual.setOnCheckedChangeListener(this);
-        this.mRdoBtnChipsetVendorQCT.setChecked(true);
+
+        this.mRdoBtnChipsetVendorDefault.setChecked(true);
+
         this.mRdoBtnThermalManual.setOnCheckedChangeListener(this);
         this.mRdoBtnThermalXoThermal.setChecked(true);
         this.mInfoImage.setOnClickListener(this);
