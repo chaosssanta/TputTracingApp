@@ -3,6 +3,7 @@ package com.lge.tputtracingapp.activities;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -19,7 +20,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.LGSetupWizard.R;
@@ -51,7 +51,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private EditText mEditTxtCPUTemperaturePath;
 
     private ImageButton mInfoImage;
-    private EditText mThresholdTimeEditText;
+    private EditText mEditTxtThresholdTime;
 
 //    private TextView mTxtViewProgressResult;
 
@@ -73,10 +73,49 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private OnClickListener mStartMonitoringOnClickListener = new OnClickListener() {
         @Override
         public void onClick(View view) {
-            if (!areAllFieldsVaild()) {
-                Toast.makeText(ConfigurationActivity.this, "잘못된 입력 값이 있습니다.", Toast.LENGTH_SHORT).show();
+            UIIncompleteException e  = areAllFieldsVaild();
+            Log.d(TAG, Integer.toBinaryString(Integer.valueOf(e.toString())));
+            boolean sum = false;
+            StringBuilder sb = new StringBuilder("아래의 입력 값을 확인하세요\n");
+            if (e.isExceptionIncluded(UIIncompleteExceptionType.PackageNameInvalid)) {
+                sb.append("Package 명이 올바르지 않습니다.\n");
+                sum = true;
+            }
+            if (e.isExceptionIncluded(UIIncompleteExceptionType.IntervalValueInvalid)) {
+                sb.append("Interval 값이 올바르지 않습니다.\n");
+                sum = true;
+            }
+            if (e.isExceptionIncluded(UIIncompleteExceptionType.ThresholdTimeInvalid)) {
+                sb.append("Threshold 값이 올바르지 않습니다.\n");
+                sum = true;
+            }
+            if (e.isExceptionIncluded(UIIncompleteExceptionType.CPUFreqPathInvalid)) {
+                sb.append("CPU Frequency path 가 올바르지 않습니다.\n");
+                sum = true;
+            }
+            if (e.isExceptionIncluded(UIIncompleteExceptionType.CPUThermalPathInvalid)) {
+                sb.append("CPU Thermal path가 올바르지 않습니다.");
+                sum = true;
+            }
+
+            Log.d(TAG, "sum : " + sum);
+            if (sum) {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ConfigurationActivity.this);
+
+                // set title
+                alertDialogBuilder.setTitle("Invalid UI settings!!");
+
+                // set dialog message
+                alertDialogBuilder.setMessage(sb.toString()).setCancelable(false).setPositiveButton("확인",new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog,int id) {}});
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
                 return;
             }
+
+            /*if (sum) {
+                return;
+            }*/
+
             String temp = mEditTxtPackageName.getText().toString();
             String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
 
@@ -86,8 +125,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             temp = mEditTxtCPUTemperaturePath.getText().toString();
             String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
 
-            temp = mThresholdTimeEditText.getText().toString();
-            int sThresholdTime = (TextUtils.isEmpty(temp))? Integer.valueOf(mThresholdTimeEditText.getHint().toString()) : Integer.valueOf(temp);
+            temp = mEditTxtThresholdTime.getText().toString();
+            int sThresholdTime = (TextUtils.isEmpty(temp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(temp);
 
             Intent startIntent = new Intent(ConfigurationActivity.this, DeviceLoggingService.class);
             startIntent.setAction("com.lge.data.START_LOGGING");
@@ -104,11 +143,95 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
     };
 
-    private boolean areAllFieldsVaild() {
-        if ("".equals(this.mEditTxtCPUClockPath.getText().toString()) || !isFreqPathVaild(this.mEditTxtCPUClockPath.getText().toString())) {
-           return false;
+    enum UIIncompleteExceptionType {
+        PackageNameInvalid(0x00000001), IntervalValueInvalid(0x00000002), ThresholdTimeInvalid(0x00000004), CPUFreqPathInvalid(0x00000008), CPUThermalPathInvalid(0x00000010);
+
+        private final int value;
+        UIIncompleteExceptionType(int value) {
+            this.value = value;
         }
-        return true;
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    static private class UIIncompleteException {
+        public int mExceptinoCode;
+
+        public UIIncompleteException() {
+            /*Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.PackageNameInvalid.getValue()));
+            Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.IntervalValueInvalid.getValue()));
+            Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.ThresholdTimeInvalid.getValue()));
+            Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.CPUFreqPathInvalid.getValue()));
+            Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.CPUThermalPathInvalid.getValue()));*/
+
+            this.mExceptinoCode = 0;
+        }
+
+        public void addException(UIIncompleteExceptionType exception) {
+            this.mExceptinoCode |= exception.getValue();
+        }
+
+        public void removceException(UIIncompleteExceptionType exception){
+            this.mExceptinoCode = this.mExceptinoCode & ~(exception.getValue());
+        }
+
+        public boolean isExceptionIncluded(UIIncompleteExceptionType e){
+            return ( this.mExceptinoCode & e.getValue() ) != 0;
+        }
+
+        @Override
+        public String toString() {
+            return Integer.toBinaryString(this.mExceptinoCode);
+        }
+    }
+
+    private UIIncompleteException areAllFieldsVaild() {
+
+        UIIncompleteException e = new UIIncompleteException();
+        // 1. packageName check
+        PackageManager pm = getPackageManager();
+        try {
+            pm.getPackageInfo(this.mEditTxtPackageName.getText().toString(), 0);
+        } catch (PackageManager.NameNotFoundException e1) {
+            e.addException(UIIncompleteExceptionType.PackageNameInvalid);
+        }
+
+        // 2. interval time check
+        try {
+            int interval = Integer.valueOf(this.mEditTxtInterval.getText().toString());
+            if (interval < 500 || interval > 5000) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException ex) {
+            e.addException(UIIncompleteExceptionType.IntervalValueInvalid);
+        }
+
+        // 3. threshold time check
+        try {
+            int thresholdTime = Integer.valueOf(this.mEditTxtThresholdTime.getText().toString());
+            if (thresholdTime > 10 || thresholdTime < 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException ex) {
+            e.addException(UIIncompleteExceptionType.ThresholdTimeInvalid);
+        }
+
+        // 4. cpu freq path check
+        if (!isFreqPathVaild((!"".equals(this.mEditTxtCPUClockPath.getText().toString())) ? this.mEditTxtCPUClockPath.getText().toString(): (this.mEditTxtCPUClockPath.getHint().toString()))) {
+            Log.d(TAG, "adding exception CPU freq path ");
+            e.addException(UIIncompleteExceptionType.CPUFreqPathInvalid);
+        }
+
+        // 5. cpu thermal path check
+
+
+        return e;
+    }
+
+    private static boolean isNemeric(String s) {
+        return s.matches("[-+]?\\d*\\.?\\d+");
     }
 
     private void refreshMonitoringBtn() {
@@ -215,7 +338,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mRdoBtnThermalVts = (RadioButton) findViewById(R.id.radioButton_thermal_vts);
         this.mRdoBtnThermalManual = (RadioButton) findViewById(R.id.radioButton_thermal_manual);
         this.mEditTxtCPUTemperaturePath = (EditText) findViewById(R.id.editText_thermal_path);
-        this.mThresholdTimeEditText = (EditText) findViewById(R.id.thresholdTimeEditText);
+        this.mEditTxtThresholdTime = (EditText) findViewById(R.id.thresholdTimeEditText);
 
         this.mInfoImage = (ImageButton) findViewById(R.id.infoImageView);
 
