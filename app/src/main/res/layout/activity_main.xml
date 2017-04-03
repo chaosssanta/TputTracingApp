@@ -15,12 +15,12 @@
         android:layout_alignParentStart="true" />
 
     <!--<LinearLayout-->
-        <!--android:id="@+id/package_selection_selection"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:orientation="horizontal"-->
-        <!--android:layout_toEndOf="@+id/textView2"-->
-        <!--android:paddingTop="10dp">-->
+    <!--android:id="@+id/package_selection_selection"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:orientation="horizontal"-->
+    <!--android:layout_toEndOf="@+id/textView2"-->
+    <!--android:paddingTop="10dp">-->
 
     <Spinner
         android:id="@+id/spinner_package_name"
@@ -108,17 +108,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/fl_thermal_selection"
+        android:layout_below="@+id/direction_section"
         android:enabled="false"
         android:text="Binding Log Service..." />
 
     <!--<TextView-->
-        <!--android:id="@+id/textView5"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentStart="true"-->
-        <!--android:layout_below="@+id/btn_start_service"-->
-        <!--android:text="Result" />-->
+    <!--android:id="@+id/textView5"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentStart="true"-->
+    <!--android:layout_below="@+id/btn_start_service"-->
+    <!--android:text="Result" />-->
 
     <TextView
         android:id="@+id/textView5"
@@ -129,14 +129,14 @@
         />
 
     <!--<TextView-->
-        <!--android:id="@+id/textView_progress_result"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_alignParentStart="true"-->
-        <!--android:layout_below="@+id/textView5"-->
-        <!--android:text="TextView" />-->
+    <!--android:id="@+id/textView_progress_result"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:layout_alignParentEnd="true"-->
+    <!--android:layout_alignParentStart="true"-->
+    <!--android:layout_below="@+id/textView5"-->
+    <!--android:text="TextView" />-->
 
     <LinearLayout
         android:id="@+id/ll_chipset_selection"
@@ -150,7 +150,7 @@
             android:id="@+id/textView6"
             android:layout_width="106dp"
             android:layout_height="match_parent"
-            android:gravity="right|center_vertical"
+            android:gravity="center_vertical"
             android:text="Chipset vendor" />
 
         <LinearLayout
@@ -194,23 +194,86 @@
                 android:visibility="gone"/>
 
         </LinearLayout>
-
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/fl_thermal_selection"
+    android:id="@+id/fl_thermal_selection"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/ll_chipset_selection"
+    android:orientation="horizontal"
+    android:paddingTop="10dp">
+
+    <TextView
+        android:id="@+id/textView_thermal_group"
+        android:layout_width="107dp"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:text="Thermal option" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:id="@+id/radioGroup_thermal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="fill_horizontal"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <RadioButton
+                android:id="@+id/radioButton_thermal_xo_therm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="xo_therm" />
+
+            <RadioButton
+                android:id="@+id/radioButton_thermal_vts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="vts" />
+
+
+            <RadioButton
+                android:id="@+id/radioButton_thermal_manual"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Manual" />
+
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/editText_thermal_path"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:hint="/sys/class/hwmon/hwmon2/device/xo_therm"
+            android:inputType="text"
+            android:lines="1"
+            android:maxLines="1"
+            android:scrollHorizontally="true"
+            android:textSize="14sp"
+            android:visibility="gone"/>
+    </LinearLayout>
+</LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/direction_section"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/ll_chipset_selection"
+        android:layout_below="@+id/fl_thermal_selection"
         android:orientation="horizontal"
         android:paddingTop="10dp">
 
         <TextView
-            android:id="@+id/textView_thermal_group"
+            android:id="@+id/textView_direction_group"
             android:layout_width="107dp"
             android:layout_height="match_parent"
-            android:gravity="right|center_vertical"
-            android:text="Thermal option" />
+            android:gravity="center_vertical"
+            android:text="Direction" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -218,7 +281,7 @@
             android:orientation="vertical">
 
             <RadioGroup
-                android:id="@+id/radioGroup_thermal"
+                android:id="@+id/radioGroup_direction"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="fill_horizontal"
@@ -226,38 +289,17 @@
                 android:weightSum="1">
 
                 <RadioButton
-                    android:id="@+id/radioButton_thermal_xo_therm"
+                    android:id="@+id/radioButton_dl_direction"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="xo_therm" />
+                    android:text="DL" />
 
                 <RadioButton
-                    android:id="@+id/radioButton_thermal_vts"
+                    android:id="@+id/radioButton_ul_direction"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="vts" />
-
-
-                <RadioButton
-                    android:id="@+id/radioButton_thermal_manual"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Manual" />
-
+                    android:text="UL" />
             </RadioGroup>
-
-            <EditText
-                android:id="@+id/editText_thermal_path"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:hint="/sys/class/hwmon/hwmon2/device/xo_therm"
-                android:inputType="text"
-                android:lines="1"
-                android:maxLines="1"
-                android:scrollHorizontally="true"
-                android:textSize="14sp"
-                android:visibility="gone"/>
         </LinearLayout>
     </LinearLayout>
 

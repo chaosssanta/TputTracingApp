@@ -42,7 +42,8 @@ public class DeviceLoggingService extends Service {
     private static final int SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME = 5;
 
     public static final String SHARED_PREFERENCES_KEY_TEST_TYPE = "test_type";
-    private static final int  SHARED_PREFERENCES_DEFAULT_TEST_TYPE = 0;
+    public static final int  SHARED_PREFERENCES_DL_DIRECTION = 0;
+    public static final int  SHARED_PREFERENCES_UL_DIRECTION = 0;
 
     public static final String SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME = "selected_package_name";
 
@@ -183,7 +184,7 @@ public class DeviceLoggingService extends Service {
             thermalFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
             interval = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
             thresholdTime = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
-            testType = (sharedPreferences.getInt(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DEFAULT_TEST_TYPE) == 0) ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST : DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
+            testType = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST : DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
         } else {
             packageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME);
             selectedPackageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME);
@@ -191,7 +192,7 @@ public class DeviceLoggingService extends Service {
             thermalFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH);
             interval = intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
             thresholdTime = intent.getIntExtra(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
-            testType = (intent.getIntExtra(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DEFAULT_TEST_TYPE) == 0 ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST);
+            testType = intent.getIntExtra(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
