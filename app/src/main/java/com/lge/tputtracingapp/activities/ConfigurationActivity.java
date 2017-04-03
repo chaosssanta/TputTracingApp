@@ -23,7 +23,6 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.android.LGSetupWizard.R;
-import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
 import java.util.ArrayList;
@@ -78,7 +77,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private OnClickListener mStartMonitoringOnClickListener = new OnClickListener() {
         @Override
         public void onClick(View view) {
-            UIIncompleteException e  = areAllFieldsVaild();
+            UIIncompleteException e  = areAllFieldsValid();
             Log.d(TAG, Integer.toBinaryString(Integer.valueOf(e.toString())));
             boolean sum = false;
             StringBuilder sb = new StringBuilder("아래의 입력 값을 확인하세요\n");
@@ -194,7 +193,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
     }
 
-    private UIIncompleteException areAllFieldsVaild() {
+    private UIIncompleteException areAllFieldsValid() {
 
         UIIncompleteException e = new UIIncompleteException();
         // 1. packageName check
@@ -460,14 +459,12 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
                 if ("직접입력".equals(item)) {
                     mEditTxtPackageName.setText("");
-                    //mEditTxtPackageName.setEnabled(true);
                     mEditTxtPackageName.setVisibility(View.VISIBLE);
                     return;
                 }
 
                 mSelectedPackageName = item;
                 mEditTxtPackageName.setText(item);
-                //mEditTxtPackageName.setEnabled(false);
                 mEditTxtPackageName.setVisibility(View.GONE);
             }
 
