@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -89,13 +90,16 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         final LinkedList<DeviceStatsInfo> sTargetList = this.mDeviceStatsRecordList;
         this.mDeviceStatsRecordList = new LinkedList<>();
 
+        Log.d(TAG, "exportToFile(), fileName: " + fileName);
+        try {
+            if (sTargetList == null || sTargetList.getFirst() == null) {}
+        } catch (NoSuchElementException e) {
+            Log.d(TAG, "sTargetList is null or First element is not exist.");
+            return -1;
+        }  catch (Exception e) {return -1;}
+
         mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         Log.d(TAG, "available thread cnt: " + Runtime.getRuntime().availableProcessors());
-
-        if (sTargetList == null) {
-            Log.d(TAG, "sTargetList is null.");
-            return -1;
-        }
 
         sCpuCnt = sTargetList.getFirst().getCpuFrequencyList().size();
         Log.d(TAG, "sCpuCnt: " + sCpuCnt);
