@@ -57,7 +57,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
     private DeviceLoggingService mDeviceLoggingService;
 
-    private Spinner mSpinnerCustum = null;
+    private Spinner mSpinnerCustom = null;
     ArrayList<String> mPackageNames = null;
     private String mSelectedPackageName = null;
 
@@ -115,7 +115,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     };
 
     private boolean areAllFieldsVaild() {
-        if (!isFreqPathVaild(this.mEditTxtCPUClockPath.getText().toString())) {
+        if ("".equals(this.mEditTxtCPUClockPath.getText().toString()) || !isFreqPathVaild(this.mEditTxtCPUClockPath.getText().toString())) {
            return false;
         }
         return true;
@@ -156,8 +156,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+        Log.d(TAG, "fffffffffffffffffff");
         switch (compoundButton.getId()) {
             case R.id.radioButton_chipset_default:
+                Log.d(TAG, "adsfasdfasdfasdfasdf");
                 break;
             case R.id.radioButton_chipset_manual:
                 if (isChecked) {
@@ -221,10 +223,11 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         this.mInfoImage = (ImageButton) findViewById(R.id.infoImageView);
 
-        this.mSpinnerCustum = (Spinner) findViewById(R.id.spinner_package_name);
+        this.mSpinnerCustom = (Spinner) findViewById(R.id.spinner_package_name);
         setPackageNamesToSpinner();
 
         // listener setup
+        this.mRdoBtnChipsetVendorDefault.setOnCheckedChangeListener(this);
         this.mRdoBtnChipsetVendorManual.setOnCheckedChangeListener(this);
 
         this.mRdoBtnChipsetVendorDefault.setChecked(true);
@@ -307,8 +310,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private void setPackageNamesToSpinner() {
         Log.d(TAG, "setPackageNamesToSpinner() Entry.");
         CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(ConfigurationActivity.this, mPackageNames);
-        mSpinnerCustum.setAdapter(customSpinnerAdapter);
-        mSpinnerCustum.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mSpinnerCustom.setAdapter(customSpinnerAdapter);
+        mSpinnerCustom.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String item = parent.getItemAtPosition(position).toString();
