@@ -82,7 +82,7 @@ public class DeviceLoggingService extends Service {
                 removeMessages(EVENT_GET_CURRENT_STATS_INFO);
                 removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
 
-                DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
+                //DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
                 break;
 
             case EVENT_START_LOGGING:
@@ -103,7 +103,7 @@ public class DeviceLoggingService extends Service {
                 for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
                     l.onLoggingStopped();
                 }
-                DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
+                //DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
                 sendEmptyMessageDelayed(EVENT_START_MONITORING, mLoggingInterval);
                 break;
 

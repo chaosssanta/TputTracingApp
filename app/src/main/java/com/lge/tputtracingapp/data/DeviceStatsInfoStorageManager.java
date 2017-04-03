@@ -346,7 +346,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     private static String generateFileName() {
-        return System.currentTimeMillis() + ".txt";
+        return System.currentTimeMillis() + "";
     }
 
     private void flushStoredData() {
