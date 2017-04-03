@@ -77,8 +77,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private OnClickListener mStartMonitoringOnClickListener = new OnClickListener() {
         @Override
         public void onClick(View view) {
-            UIIncompleteException e  = areAllFieldsValid();
-            Log.d(TAG, Integer.toBinaryString(Integer.valueOf(e.toString())));
+            UIValidationResult e  = getUIValidationResult();
+//            Log.d(TAG, Integer.toBinaryString(Integer.valueOf(e.toString())));
             boolean sum = false;
             StringBuilder sb = new StringBuilder("아래의 입력 값을 확인하세요\n");
             if (e.isExceptionIncluded(UIIncompleteExceptionType.PackageNameInvalid)) {
@@ -105,20 +105,11 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             Log.d(TAG, "sum : " + sum);
             if (sum) {
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ConfigurationActivity.this);
-
-                // set title
-                alertDialogBuilder.setTitle("Invalid UI settings!!");
-
-                // set dialog message
-                alertDialogBuilder.setMessage(sb.toString()).setCancelable(false).setPositiveButton("확인",new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog,int id) {}});
+                alertDialogBuilder.setTitle("Invalid UI settings!!").setMessage(sb.toString()).setCancelable(false).setPositiveButton("확인",new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog,int id) {}});
                 AlertDialog alertDialog = alertDialogBuilder.create();
                 alertDialog.show();
                 return;
             }
-
-            /*if (sum) {
-                return;
-            }*/
 
             String temp = mEditTxtPackageName.getText().toString();
             String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
@@ -162,16 +153,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
     }
 
-    static private class UIIncompleteException {
+    static private class UIValidationResult {
         public int mExceptinoCode;
 
-        public UIIncompleteException() {
-            /*Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.PackageNameInvalid.getValue()));
-            Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.IntervalValueInvalid.getValue()));
-            Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.ThresholdTimeInvalid.getValue()));
-            Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.CPUFreqPathInvalid.getValue()));
-            Log.d(TAG, Integer.toBinaryString(UIIncompleteExceptionType.CPUThermalPathInvalid.getValue()));*/
-
+        public UIValidationResult() {
             this.mExceptinoCode = 0;
         }
 
@@ -193,9 +178,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
     }
 
-    private UIIncompleteException areAllFieldsValid() {
+    private UIValidationResult getUIValidationResult() {
 
-        UIIncompleteException e = new UIIncompleteException();
+        UIValidationResult e = new UIValidationResult();
         // 1. packageName check
         PackageManager pm = getPackageManager();
         try {
