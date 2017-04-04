@@ -291,10 +291,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 }
                 break;
             case R.id.radioButton_dl_direction:
-                mDirection = mDeviceLoggingService.SHARED_PREFERENCES_DL_DIRECTION;
+                mDirection = DeviceLoggingService.SHARED_PREFERENCES_DL_DIRECTION;
                 break;
             case R.id.radioButton_ul_direction:
-                mDirection = mDeviceLoggingService.SHARED_PREFERENCES_UL_DIRECTION;
+                mDirection = DeviceLoggingService.SHARED_PREFERENCES_UL_DIRECTION;
                 break;
 
             default:

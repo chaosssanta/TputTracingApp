@@ -12,11 +12,11 @@ public class DeviceStatsInfo {
 
     @Setter @Getter private long mTimeStamp;
 
-    /* Network statsreader */
+    /* Network Stats */
     @Setter @Getter private long mTxBytes;
     @Setter @Getter private long mRxBytes;
 
-    /* CPU Stats */
+    /* CPU Info */
     @Setter @Getter private ArrayList<Integer> mCpuFrequencyList;
     @Setter @Getter private int mCpuTemperature;
 
@@ -26,10 +26,10 @@ public class DeviceStatsInfo {
     /* Package Name */
     @Setter @Getter private String mPackageName;
 
-    /* Package Name */
+    /* Network Type */
     @Setter @Getter private int mNetworkType;
 
-    /* Package Name */
+    /* Direction */
     @Setter @Getter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
 
     public DeviceStatsInfo() {

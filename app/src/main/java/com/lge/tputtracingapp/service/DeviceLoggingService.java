@@ -174,45 +174,45 @@ public class DeviceLoggingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-        String packageName, cpuFilePath, thermalFilePath, selectedPackageName;
-        int interval, thresholdTime;
-        DeviceStatsInfoStorageManager.TEST_TYPE direction;
+        SharedPreferences sSharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+        String sPackageName, sCpuFilePath, sThermalFilePath, sSelectedPackageName;
+        int sInterval, sThresholdTime;
+        DeviceStatsInfoStorageManager.TEST_TYPE sDirection;
         //test start
-        int networkType = 14; //hard coding, LTE
+        int sNetworkType = 14; //hard coding, LTE
         //test end
 
         if (intent == null) {
-            packageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME);
+            sPackageName = sSharedPreferences.getString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME);
 //            selectedPackageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, "");
-            cpuFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_CLOCK_FILE_PATH);
-            thermalFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
-            interval = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
-            thresholdTime = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
-            direction = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST : DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
+            sCpuFilePath = sSharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_CLOCK_FILE_PATH);
+            sThermalFilePath = sSharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
+            sInterval = sSharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
+            sThresholdTime = sSharedPreferences.getInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
+            sDirection = sSharedPreferences.getInt(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST : DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
         } else {
-            packageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME);
+            sPackageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME);
 //            selectedPackageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME);
-            cpuFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH);
-            thermalFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH);
-            interval = intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
-            thresholdTime = intent.getIntExtra(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
-            direction = intent.getIntExtra(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
+            sCpuFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH);
+            sThermalFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH);
+            sInterval = intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
+            sThresholdTime = intent.getIntExtra(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
+            sDirection = intent.getIntExtra(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
 
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
-            editor.putString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuFilePath);
-            editor.putString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, thermalFilePath);
-            editor.putInt(SHARED_PREFERENCES_KEY_INTERVAL, interval);
-            editor.putInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, thresholdTime);
-            editor.putInt(SHARED_PREFERENCES_KEY_TEST_TYPE, (direction == DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST) ? 0 : 1);
-            editor.commit();
+            SharedPreferences.Editor sEditor = sSharedPreferences.edit();
+            sEditor.putString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, sPackageName);
+            sEditor.putString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, sCpuFilePath);
+            sEditor.putString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, sThermalFilePath);
+            sEditor.putInt(SHARED_PREFERENCES_KEY_INTERVAL, sInterval);
+            sEditor.putInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
+            sEditor.putInt(SHARED_PREFERENCES_KEY_TEST_TYPE, (sDirection == DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST) ? 0 : 1);
+            sEditor.commit();
         }
 
         this.mDeviceLoggingStateListenerList = new ArrayList<>();
         this.setOnLoggingStateChangedListener(DeviceStatsInfoStorageManager.getInstance());
 
-        startMonitoringDeviceStats(packageName, interval, cpuFilePath, thermalFilePath, thresholdTime, direction, networkType);
+        startMonitoringDeviceStats(sPackageName, sInterval, sCpuFilePath, sThermalFilePath, sThresholdTime, sDirection, sNetworkType);
         return START_STICKY;
     }
 
@@ -239,13 +239,13 @@ public class DeviceLoggingService extends Service {
         setNetworkType(networkType);
 
         Log.d(TAG, "Start Logging based on the following information :");
-        Log.d(TAG, "Direction : " + direction);
+        Log.d(TAG, "Direction : " + this.mDirection);
         Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
         Log.d(TAG, "TargetUid : " + this.mTargetUid);
         Log.d(TAG, "CPU Temperature file path : " + this.mCPUTemperatureFilePath);
         Log.d(TAG, "CPU clock file path : " + this.mCPUClockFilePath);
         Log.d(TAG, "DL Complete time threshold value : " + this.mDLCompleteDecisionTimeThreshold);
-        Log.d(TAG, "NetworkType : " + networkType);
+        Log.d(TAG, "NetworkType : " + this.mNetworkType);
 
         this.mServiceLogicHandler.sendMessage(msg);
     }
