@@ -25,8 +25,7 @@ public class CPUStatsReader {
     private static int CPU_COUNT = -1;
     private static CpuFilter mCPU_FILE_Filter = new CpuFilter();
     private static File[] mFile = null;
-
-    //test start
+    
     private long mWork, mWorkT, mWorkBefore;
     private long mTotal, mTotalT, mTotalBefore;
     private float mCpuTotal;
@@ -44,7 +43,6 @@ public class CPUStatsReader {
     private CPUStatsReader() {
 
     }
-    //test end
 
     private static class CpuFilter implements FileFilter {
         @Override
