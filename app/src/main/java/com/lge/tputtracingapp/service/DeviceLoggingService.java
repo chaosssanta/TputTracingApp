@@ -42,8 +42,8 @@ public class DeviceLoggingService extends Service {
     private static final int SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME = 5;
 
     public static final String SHARED_PREFERENCES_KEY_TEST_TYPE = "test_type";
-    public static final int  SHARED_PREFERENCES_DL_DIRECTION = 0;
-    public static final int  SHARED_PREFERENCES_UL_DIRECTION = 0;
+    public static final int SHARED_PREFERENCES_DL_DIRECTION = 0;
+    public static final int SHARED_PREFERENCES_UL_DIRECTION = 1;
 
     public static final String SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME = "selected_package_name";
 
@@ -110,12 +110,12 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_LOG_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_LOG_CURRENT_STATS_INFO");
-                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath);
+                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
 
                 DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(deviceStatsInfo);
                 DeviceStatsInfoStorageManager.getInstance().addToStorage(deviceStatsInfo);
 
-                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mTestType) < TPUT_THRESHOLD) {
+                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mDirection) < TPUT_THRESHOLD) {
                     sendEmptyMessage(EVENT_STOP_LOGGING);
                 } else {
                     sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
@@ -126,11 +126,11 @@ public class DeviceLoggingService extends Service {
             case EVENT_GET_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_GET_CURRENT_STATS_INFO");
 
-                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath);
+                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
                 DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(deviceStatsInfo);
 
                 // if the avg t-put exceeds threshold, it's time to start logging.
-                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mTestType) > TPUT_THRESHOLD) {
+                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mDirection) > TPUT_THRESHOLD) {
                     Message eventMessage = this.obtainMessage(EVENT_START_LOGGING);
                     eventMessage.obj = deviceStatsInfo;
                     sendMessage(eventMessage);
@@ -152,7 +152,8 @@ public class DeviceLoggingService extends Service {
     @Setter private String mCPUClockFilePath;
     @Setter private String mCPUTemperatureFilePath;
     @Setter private int mDLCompleteDecisionTimeThreshold = 3;
-    @Setter private DeviceStatsInfoStorageManager.TEST_TYPE mTestType;
+    @Setter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
+    @Setter private int mNetworkType;
 
     private ArrayList<DeviceLoggingStateChangedListener> mDeviceLoggingStateListenerList;
 
@@ -176,23 +177,27 @@ public class DeviceLoggingService extends Service {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         String packageName, cpuFilePath, thermalFilePath, selectedPackageName;
         int interval, thresholdTime;
-        DeviceStatsInfoStorageManager.TEST_TYPE testType;
+        DeviceStatsInfoStorageManager.TEST_TYPE direction;
+        //test start
+        int networkType = 14; //hard coding, LTE
+        //test end
+
         if (intent == null) {
             packageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME);
-            selectedPackageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, "");
+//            selectedPackageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, "");
             cpuFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_CLOCK_FILE_PATH);
             thermalFilePath = sharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
             interval = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
             thresholdTime = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
-            testType = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST : DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
+            direction = sharedPreferences.getInt(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST : DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
         } else {
             packageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME);
-            selectedPackageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME);
+//            selectedPackageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME);
             cpuFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH);
             thermalFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH);
             interval = intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
             thresholdTime = intent.getIntExtra(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
-            testType = intent.getIntExtra(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
+            direction = intent.getIntExtra(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
@@ -200,14 +205,14 @@ public class DeviceLoggingService extends Service {
             editor.putString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, thermalFilePath);
             editor.putInt(SHARED_PREFERENCES_KEY_INTERVAL, interval);
             editor.putInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, thresholdTime);
-            editor.putInt(SHARED_PREFERENCES_KEY_TEST_TYPE, (testType == DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST) ? 0 : 1);
+            editor.putInt(SHARED_PREFERENCES_KEY_TEST_TYPE, (direction == DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST) ? 0 : 1);
             editor.commit();
         }
 
         this.mDeviceLoggingStateListenerList = new ArrayList<>();
         this.setOnLoggingStateChangedListener(DeviceStatsInfoStorageManager.getInstance());
 
-        startMonitoringDeviceStats(packageName, interval, cpuFilePath, thermalFilePath, thresholdTime, testType);
+        startMonitoringDeviceStats(packageName, interval, cpuFilePath, thermalFilePath, thresholdTime, direction, networkType);
         return START_STICKY;
     }
 
@@ -220,7 +225,7 @@ public class DeviceLoggingService extends Service {
     }
 
     // monitoring controller
-    private void startMonitoringDeviceStats(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int dlCompleteDecisionTimeThreshold, DeviceStatsInfoStorageManager.TEST_TYPE type) {
+    private void startMonitoringDeviceStats(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int dlCompleteDecisionTimeThreshold, DeviceStatsInfoStorageManager.TEST_TYPE direction, int networkType) {
         Message msg = this.mServiceLogicHandler.obtainMessage();
         msg.what = EVENT_START_MONITORING;
 
@@ -230,15 +235,17 @@ public class DeviceLoggingService extends Service {
         setCPUClockFilePath(cpuClockFilePath);
         setCPUTemperatureFilePath(thermalFilePath);
         setDLCompleteDecisionTimeThreshold(dlCompleteDecisionTimeThreshold);
-        setTestType(type);
+        setDirection(direction);
+        setNetworkType(networkType);
 
         Log.d(TAG, "Start Logging based on the following information :");
-        Log.d(TAG, "Test type : " + type);
+        Log.d(TAG, "Direction : " + direction);
         Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
         Log.d(TAG, "TargetUid : " + this.mTargetUid);
         Log.d(TAG, "CPU Temperature file path : " + this.mCPUTemperatureFilePath);
         Log.d(TAG, "CPU clock file path : " + this.mCPUClockFilePath);
         Log.d(TAG, "DL Complete time threshold value : " + this.mDLCompleteDecisionTimeThreshold);
+        Log.d(TAG, "NetworkType : " + networkType);
 
         this.mServiceLogicHandler.sendMessage(msg);
     }

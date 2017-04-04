@@ -20,8 +20,17 @@ public class DeviceStatsInfo {
     @Setter @Getter private ArrayList<Integer> mCpuFrequencyList;
     @Setter @Getter private int mCpuTemperature;
 
-//    @Setter @Getter private int mCpuUsage;
+    /* CPU Usage */
     @Setter @Getter private float mCpuUsage;
+
+    /* Package Name */
+    @Setter @Getter private String mPackageName;
+
+    /* Package Name */
+    @Setter @Getter private int mNetworkType;
+
+    /* Package Name */
+    @Setter @Getter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
 
     public DeviceStatsInfo() {
         this.mCpuFrequencyList = new ArrayList<>();
@@ -31,8 +40,8 @@ public class DeviceStatsInfo {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Time : ").append(this.mTimeStamp).append("\n");
-        sb.append("tx : ").append(this.mTxBytes);
-        sb.append(", rx : ").append(this.mRxBytes).append("\n");
+        sb.append("Tx : ").append(this.mTxBytes);
+        sb.append(", Rx : ").append(this.mRxBytes).append("\n");
         if (this.mCpuFrequencyList != null) {
             for (int i = 0; i < this.mCpuFrequencyList.size(); ++i) {
                 sb.append("CPU [").append(i).append("] ").append(this.mCpuFrequencyList.get(i)).append(" MHz\n");
@@ -40,6 +49,9 @@ public class DeviceStatsInfo {
         }
         sb.append("Temperature : ").append(this.mCpuTemperature).append("\n");
         sb.append("Usage : ").append(this.mCpuUsage).append(" %\n");
+        sb.append("Direction : ").append(this.mDirection).append("\n");
+        sb.append("NetworkType : ").append(this.mNetworkType).append("\n");
+        sb.append("PackageName : ").append(this.mPackageName).append("\n");
 
         return sb.toString();
     }
@@ -50,10 +62,12 @@ public class DeviceStatsInfo {
         cloned.mTimeStamp = this.mTimeStamp;
         cloned.mTxBytes = this.mTxBytes;
         cloned.mRxBytes = this.mRxBytes;
-//        cloned.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
         cloned.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
         cloned.mCpuTemperature = this.mCpuTemperature;
         cloned.mCpuUsage = this.mCpuUsage;
+        cloned.mDirection = this.mDirection;
+        cloned.mNetworkType = this.mNetworkType;
+        cloned.mPackageName = this.mPackageName;
         return cloned;
     }
 }

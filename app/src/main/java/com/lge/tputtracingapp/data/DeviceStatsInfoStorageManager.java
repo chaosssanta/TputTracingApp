@@ -237,11 +237,17 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     private byte[] getEachRowDataAsByte(DeviceStatsInfo deviceStatsInfo, int cnt) {
         StringBuilder sb = new StringBuilder();
+        String sDirection;
+
+        if (deviceStatsInfo == null)
+            return new byte[0];
+
+        sDirection = (deviceStatsInfo.getDirection() == TEST_TYPE.DL_TEST ) ? "DL" : "UL";
 
         sb.append(String.valueOf(cnt)).append(mSeperator)
-                .append("packageName").append(mSeperator)
-                .append("NetworkType ").append(mSeperator)
-                .append("DL").append(mSeperator)
+                .append(deviceStatsInfo.getPackageName()).append(mSeperator)
+                .append(deviceStatsInfo.getNetworkType()).append(mSeperator)
+                .append(sDirection).append(mSeperator)
                 //.append(getDate(deviceStatsInfo.getTimeStamp())).append(mSeperator)
                 .append(deviceStatsInfo.getTimeStamp()).append(mSeperator)
                 .append(String.valueOf(deviceStatsInfo.getRxBytes())).append(mSeperator)
@@ -334,8 +340,12 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         return tput;
     }
 
-    public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath) {
+    public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath, String packageName, DeviceStatsInfoStorageManager.TEST_TYPE direction, int networkType) {
         DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
+
+        deviceStatsInfo.setPackageName(packageName);
+        deviceStatsInfo.setNetworkType(networkType);
+        deviceStatsInfo.setDirection(direction);
         deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
         deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(targetUid));
         deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(targetUid));

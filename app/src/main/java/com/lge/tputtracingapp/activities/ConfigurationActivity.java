@@ -23,6 +23,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.android.LGSetupWizard.R;
+import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
 import java.util.ArrayList;
@@ -109,8 +110,11 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 return;
             }
 
-            String temp = mEditTxtPackageName.getText().toString();
-            String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
+            String temp = "";
+//            String temp = mEditTxtPackageName.getText().toString();
+//            String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
+            String packageName = mEditTxtPackageName.getText().toString();
+            Log.d("NHY", "[11] packageName: " + packageName);
 
             temp = mEditTxtInterval.getText().toString();
             int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(temp);
@@ -267,17 +271,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 if (isChecked) {
                     this.mEditTxtCPUClockPath.setText("");
                     this.mEditTxtCPUClockPath.setVisibility(View.GONE);
-                    //mCpuInfoPath = mDefaultCpuInfoPath;
                 }
-
-                /*if (mRdoBtnChipsetVendorDefault.isChecked()) {
-
-                }  else if (mRdoBtnChipsetVendorManual.isChecked()) {
-                    if (TextUtils.isEmpty(mEditTxtCPUClockPath.getText().toString()))
-                        mCpuInfoPath = mEditTxtCPUClockPath.getHint().toString();
-                    else
-                        mCpuInfoPath = mEditTxtCPUClockPath.getText().toString();
-                }*/
                 break;
             case R.id.radioButton_chipset_manual:
                 if (isChecked) {
@@ -297,10 +291,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 }
                 break;
             case R.id.radioButton_dl_direction:
-                mDirection = DeviceLoggingService.SHARED_PREFERENCES_DL_DIRECTION;
+                mDirection = mDeviceLoggingService.SHARED_PREFERENCES_DL_DIRECTION;
                 break;
             case R.id.radioButton_ul_direction:
-                mDirection = DeviceLoggingService.SHARED_PREFERENCES_UL_DIRECTION;
+                mDirection = mDeviceLoggingService.SHARED_PREFERENCES_UL_DIRECTION;
                 break;
 
             default:
@@ -467,5 +461,4 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             }
         });
     }
-    //test end
 }
