@@ -81,23 +81,23 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 //            Log.d(TAG, Integer.toBinaryString(Integer.valueOf(e.toString())));
             boolean sum = false;
             StringBuilder sb = new StringBuilder("아래의 입력 값을 확인하세요\n");
-            if (e.isExceptionIncluded(UIException.PackageNameInvalid)) {
+            if (e.isExceptionIncluded(UIValidationResult.UIException.PackageNameInvalid)) {
                 sb.append("Package 명이 올바르지 않습니다.\n");
                 sum = true;
             }
-            if (e.isExceptionIncluded(UIException.IntervalValueInvalid)) {
+            if (e.isExceptionIncluded(UIValidationResult.UIException.IntervalValueInvalid)) {
                 sb.append("Interval 값이 올바르지 않습니다.\n");
                 sum = true;
             }
-            if (e.isExceptionIncluded(UIException.ThresholdTimeInvalid)) {
+            if (e.isExceptionIncluded(UIValidationResult.UIException.ThresholdTimeInvalid)) {
                 sb.append("Threshold 값이 올바르지 않습니다.\n");
                 sum = true;
             }
-            if (e.isExceptionIncluded(UIException.CPUFreqPathInvalid)) {
+            if (e.isExceptionIncluded(UIValidationResult.UIException.CPUFreqPathInvalid)) {
                 sb.append("CPU Frequency path 가 올바르지 않습니다.\n");
                 sum = true;
             }
-            if (e.isExceptionIncluded(UIException.CPUThermalPathInvalid)) {
+            if (e.isExceptionIncluded(UIValidationResult.UIException.CPUThermalPathInvalid)) {
                 sb.append("CPU Thermal path가 올바르지 않습니다.");
                 sum = true;
             }
@@ -140,7 +140,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
     };
 
-    enum UIException {
+    /*enum UIException {
         NoError(0x00000000), PackageNameInvalid(0x00000001), IntervalValueInvalid(0x00000002), ThresholdTimeInvalid(0x00000004), CPUFreqPathInvalid(0x00000008), CPUThermalPathInvalid(0x00000010);
 
         private int value;
@@ -152,30 +152,44 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             return value;
         }
         public void setValue(int value) {  this.value = value; }
-    }
+    }*/
 
     static private class UIValidationResult {
-        public UIException mExceptinoCode;
+        enum UIException {
+            NoError(0x00000000), PackageNameInvalid(0x00000001), IntervalValueInvalid(0x00000002), ThresholdTimeInvalid(0x00000004), CPUFreqPathInvalid(0x00000008), CPUThermalPathInvalid(0x00000010);
+
+            private int value;
+            UIException(int value) {
+                this.value = value;
+            }
+
+            public int getValue() {
+                return value;
+            }
+            public void setValue(int value) {  this.value = value; }
+        }
+
+        public int mExceptinoCode;
 
         public UIValidationResult() {
-            this.mExceptinoCode = UIException.NoError;
+            this.mExceptinoCode = UIException.NoError.getValue();
         }
 
         public void addException(UIException exception) {
-            this.mExceptinoCode.setValue(this.mExceptinoCode.getValue() | exception.getValue());
+            this.mExceptinoCode = this.mExceptinoCode | exception.getValue();
         }
 
         public void removceException(UIException exception) {
-            this.mExceptinoCode.setValue(this.mExceptinoCode.getValue() & ~(exception.getValue()));
+            this.mExceptinoCode =this.mExceptinoCode & ~(exception.getValue());
         }
 
         public boolean isExceptionIncluded(UIException e) {
-            return (this.mExceptinoCode.getValue() & e.getValue()) != 0;
+            return (this.mExceptinoCode & e.getValue()) != 0;
         }
 
         @Override
         public String toString() {
-            return Integer.toBinaryString(this.mExceptinoCode.getValue());
+            return Integer.toBinaryString(this.mExceptinoCode);
         }
     }
 
@@ -187,7 +201,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         try {
             pm.getPackageInfo(this.mEditTxtPackageName.getText().toString(), 0);
         } catch (PackageManager.NameNotFoundException e1) {
-            e.addException(UIException.PackageNameInvalid);
+            e.addException(UIValidationResult.UIException.PackageNameInvalid);
         }
 
         // 2. interval time check
@@ -197,7 +211,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
-            e.addException(UIException.IntervalValueInvalid);
+            e.addException(UIValidationResult.UIException.IntervalValueInvalid);
         }
 
         // 3. threshold time check
@@ -207,13 +221,13 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
-            e.addException(UIException.ThresholdTimeInvalid);
+            e.addException(UIValidationResult.UIException.ThresholdTimeInvalid);
         }
 
         // 4. cpu freq path check
         if (!isFreqPathVaild((!"".equals(this.mEditTxtCPUClockPath.getText().toString())) ? this.mEditTxtCPUClockPath.getText().toString(): (this.mEditTxtCPUClockPath.getHint().toString()))) {
             Log.d(TAG, "adding exception CPU freq path ");
-            e.addException(UIException.CPUFreqPathInvalid);
+            e.addException(UIValidationResult.UIException.CPUFreqPathInvalid);
         }
 
         // 5. cpu thermal path check
