@@ -23,8 +23,8 @@ public class CPUStatsReader {
     private static final String mCpuUsageFilePath = "/proc/stat";
 
     private static int CPU_COUNT = -1;
-    private static CpuFilter sCPU_FILE_Filter = new CpuFilter();
-    private static File[] ff = null;
+    private static CpuFilter mCPU_FILE_Filter = new CpuFilter();
+    private static File[] mFile = null;
 
     //test start
     private long mWork, mWorkT, mWorkBefore;
@@ -70,11 +70,11 @@ public class CPUStatsReader {
             CPU_COUNT = getNumOfCPUs(filePath);
             Log.d(TAG, "CPU_COUNT : " + CPU_COUNT);
         }
-        ArrayList<Integer> ret = new ArrayList<>();
+        ArrayList<Integer> sRet = new ArrayList<>();
         for (int i = 0; i < CPU_COUNT; i++) {
-            ret.add(Integer.valueOf(cmdCat(filePath + "cpu" + i + "/cpufreq/scaling_cur_freq").replace("\n", "")));
+            sRet.add(Integer.valueOf(cmdCat(filePath + "cpu" + i + "/cpufreq/scaling_cur_freq").replace("\n", "")));
         }
-        return ret;
+        return sRet;
     }
 
     private float restrictPercentage(float percentage) {
@@ -86,12 +86,12 @@ public class CPUStatsReader {
     }
 
     private static int getNumOfCPUs(String filePath) {
-        if (ff == null) {
-            ff = new File(filePath).listFiles(sCPU_FILE_Filter);
+        if (mFile == null) {
+            mFile = new File(filePath).listFiles(mCPU_FILE_Filter);
         }
 
         try {
-            return ff.length;
+            return mFile.length;
         } catch (NullPointerException e) {
             return -1;
         }
@@ -106,9 +106,9 @@ public class CPUStatsReader {
         }
     }
 
-    //    CPU usage percents calculation. It is possible negative values or values higher than 100% may appear.
-    //    http://stackoverflow.com/questions/1420426
-    //    http://kernel.org/doc/Documentation/filesystems/proc.txt
+    //CPU usage percents calculation. It is possible negative values or values higher than 100% may appear.
+    //http://stackoverflow.com/questions/1420426
+    //http://kernel.org/doc/Documentation/filesystems/proc.txt
     public float getCpuUsage() {
         try {
             mReader = new BufferedReader(new FileReader(mCpuUsageFilePath));
@@ -121,7 +121,7 @@ public class CPUStatsReader {
                 mTotalT = mTotal - mTotalBefore;
                 mWorkT = mWork - mWorkBefore;
                 mCpuTotal = restrictPercentage(mWorkT * 100 / (float) mTotalT);
-                Log.d(TAG, "CPU Usage: " + restrictPercentage(mWorkT * 100 / (float) mTotalT) + "%");
+//                Log.d(TAG, "CPU Usage: " + restrictPercentage(mWorkT * 100 / (float) mTotalT) + "%");
             }
             mTotalBefore = mTotal;
             mWorkBefore = mWork;
@@ -137,22 +137,22 @@ public class CPUStatsReader {
 
     private static String cmdCat(String f) {
 
-        String[] command = {"cat", f};
-        StringBuilder cmdReturn = new StringBuilder();
+        String[] sCommand = {"cat", f};
+        StringBuilder sCmdReturn = new StringBuilder();
 
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder(command);
-            Process process = processBuilder.start();
+            ProcessBuilder sProcessBuilder = new ProcessBuilder(sCommand);
+            Process sProcess = sProcessBuilder.start();
 
-            InputStream inputStream = process.getInputStream();
+            InputStream sInputStream = sProcess.getInputStream();
             int c;
 
-            while ((c = inputStream.read()) != -1) {
-                cmdReturn.append((char) c);
+            while ((c = sInputStream.read()) != -1) {
+                sCmdReturn.append((char) c);
             }
-            process.destroy();
-            inputStream.close();
-            return cmdReturn.toString();
+            sProcess.destroy();
+            sInputStream.close();
+            return sCmdReturn.toString();
 
         } catch (IOException e) {
             e.printStackTrace();

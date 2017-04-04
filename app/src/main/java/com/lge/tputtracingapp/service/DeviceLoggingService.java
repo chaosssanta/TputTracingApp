@@ -110,10 +110,10 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_LOG_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_LOG_CURRENT_STATS_INFO");
-                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
+                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
 
-                DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(deviceStatsInfo);
-                DeviceStatsInfoStorageManager.getInstance().addToStorage(deviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(sDeviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance().addToStorage(sDeviceStatsInfo);
 
                 if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mDirection) < TPUT_THRESHOLD) {
                     sendEmptyMessage(EVENT_STOP_LOGGING);
@@ -126,13 +126,13 @@ public class DeviceLoggingService extends Service {
             case EVENT_GET_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_GET_CURRENT_STATS_INFO");
 
-                DeviceStatsInfo deviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
-                DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(deviceStatsInfo);
+                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
+                DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(sDeviceStatsInfo);
 
                 // if the avg t-put exceeds threshold, it's time to start logging.
                 if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mDirection) > TPUT_THRESHOLD) {
                     Message eventMessage = this.obtainMessage(EVENT_START_LOGGING);
-                    eventMessage.obj = deviceStatsInfo;
+                    eventMessage.obj = sDeviceStatsInfo;
                     sendMessage(eventMessage);
                 } else {
                     sendEmptyMessageDelayed(EVENT_GET_CURRENT_STATS_INFO, mLoggingInterval);
@@ -179,7 +179,7 @@ public class DeviceLoggingService extends Service {
         int sInterval, sThresholdTime;
         DeviceStatsInfoStorageManager.TEST_TYPE sDirection;
         //test start
-        int sNetworkType = 14; //hard coding, LTE
+        int sNetworkType = 14; //hard coding, eg,.LTE is 14.
         //test end
 
         if (intent == null) {
@@ -226,8 +226,8 @@ public class DeviceLoggingService extends Service {
 
     // monitoring controller
     private void startMonitoringDeviceStats(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int dlCompleteDecisionTimeThreshold, DeviceStatsInfoStorageManager.TEST_TYPE direction, int networkType) {
-        Message msg = this.mServiceLogicHandler.obtainMessage();
-        msg.what = EVENT_START_MONITORING;
+        Message sMsg = this.mServiceLogicHandler.obtainMessage();
+        sMsg.what = EVENT_START_MONITORING;
 
         setTargetPackageName(targetPackageName);
         setTargetUid(DeviceLoggingService.getUidByPackageName(this, this.mTargetPackageName));
@@ -247,7 +247,7 @@ public class DeviceLoggingService extends Service {
         Log.d(TAG, "DL Complete time threshold value : " + this.mDLCompleteDecisionTimeThreshold);
         Log.d(TAG, "NetworkType : " + this.mNetworkType);
 
-        this.mServiceLogicHandler.sendMessage(msg);
+        this.mServiceLogicHandler.sendMessage(sMsg);
     }
 
     @Override

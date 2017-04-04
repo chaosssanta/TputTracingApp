@@ -77,7 +77,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         this.mDLTPutCircularArray = new CircularArray<>();
     }
     private ExecutorService mExecutorService = null;
-    private static SimpleDateFormat sDateTimeFormatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+    private static SimpleDateFormat mDateTimeFormatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
 
     public static DeviceStatsInfoStorageManager getInstance() {
         if (mInstance == null) {
@@ -99,10 +99,10 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         }  catch (Exception e) {return -1;}
 
         mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        Log.d(TAG, "available thread cnt: " + Runtime.getRuntime().availableProcessors());
+//        Log.d(TAG, "available thread cnt: " + Runtime.getRuntime().availableProcessors());
 
         sCpuCnt = sTargetList.getFirst().getCpuFrequencyList().size();
-        Log.d(TAG, "sCpuCnt: " + sCpuCnt);
+//        Log.d(TAG, "sCpuCnt: " + sCpuCnt);
         makeColumns();
 
         Runnable run = new Runnable() {
@@ -208,8 +208,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     private void makeColumns() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("No").append(mSeperator)
+        StringBuilder sSb = new StringBuilder();
+        sSb.append("No").append(mSeperator)
                 .append("PackageName").append(mSeperator)
                 .append("Network").append(mSeperator)
                 .append("Direction").append(mSeperator)
@@ -217,12 +217,12 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 .append("ReceivedBytes").append(mSeperator)
                 .append("SentBytes").append(mSeperator)
                 .append("Temperature").append(mSeperator)
-                .append("CPU_Occupacy(%)").append(mSeperator);
+                .append("CPU_Usage(%)").append(mSeperator);
 
         for (int i = 0; i < sCpuCnt; i++) {
-            sb.append("CPU0_Freq" + i).append(mSeperator);
+            sSb.append("CPU0_Freq" + i).append(mSeperator);
         }
-        mColumns = sb.toString().split(mSeperator);
+        mColumns = sSb.toString().split(mSeperator);
     }
 
     private byte[] makeColumnNameAsByte() {
@@ -236,7 +236,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     private byte[] getEachRowDataAsByte(DeviceStatsInfo deviceStatsInfo, int cnt) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sSb = new StringBuilder();
         String sDirection;
 
         if (deviceStatsInfo == null)
@@ -244,7 +244,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
         sDirection = (deviceStatsInfo.getDirection() == TEST_TYPE.DL_TEST ) ? "DL" : "UL";
 
-        sb.append(String.valueOf(cnt)).append(mSeperator)
+        sSb.append(String.valueOf(cnt)).append(mSeperator)
                 .append(deviceStatsInfo.getPackageName()).append(mSeperator)
                 .append(deviceStatsInfo.getNetworkType()).append(mSeperator)
                 .append(sDirection).append(mSeperator)
@@ -256,36 +256,36 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 .append(deviceStatsInfo.getCpuUsage()).append(mSeperator);
 
         for (int i=0; i<sCpuCnt; i++) {
-            sb.append(deviceStatsInfo.getCpuFrequencyList().get(i)).append(mSeperator);
+            sSb.append(deviceStatsInfo.getCpuFrequencyList().get(i)).append(mSeperator);
         }
-        sb.append(mCarriageReturn).append(mLineFeed);
+        sSb.append(mCarriageReturn).append(mLineFeed);
 
-        return sb.toString().getBytes();
+        return sSb.toString().getBytes();
     }
 
     private static String getDate(long milliSeconds) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(milliSeconds);
-        return sDateTimeFormatter.format(calendar.getTime());
+        Calendar sCalendar = Calendar.getInstance();
+        sCalendar.setTimeInMillis(milliSeconds);
+        return mDateTimeFormatter.format(sCalendar.getTime());
     }
 
     public void addToStorage(DeviceStatsInfo deviceStatsInfo) {
         try {
-            DeviceStatsInfo d = deviceStatsInfo.clone();
+            DeviceStatsInfo sDeviceStatsInfo = deviceStatsInfo.clone();
             if (this.mDeviceStatsRecordList.size() == 0) { // if it's the first element.
-                this.mPivotTxBytes = d.getTxBytes();
-                this.mPivotRxBytes = d.getRxBytes();
-                d.setTxBytes(0);
-                d.setRxBytes(0);
+                this.mPivotTxBytes = sDeviceStatsInfo.getTxBytes();
+                this.mPivotRxBytes = sDeviceStatsInfo.getRxBytes();
+                sDeviceStatsInfo.setTxBytes(0);
+                sDeviceStatsInfo.setRxBytes(0);
             } else {
-                long tempRx = d.getRxBytes();
-                long tempTx = d.getTxBytes();
-                d.setTxBytes(tempTx - this.mPivotTxBytes);
-                d.setRxBytes(tempRx - this.mPivotRxBytes);
-                this.mPivotTxBytes = tempTx;
-                this.mPivotRxBytes = tempRx;
+                long sTempRx = sDeviceStatsInfo.getRxBytes();
+                long sTempTx = sDeviceStatsInfo.getTxBytes();
+                sDeviceStatsInfo.setTxBytes(sTempTx - this.mPivotTxBytes);
+                sDeviceStatsInfo.setRxBytes(sTempRx - this.mPivotRxBytes);
+                this.mPivotTxBytes = sTempTx;
+                this.mPivotRxBytes = sTempRx;
             }
-            this.mDeviceStatsRecordList.add(d);
+            this.mDeviceStatsRecordList.add(sDeviceStatsInfo);
         } catch(Exception e){};
     }
 
@@ -320,39 +320,39 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     public float getAvgTputFromTpuCalculationBuffer(TEST_TYPE type) {
-        float tput = 0.0f;
+        float sTput = 0.0f;
 
         if (this.mDLTPutCircularArray.size() >= 0) {
             if (this.mDLTPutCircularArray.getFirst().hashCode() != this.mDLTPutCircularArray.getLast().hashCode()) {
-                long duration = this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp();
-                long bytes = 0;
+                long sDuration = this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp();
+                long sBytes = 0;
                 if (type == TEST_TYPE.DL_TEST) {
-                    bytes = this.mDLTPutCircularArray.getLast().getRxBytes() - this.mDLTPutCircularArray.getFirst().getRxBytes();
+                    sBytes = this.mDLTPutCircularArray.getLast().getRxBytes() - this.mDLTPutCircularArray.getFirst().getRxBytes();
                 } else {
-                    bytes = this.mDLTPutCircularArray.getLast().getTxBytes() - this.mDLTPutCircularArray.getFirst().getTxBytes();
+                    sBytes = this.mDLTPutCircularArray.getLast().getTxBytes() - this.mDLTPutCircularArray.getFirst().getTxBytes();
                 }
 
-                tput = (bytes / 1024 / 1024 * 8)/(duration / 1000.0f);
+                sTput = (sBytes / 1024 / 1024 * 8)/(sDuration / 1000.0f);
             }
         }
 
-        Log.d(TAG, "T-put : " + tput);
-        return tput;
+        Log.d(TAG, "T-put : " + sTput);
+        return sTput;
     }
 
     public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath, String packageName, DeviceStatsInfoStorageManager.TEST_TYPE direction, int networkType) {
-        DeviceStatsInfo deviceStatsInfo = new DeviceStatsInfo();
+        DeviceStatsInfo sDeviceStatsInfo = new DeviceStatsInfo();
 
-        deviceStatsInfo.setPackageName(packageName);
-        deviceStatsInfo.setNetworkType(networkType);
-        deviceStatsInfo.setDirection(direction);
-        deviceStatsInfo.setTimeStamp(System.currentTimeMillis());
-        deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(targetUid));
-        deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(targetUid));
-        deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(cpuTemperatureFilePath));
-        deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getInstance().getCpuFreq(cpuClockFilePath));
-        deviceStatsInfo.setCpuUsage(CPUStatsReader.getInstance().getCpuUsage());
-        return deviceStatsInfo;
+        sDeviceStatsInfo.setPackageName(packageName);
+        sDeviceStatsInfo.setNetworkType(networkType);
+        sDeviceStatsInfo.setDirection(direction);
+        sDeviceStatsInfo.setTimeStamp(System.currentTimeMillis());
+        sDeviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(targetUid));
+        sDeviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(targetUid));
+        sDeviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(cpuTemperatureFilePath));
+        sDeviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getInstance().getCpuFreq(cpuClockFilePath));
+        sDeviceStatsInfo.setCpuUsage(CPUStatsReader.getInstance().getCpuUsage());
+        return sDeviceStatsInfo;
     }
 
     private static String generateFileName() {

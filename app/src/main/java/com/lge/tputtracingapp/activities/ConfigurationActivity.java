@@ -79,30 +79,30 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         public void onClick(View view) {
             UIValidationResult e  = getUIValidationResult();
 //            Log.d(TAG, Integer.toBinaryString(Integer.valueOf(e.toString())));
-            boolean sum = false;
+            boolean sSum = false;
             StringBuilder sb = new StringBuilder("아래의 입력 값을 확인하세요\n");
             if (e.isExceptionIncluded(UIValidationResult.UIException.PackageNameInvalid)) {
                 sb.append("Package 명이 올바르지 않습니다.\n");
-                sum = true;
+                sSum = true;
             }
             if (e.isExceptionIncluded(UIValidationResult.UIException.IntervalValueInvalid)) {
                 sb.append("Interval 값이 올바르지 않습니다.\n");
-                sum = true;
+                sSum = true;
             }
             if (e.isExceptionIncluded(UIValidationResult.UIException.ThresholdTimeInvalid)) {
                 sb.append("Threshold 값이 올바르지 않습니다.\n");
-                sum = true;
+                sSum = true;
             }
             if (e.isExceptionIncluded(UIValidationResult.UIException.CPUFreqPathInvalid)) {
                 sb.append("CPU Frequency path 가 올바르지 않습니다.\n");
-                sum = true;
+                sSum = true;
             }
             if (e.isExceptionIncluded(UIValidationResult.UIException.CPUThermalPathInvalid)) {
                 sb.append("CPU Thermal path가 올바르지 않습니다.");
-                sum = true;
+                sSum = true;
             }
 
-            if (sum) {
+            if (sSum) {
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ConfigurationActivity.this);
                 alertDialogBuilder.setTitle("Invalid UI settings!!").setMessage(sb.toString()).setCancelable(false).setPositiveButton("확인",new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog,int id) {}});
                 AlertDialog alertDialog = alertDialogBuilder.create();
@@ -110,27 +110,24 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 return;
             }
 
-            String temp = "";
-//            String temp = mEditTxtPackageName.getText().toString();
-//            String packageName = (TextUtils.isEmpty(temp)) ? mEditTxtPackageName.getHint().toString() : temp;
-            String packageName = mEditTxtPackageName.getText().toString();
-            Log.d("NHY", "[11] packageName: " + packageName);
+            String sTemp = "";
+            String sPackageName = mEditTxtPackageName.getText().toString();
 
-            temp = mEditTxtInterval.getText().toString();
-            int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(temp);
+            sTemp = mEditTxtInterval.getText().toString();
+            int interval = (TextUtils.isEmpty(sTemp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(sTemp);
 
-            temp = mEditTxtCPUClockPath.getText().toString();
-            String cpuClockFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUClockPath.getHint().toString() : temp;
+            sTemp = mEditTxtCPUClockPath.getText().toString();
+            String cpuClockFilePath = (TextUtils.isEmpty(sTemp)) ? mEditTxtCPUClockPath.getHint().toString() : sTemp;
 
-            temp = mEditTxtCPUTemperaturePath.getText().toString();
-            String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
+            sTemp = mEditTxtCPUTemperaturePath.getText().toString();
+            String cpuThermalFilePath = (TextUtils.isEmpty(sTemp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : sTemp;
 
-            temp = mEditTxtThresholdTime.getText().toString();
-            int sThresholdTime = (TextUtils.isEmpty(temp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(temp);
+            sTemp = mEditTxtThresholdTime.getText().toString();
+            int sThresholdTime = (TextUtils.isEmpty(sTemp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(sTemp);
 
             Intent startIntent = new Intent(ConfigurationActivity.this, DeviceLoggingService.class);
             startIntent.setAction("com.lge.data.START_LOGGING");
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, sPackageName);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
 
@@ -187,9 +184,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         UIValidationResult e = new UIValidationResult();
         // 1. packageName check
-        PackageManager pm = getPackageManager();
+        PackageManager sPm = getPackageManager();
         try {
-            pm.getPackageInfo(this.mEditTxtPackageName.getText().toString(), 0);
+            sPm.getPackageInfo(this.mEditTxtPackageName.getText().toString(), 0);
         } catch (PackageManager.NameNotFoundException e1) {
             Log.d(TAG, "adding exception invalid package name ");
             e.addException(UIValidationResult.UIException.PackageNameInvalid);
@@ -197,9 +194,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         // 2. interval time check
         try {
-            int interval = ("".equals(this.mEditTxtInterval.getText().toString())) ? Integer.valueOf(this.mEditTxtInterval.getHint().toString()) : Integer.valueOf(this.mEditTxtInterval.getText().toString());
-            Log.d(TAG, "interval : " + interval);
-            if (interval < 500 || interval > 5000) {
+            int sInterval = ("".equals(this.mEditTxtInterval.getText().toString())) ? Integer.valueOf(this.mEditTxtInterval.getHint().toString()) : Integer.valueOf(this.mEditTxtInterval.getText().toString());
+            Log.d(TAG, "interval : " + sInterval);
+            if (sInterval < 500 || sInterval > 5000) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
@@ -209,8 +206,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         // 3. threshold time check
         try {
-            int thresholdTime = ("".equals(this.mEditTxtThresholdTime.getText().toString())) ? Integer.valueOf(this.mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(this.mEditTxtThresholdTime.getText().toString());
-            if (thresholdTime > 10 || thresholdTime < 0) {
+            int sThresholdTime = ("".equals(this.mEditTxtThresholdTime.getText().toString())) ? Integer.valueOf(this.mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(this.mEditTxtThresholdTime.getText().toString());
+            if (sThresholdTime > 10 || sThresholdTime < 0) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
@@ -227,14 +224,13 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         // 5. cpu thermal path check
         // TODO: cpu thermal path check should be implemented later
 
-
         return e;
     }
 
     private void refreshMonitoringBtn() {
         if (this.isMyServiceRunning(DeviceLoggingService.class)) {
             // need to set the btn property to stop monitoring set.
-            this.mBtnLoggingController.setText("Stop   Logging"); // set the text
+            this.mBtnLoggingController.setText("Stop   Logging"); //set the text
             this.mBtnLoggingController.setOnClickListener(this.mStopMonitoringOnClickListener);
         } else {
             // otherwise,
@@ -364,9 +360,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager sManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+        for (ActivityManager.RunningServiceInfo service : sManager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
                 return true;
             }
@@ -379,13 +375,13 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         Log.d(TAG, "loadPackageNames() Entry.");
 
         this.mPackageNames = new ArrayList<String>();
-        final List<PackageInfo> packageInfos = this.getPackageManager().getInstalledPackages(PackageManager.GET_PERMISSIONS);
-        PriorityQueue<PackageNameInstallTime> queue = new PriorityQueue<>(packageInfos.size(), new Comparator<PackageNameInstallTime>() {
+        final List<PackageInfo> sPackageInfos = this.getPackageManager().getInstalledPackages(PackageManager.GET_PERMISSIONS);
+        PriorityQueue<PackageNameInstallTime> queue = new PriorityQueue<>(sPackageInfos.size(), new Comparator<PackageNameInstallTime>() {
             @Override
             public int compare(PackageNameInstallTime packageNameInstallTime, PackageNameInstallTime t1) {
-                if (packageNameInstallTime.installTime > t1.installTime) {
+                if (packageNameInstallTime.sInstallTime > t1.sInstallTime) {
                     return -1;
-                } else if (packageNameInstallTime.installTime == t1.installTime) {
+                } else if (packageNameInstallTime.sInstallTime == t1.sInstallTime) {
                     return 0;
                 } else {
                     return 1;
@@ -393,20 +389,22 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             }
         });
 
-        for (PackageInfo pi: packageInfos) {
+        for (PackageInfo pi: sPackageInfos) {
             if (pi.applicationInfo.uid < 10000) {
                 continue;
             }
 
-            String packageName = pi.applicationInfo.packageName;
-            if (packageName.contains("com.lg") || packageName.contains("google.") || (packageName.contains("kt.") && !packageName.contains("giga")) || (packageName.contains("com.android") && !packageName.contains("chrome"))) {
+            String sPackageName = pi.applicationInfo.packageName;
+            if (sPackageName.contains("com.lg")
+                    || sPackageName.contains("google.")
+                    || (sPackageName.contains("kt.") && !sPackageName.contains("giga"))
+                    || (sPackageName.contains("com.android") && !sPackageName.contains("chrome"))) {
                 continue;
             }
 
-
-            String[] requestedPermissions = pi.requestedPermissions;
-            if (requestedPermissions != null) {
-                for (String requestedPermission : requestedPermissions) {
+            String[] sRequestedPermissions = pi.requestedPermissions;
+            if (sRequestedPermissions != null) {
+                for (String requestedPermission : sRequestedPermissions) {
                     if (requestedPermission.contains("android.permission.INTERNET")) {
                         queue.offer(new PackageNameInstallTime(pi.firstInstallTime, pi.packageName));
                         break;
@@ -416,40 +414,41 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
 
         while (queue.iterator().hasNext()) {
-            PackageNameInstallTime pnit = queue.poll();
-            Log.d(TAG, "adding " + pnit.packageName + ", install time : " + pnit.installTime);
-            mPackageNames.add(pnit.packageName);
+            PackageNameInstallTime sPnit = queue.poll();
+            Log.d(TAG, "adding " + sPnit.sPackageName + ", install time : " + sPnit.sInstallTime);
+            mPackageNames.add(sPnit.sPackageName);
         }
         mPackageNames.add("직접입력");
     }
+
     private class PackageNameInstallTime {
-        long installTime;
-        String packageName;
+        long sInstallTime;
+        String sPackageName;
 
         public PackageNameInstallTime(long installTime, String packageName) {
-            this.installTime = installTime;
-            this.packageName = packageName;
+            this.sInstallTime = installTime;
+            this.sPackageName = packageName;
         }
     }
 
     private void setPackageNamesToSpinner() {
         Log.d(TAG, "setPackageNamesToSpinner() Entry.");
-        CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(ConfigurationActivity.this, mPackageNames);
-        mSpinnerCustom.setAdapter(customSpinnerAdapter);
+        CustomSpinnerAdapter sCustomSpinnerAdapter = new CustomSpinnerAdapter(ConfigurationActivity.this, mPackageNames);
+        mSpinnerCustom.setAdapter(sCustomSpinnerAdapter);
         mSpinnerCustom.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String item = parent.getItemAtPosition(position).toString();
-                Log.d(TAG, "Selected Item: " + item);
+                String sItem = parent.getItemAtPosition(position).toString();
+                Log.d(TAG, "Selected Item: " + sItem);
 
-                if ("직접입력".equals(item)) {
+                if ("직접입력".equals(sItem)) {
                     mEditTxtPackageName.setText("");
                     mEditTxtPackageName.setVisibility(View.VISIBLE);
                     return;
                 }
 
-                mSelectedPackageName = item;
-                mEditTxtPackageName.setText(item);
+                mSelectedPackageName = sItem;
+                mEditTxtPackageName.setText(sItem);
                 mEditTxtPackageName.setVisibility(View.GONE);
             }
 
