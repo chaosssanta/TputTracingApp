@@ -44,7 +44,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private RadioButton mRdoBtnChipsetVendorManual;
     private EditText mEditTxtCPUClockPath;
     private String mCpuInfoPath;
-
     private RadioButton mRdoBtnThermalXoThermal;
     private RadioButton mRdoBtnThermalVts;
     private RadioButton mRdoBtnThermalManual;
@@ -116,6 +115,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             temp = mEditTxtInterval.getText().toString();
             int interval = (TextUtils.isEmpty(temp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(temp);
 
+            temp = mEditTxtCPUClockPath.getText().toString();
+            String cpuClockFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUClockPath.getHint().toString() : temp;
+
             temp = mEditTxtCPUTemperaturePath.getText().toString();
             String cpuThermalFilePath = (TextUtils.isEmpty(temp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : temp;
 
@@ -126,7 +128,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             startIntent.setAction("com.lge.data.START_LOGGING");
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, packageName);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, mCpuInfoPath);
+            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
 
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
@@ -151,7 +153,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             public int getValue() {
                 return value;
             }
-            public void setValue(int value) {  this.value = value; }
         }
 
         public int mExceptinoCode;
@@ -263,20 +264,24 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
         switch (compoundButton.getId()) {
             case R.id.radioButton_chipset_default:
-                if (mRdoBtnChipsetVendorDefault.isChecked()) {
-                    mCpuInfoPath = mDefaultCpuInfoPath;
+                if (isChecked) {
+                    this.mEditTxtCPUClockPath.setText("");
+                    this.mEditTxtCPUClockPath.setVisibility(View.GONE);
+                    //mCpuInfoPath = mDefaultCpuInfoPath;
+                }
+
+                /*if (mRdoBtnChipsetVendorDefault.isChecked()) {
+
                 }  else if (mRdoBtnChipsetVendorManual.isChecked()) {
                     if (TextUtils.isEmpty(mEditTxtCPUClockPath.getText().toString()))
                         mCpuInfoPath = mEditTxtCPUClockPath.getHint().toString();
                     else
                         mCpuInfoPath = mEditTxtCPUClockPath.getText().toString();
-                }
+                }*/
                 break;
             case R.id.radioButton_chipset_manual:
                 if (isChecked) {
                     this.mEditTxtCPUClockPath.setVisibility(View.VISIBLE);
-                } else {
-                    this.mEditTxtCPUClockPath.setVisibility(View.GONE);
                 }
                 break;
 
