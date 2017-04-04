@@ -102,7 +102,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 sum = true;
             }
 
-            Log.d(TAG, "sum : " + sum);
             if (sum) {
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ConfigurationActivity.this);
                 alertDialogBuilder.setTitle("Invalid UI settings!!").setMessage(sb.toString()).setCancelable(false).setPositiveButton("확인",new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog,int id) {}});
@@ -139,20 +138,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             refreshMonitoringBtn();
         }
     };
-
-    /*enum UIException {
-        NoError(0x00000000), PackageNameInvalid(0x00000001), IntervalValueInvalid(0x00000002), ThresholdTimeInvalid(0x00000004), CPUFreqPathInvalid(0x00000008), CPUThermalPathInvalid(0x00000010);
-
-        private int value;
-        UIException(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-        public void setValue(int value) {  this.value = value; }
-    }*/
 
     static private class UIValidationResult {
         enum UIException {
@@ -201,26 +186,30 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         try {
             pm.getPackageInfo(this.mEditTxtPackageName.getText().toString(), 0);
         } catch (PackageManager.NameNotFoundException e1) {
+            Log.d(TAG, "adding exception invalid package name ");
             e.addException(UIValidationResult.UIException.PackageNameInvalid);
         }
 
         // 2. interval time check
         try {
-            int interval = Integer.valueOf(this.mEditTxtInterval.getText().toString());
+            int interval = ("".equals(this.mEditTxtInterval.getText().toString())) ? Integer.valueOf(this.mEditTxtInterval.getHint().toString()) : Integer.valueOf(this.mEditTxtInterval.getText().toString());
+            Log.d(TAG, "interval : " + interval);
             if (interval < 500 || interval > 5000) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
+            Log.d(TAG, "adding exception invalid interval time ");
             e.addException(UIValidationResult.UIException.IntervalValueInvalid);
         }
 
         // 3. threshold time check
         try {
-            int thresholdTime = Integer.valueOf(this.mEditTxtThresholdTime.getText().toString());
+            int thresholdTime = ("".equals(this.mEditTxtThresholdTime.getText().toString())) ? Integer.valueOf(this.mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(this.mEditTxtThresholdTime.getText().toString());
             if (thresholdTime > 10 || thresholdTime < 0) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
+            Log.d(TAG, "adding exception invalid threshold time ");
             e.addException(UIValidationResult.UIException.ThresholdTimeInvalid);
         }
 
@@ -231,13 +220,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
 
         // 5. cpu thermal path check
+        // TODO: cpu thermal path check should be implemented later
 
 
         return e;
-    }
-
-    private static boolean isNemeric(String s) {
-        return s.matches("[-+]?\\d*\\.?\\d+");
     }
 
     private void refreshMonitoringBtn() {
