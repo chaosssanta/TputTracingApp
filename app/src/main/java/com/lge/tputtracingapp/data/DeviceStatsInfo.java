@@ -17,7 +17,8 @@ public class DeviceStatsInfo {
     @Setter @Getter private long mRxBytes;
 
     /* CPU Stats */
-    @Setter @Getter private ArrayList<Integer> mCpuFrequencyList;
+//    @Setter @Getter private ArrayList<Integer> mCpuFrequencyList;
+    @Setter @Getter private ArrayList<Float> mCpuFrequencyList;
     @Setter @Getter private int mCpuTemperature;
     @Setter @Getter private int mCpuUsage;
 
@@ -48,7 +49,8 @@ public class DeviceStatsInfo {
         cloned.mTimeStamp = this.mTimeStamp;
         cloned.mTxBytes = this.mTxBytes;
         cloned.mRxBytes = this.mRxBytes;
-        cloned.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
+//        cloned.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
+        cloned.mCpuFrequencyList = (ArrayList<Float>) this.mCpuFrequencyList.clone();
         cloned.mCpuTemperature = this.mCpuTemperature;
         cloned.mCpuUsage = this.mCpuUsage;
         return cloned;

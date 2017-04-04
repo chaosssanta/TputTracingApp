@@ -215,10 +215,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         }
 
         // 4. cpu freq path check
-        if (!isFreqPathVaild((!"".equals(this.mEditTxtCPUClockPath.getText().toString())) ? this.mEditTxtCPUClockPath.getText().toString(): (this.mEditTxtCPUClockPath.getHint().toString()))) {
-            Log.d(TAG, "adding exception CPU freq path ");
-            e.addException(UIValidationResult.UIException.CPUFreqPathInvalid);
-        }
+//        if (!isFreqPathVaild((!"".equals(this.mEditTxtCPUClockPath.getText().toString())) ? this.mEditTxtCPUClockPath.getText().toString(): (this.mEditTxtCPUClockPath.getHint().toString()))) {
+//            Log.d(TAG, "adding exception CPU freq path ");
+//            e.addException(UIValidationResult.UIException.CPUFreqPathInvalid);
+//        }
 
         // 5. cpu thermal path check
         // TODO: cpu thermal path check should be implemented later

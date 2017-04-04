@@ -9,7 +9,7 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:text="Package Name : "
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
@@ -27,6 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/textView2"
+        android:gravity="center_vertical"
         android:spinnerMode="dropdown" />
     <!--</LinearLayout>-->
 
@@ -185,7 +186,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:hint="/sys/devices/system/cpu/"
+                android:hint="/proc/stat"
                 android:inputType="text"
                 android:lines="1"
                 android:maxLines="1"

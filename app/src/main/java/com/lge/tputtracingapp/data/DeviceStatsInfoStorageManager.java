@@ -340,7 +340,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         deviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(targetUid));
         deviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(targetUid));
         deviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(cpuTemperatureFilePath));
-        deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getCpuFreq(cpuClockFilePath));
+        deviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getInstance().getCpuFreq(cpuClockFilePath));
         deviceStatsInfo.setCpuUsage(CPUStatsReader.getCpuUsage());
         return deviceStatsInfo;
     }

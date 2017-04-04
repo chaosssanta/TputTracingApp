@@ -2,11 +2,15 @@ package com.lge.tputtracingapp.statsreader;
 
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -19,6 +23,26 @@ public class CPUStatsReader {
     private static int CPU_COUNT = -1;
     private static CpuFilter sCPU_FILE_Filter = new CpuFilter();
     private static File[] ff = null;
+
+    //test start
+    private long mWork, mWorkT, mWorkBefore;
+    private long mTotal, mTotalT, mTotalBefore;
+
+    private static CPUStatsReader mCPUStatsReader = null;
+    private BufferedReader mReader;
+    private String[] mSa;
+    private ArrayList<Float> mCpuTotal;
+
+    public static CPUStatsReader getInstance() {
+        if (mCPUStatsReader == null)
+            mCPUStatsReader = new CPUStatsReader();
+        return mCPUStatsReader;
+    }
+
+    private CPUStatsReader() {
+
+    }
+    //test end
 
     private static class CpuFilter implements FileFilter {
         @Override
@@ -38,17 +62,53 @@ public class CPUStatsReader {
         }
     }
 
-    public static ArrayList<Integer> getCpuFreq(String filePath) throws NumberFormatException {
-        if (CPU_COUNT == -1) {
-            Log.d(TAG, "CPU_COUNT init : " + filePath);
-            CPU_COUNT = getNumOfCPUs(filePath);
-            Log.d(TAG, "CPU_COUNT : " + CPU_COUNT);
+//    CPU usage percents calculation. It is possible negative values or values higher than 100% may appear.
+//    http://stackoverflow.com/questions/1420426
+//    http://kernel.org/doc/Documentation/filesystems/proc.txt
+//    public ArrayList<Float> getCpuFreq(String filePath) throws NumberFormatException {
+    public ArrayList<Float> getCpuFreq(String filePath) {
+//        if (CPU_COUNT == -1) {
+//            Log.d(TAG, "CPU_COUNT init : " + filePath);
+//            CPU_COUNT = getNumOfCPUs(filePath);
+//            Log.d(TAG, "CPU_COUNT : " + CPU_COUNT);
+//        }
+//        ArrayList<Integer> ret = new ArrayList<>();
+//        for (int i = 0; i < CPU_COUNT; i++) {
+//            ret.add(Integer.valueOf(cmdCat(filePath + "cpu" + i + "/cpufreq/scaling_cur_freq").replace("\n", "")));
+//        }
+//        return ret;
+        try {
+            mReader = new BufferedReader(new FileReader(filePath));
+            mSa = mReader.readLine().split("[ ]+", 9);
+            mCpuTotal = new ArrayList<Float>(2000);
+
+            mWork = Long.parseLong(mSa[1]) + Long.parseLong(mSa[2]) + Long.parseLong(mSa[3]);
+            mTotal = mWork + Long.parseLong(mSa[4]) + Long.parseLong(mSa[5]) + Long.parseLong(mSa[6]) + Long.parseLong(mSa[7]);
+
+            if (mTotalBefore != 0) {
+                mTotalT = mTotal - mTotalBefore;
+                mWorkT = mWork - mWorkBefore;
+                mCpuTotal.add(0, restrictPercentage(mWorkT * 100 / (float) mTotalT));
+//                Log.d("NHY", "CPU Usage: " + restrictPercentage(mWorkT * 100 / (float) mTotalT) + "%");
+            }
+            mTotalBefore = mTotal;
+            mWorkBefore = mWork;
+
+            mReader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        ArrayList<Integer> ret = new ArrayList<>();
-        for (int i = 0; i < CPU_COUNT; i++) {
-            ret.add(Integer.valueOf(cmdCat(filePath + "cpu" + i + "/cpufreq/scaling_cur_freq").replace("\n", "")));
-        }
-        return ret;
+        return mCpuTotal;
+    }
+
+    private float restrictPercentage(float percentage) {
+        if (percentage > 100)
+            return 100;
+        else if (percentage < 0)
+            return 0;
+        else return percentage;
     }
 
     private static int getNumOfCPUs(String filePath) {
