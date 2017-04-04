@@ -1,4 +1,4 @@
-package com.lge.tputtracingapp.data;
+    package com.lge.tputtracingapp.data;
 
 import java.util.ArrayList;
 import lombok.AllArgsConstructor;
@@ -17,10 +17,11 @@ public class DeviceStatsInfo {
     @Setter @Getter private long mRxBytes;
 
     /* CPU Stats */
-//    @Setter @Getter private ArrayList<Integer> mCpuFrequencyList;
-    @Setter @Getter private ArrayList<Float> mCpuFrequencyList;
+    @Setter @Getter private ArrayList<Integer> mCpuFrequencyList;
     @Setter @Getter private int mCpuTemperature;
-    @Setter @Getter private int mCpuUsage;
+
+//    @Setter @Getter private int mCpuUsage;
+    @Setter @Getter private float mCpuUsage;
 
     public DeviceStatsInfo() {
         this.mCpuFrequencyList = new ArrayList<>();
@@ -50,7 +51,7 @@ public class DeviceStatsInfo {
         cloned.mTxBytes = this.mTxBytes;
         cloned.mRxBytes = this.mRxBytes;
 //        cloned.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
-        cloned.mCpuFrequencyList = (ArrayList<Float>) this.mCpuFrequencyList.clone();
+        cloned.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
         cloned.mCpuTemperature = this.mCpuTemperature;
         cloned.mCpuUsage = this.mCpuUsage;
         return cloned;

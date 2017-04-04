@@ -186,7 +186,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:hint="/proc/stat"
+                android:hint="/sys/devices/system/cpu/"
                 android:inputType="text"
                 android:lines="1"
                 android:maxLines="1"

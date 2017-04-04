@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
 public class CPUStatsReader {
     private static final String TAG = CPUStatsReader.class.getSimpleName();
 
+    private static final String mCpuUsageFilePath = "/proc/stat";
+
     private static int CPU_COUNT = -1;
     private static CpuFilter sCPU_FILE_Filter = new CpuFilter();
     private static File[] ff = null;
@@ -27,11 +29,11 @@ public class CPUStatsReader {
     //test start
     private long mWork, mWorkT, mWorkBefore;
     private long mTotal, mTotalT, mTotalBefore;
+    private float mCpuTotal;
 
     private static CPUStatsReader mCPUStatsReader = null;
     private BufferedReader mReader;
     private String[] mSa;
-    private ArrayList<Float> mCpuTotal;
 
     public static CPUStatsReader getInstance() {
         if (mCPUStatsReader == null)
@@ -62,45 +64,17 @@ public class CPUStatsReader {
         }
     }
 
-//    CPU usage percents calculation. It is possible negative values or values higher than 100% may appear.
-//    http://stackoverflow.com/questions/1420426
-//    http://kernel.org/doc/Documentation/filesystems/proc.txt
-//    public ArrayList<Float> getCpuFreq(String filePath) throws NumberFormatException {
-    public ArrayList<Float> getCpuFreq(String filePath) {
-//        if (CPU_COUNT == -1) {
-//            Log.d(TAG, "CPU_COUNT init : " + filePath);
-//            CPU_COUNT = getNumOfCPUs(filePath);
-//            Log.d(TAG, "CPU_COUNT : " + CPU_COUNT);
-//        }
-//        ArrayList<Integer> ret = new ArrayList<>();
-//        for (int i = 0; i < CPU_COUNT; i++) {
-//            ret.add(Integer.valueOf(cmdCat(filePath + "cpu" + i + "/cpufreq/scaling_cur_freq").replace("\n", "")));
-//        }
-//        return ret;
-        try {
-            mReader = new BufferedReader(new FileReader(filePath));
-            mSa = mReader.readLine().split("[ ]+", 9);
-            mCpuTotal = new ArrayList<Float>(2000);
-
-            mWork = Long.parseLong(mSa[1]) + Long.parseLong(mSa[2]) + Long.parseLong(mSa[3]);
-            mTotal = mWork + Long.parseLong(mSa[4]) + Long.parseLong(mSa[5]) + Long.parseLong(mSa[6]) + Long.parseLong(mSa[7]);
-
-            if (mTotalBefore != 0) {
-                mTotalT = mTotal - mTotalBefore;
-                mWorkT = mWork - mWorkBefore;
-                mCpuTotal.add(0, restrictPercentage(mWorkT * 100 / (float) mTotalT));
-//                Log.d("NHY", "CPU Usage: " + restrictPercentage(mWorkT * 100 / (float) mTotalT) + "%");
-            }
-            mTotalBefore = mTotal;
-            mWorkBefore = mWork;
-
-            mReader.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static ArrayList<Integer> getCpuFreq(String filePath) throws NumberFormatException {
+        if (CPU_COUNT == -1) {
+            Log.d(TAG, "CPU_COUNT init : " + filePath);
+            CPU_COUNT = getNumOfCPUs(filePath);
+            Log.d(TAG, "CPU_COUNT : " + CPU_COUNT);
         }
-        return mCpuTotal;
+        ArrayList<Integer> ret = new ArrayList<>();
+        for (int i = 0; i < CPU_COUNT; i++) {
+            ret.add(Integer.valueOf(cmdCat(filePath + "cpu" + i + "/cpufreq/scaling_cur_freq").replace("\n", "")));
+        }
+        return ret;
     }
 
     private float restrictPercentage(float percentage) {
@@ -132,74 +106,33 @@ public class CPUStatsReader {
         }
     }
 
-
-    static ProcessBuilder sGetTopProcessBuilder = new ProcessBuilder("/system/xbin/bash", "-c", "top -n 1 -m 1");
-
-    public static int getCpuUsage() {
-        InputStream is = null;
-        Process p = null;
-
-        StringBuilder sb = new StringBuilder();
+    //    CPU usage percents calculation. It is possible negative values or values higher than 100% may appear.
+    //    http://stackoverflow.com/questions/1420426
+    //    http://kernel.org/doc/Documentation/filesystems/proc.txt
+    public float getCpuUsage() {
         try {
-            p = sGetTopProcessBuilder.start();
-            is = p.getInputStream();
+            mReader = new BufferedReader(new FileReader(mCpuUsageFilePath));
+            mSa = mReader.readLine().split("[ ]+", 9);
 
-            int value = -1;
-            while ((value = is.read()) != -1) {
-                sb.append((char)value);
-            }
-            value = -1;
-            while ((value = is.read()) != -1) {
-                sb.append((char)value);
-            }
-        } catch (IOException exp) {
-            exp.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            mWork = Long.parseLong(mSa[1]) + Long.parseLong(mSa[2]) + Long.parseLong(mSa[3]);
+            mTotal = mWork + Long.parseLong(mSa[4]) + Long.parseLong(mSa[5]) + Long.parseLong(mSa[6]) + Long.parseLong(mSa[7]);
 
-            if (p != null) {
-                p.destroy();
+            if (mTotalBefore != 0) {
+                mTotalT = mTotal - mTotalBefore;
+                mWorkT = mWork - mWorkBefore;
+                mCpuTotal = restrictPercentage(mWorkT * 100 / (float) mTotalT);
+                Log.d(TAG, "CPU Usage: " + restrictPercentage(mWorkT * 100 / (float) mTotalT) + "%");
             }
+            mTotalBefore = mTotal;
+            mWorkBefore = mWork;
+
+            mReader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        String ret = sb.toString();
-        int sum = 0;
-
-        String[] parsingTargetArray = ret.split("\n");
-        for (String s: parsingTargetArray[0].split(",")) {
-            if (s.contains("User") || s.contains("System") || s.contains("IOW") || s.contains("IRQ")) {
-                String[] tmp = s.split(" ");
-                String target = tmp[tmp.length - 1].replace("%", "");
-
-                try {
-                    sum += Integer.valueOf(target);
-                } catch (NumberFormatException e) {
-                    sum += 0;
-                }
-            }
-        }
-
-
-        /*int topUsage = 0;
-        for (int i = 1; i != parsingTargetArray.length; ++i) {
-            String s = parsingTargetArray[i];
-            if (s.contains("system")  && s.contains("top")) {
-                String asdf = s.replaceAll("\\s{2,}", " ").trim();
-               // Log.d(TAG, "top process : " + asdf);
-                String[] tmp = asdf.split(" ");
-                String topUsageString = tmp[4].replace("%", "");
-                //Log.d(TAG, "top : " + topUsageString);
-                topUsage = Integer.valueOf(topUsageString);
-                break;
-            }
-        }*/
-        return sum;
+        return mCpuTotal;
     }
 
     private static String cmdCat(String f) {
