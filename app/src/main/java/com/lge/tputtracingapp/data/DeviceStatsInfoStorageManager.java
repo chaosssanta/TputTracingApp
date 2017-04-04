@@ -36,7 +36,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private static final String mCarriageReturn = "\r";
     private static final String mSeperator = ",";
     private static final String mFileExtention = ".csv";
-    private int sCpuCnt = -1; //initializing
+    private int mCpuCnt = -1; //initializing
 
     @Override
     public void onMonitoringStarted() {
@@ -91,6 +91,11 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         this.mDeviceStatsRecordList = new LinkedList<>();
 
         Log.d(TAG, "exportToFile(), fileName: " + fileName);
+
+        //search how many cpu core are exist...
+        mCpuCnt = sTargetList.getFirst().getCpuFrequencyList().size();
+
+        //exception handling if there is no data...
         try {
             if (sTargetList == null || sTargetList.getFirst() == null) {}
         } catch (NoSuchElementException e) {
@@ -98,21 +103,23 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             return -1;
         }  catch (Exception e) {return -1;}
 
+        //1. create thread pool
         mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-//        Log.d(TAG, "available thread cnt: " + Runtime.getRuntime().availableProcessors());
 
-        sCpuCnt = sTargetList.getFirst().getCpuFrequencyList().size();
-//        Log.d(TAG, "sCpuCnt: " + sCpuCnt);
         makeColumns();
 
+        //2. make task to work
         Runnable run = new Runnable() {
             @Override
             public void run() {
                 handleFileWriting(sTargetList, fileName);
             }
         };
+
+        //3. submit task to thread pool
         Future sFuture = mExecutorService.submit(run);
 
+        //4. receive result of task
         try {
             sFuture.get(); //if return value were null, it will be good.
             Log.d(TAG, "File writing is completed.");
@@ -123,7 +130,9 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             Log.d(TAG, "Exception. e.getMessage: " + e.getMessage());
             e.printStackTrace();
         }
-        mExecutorService.shutdown(); //free thread pool.
+
+        //5. free thread pool
+        mExecutorService.shutdown();
 
         return 0;
     }
@@ -141,7 +150,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         StringBuilder sb = new StringBuilder();
         int cnt = 0; //initializing
 
-        //make directory
+        //1. make directory
         File sDir = new File(sDirPath+"/TputTracingApp_Logs");
         if (!sDir.exists()) {
             sIsMadeDir = sDir.mkdir();
@@ -152,11 +161,11 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             Log.d(TAG, "Cannot write logs to dir");
         }
 
-        //make file to write raw data
+        //2. make file to write raw data
         File sFile = new File(sDir, fileName + mFileExtention);
         boolean isExistFile = sFile.exists();
 
-        //prepare OutputStream and BufferedOutputStream to write logs to file
+        //3. prepare OutputStream and BufferedOutputStream to write logs to file
         try {
             if (isExistFile)
                 sFos = new FileOutputStream(sFile, true); //add logs to already exist file
@@ -175,7 +184,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             return;
         }
 
-        //write raw data using BufferedOutputStream to file created before
+        //4. write raw data using BufferedOutputStream to file created before
         try {
             if (!isExistFile) {
                 //first, write columns to file.
@@ -219,7 +228,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 .append("Temperature").append(mSeperator)
                 .append("CPU_Usage(%)").append(mSeperator);
 
-        for (int i = 0; i < sCpuCnt; i++) {
+        for (int i = 0; i < mCpuCnt; i++) {
             sSb.append("CPU0_Freq" + i).append(mSeperator);
         }
         mColumns = sSb.toString().split(mSeperator);
@@ -255,7 +264,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 .append(deviceStatsInfo.getCpuTemperature()).append(mSeperator)
                 .append(deviceStatsInfo.getCpuUsage()).append(mSeperator);
 
-        for (int i=0; i<sCpuCnt; i++) {
+        for (int i=0; i<mCpuCnt; i++) {
             sSb.append(deviceStatsInfo.getCpuFrequencyList().get(i)).append(mSeperator);
         }
         sSb.append(mCarriageReturn).append(mLineFeed);
