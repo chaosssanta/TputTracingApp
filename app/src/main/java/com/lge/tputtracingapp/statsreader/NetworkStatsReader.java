@@ -14,8 +14,12 @@ public class NetworkStatsReader {
         return TrafficStats.getUidRxBytes(targetUid);
     }
 
-    public static String getNetworkType(Context context) {
-        switch (((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getNetworkType()) {
+    public static int getNetworkType(Context context) {
+        return ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getNetworkType();
+    }
+
+    public static String getNetworkTypeName(int networkType) {
+        switch (networkType) {
             case TelephonyManager.NETWORK_TYPE_1xRTT: return "1xRTT";
             case TelephonyManager.NETWORK_TYPE_CDMA: return "CDMA";
             case TelephonyManager.NETWORK_TYPE_EDGE: return "EDGE";
