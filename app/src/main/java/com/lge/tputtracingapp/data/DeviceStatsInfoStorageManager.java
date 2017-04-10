@@ -1,5 +1,6 @@
 package com.lge.tputtracingapp.data;
 
+import android.content.Context;
 import android.os.Environment;
 import android.support.v4.util.CircularArray;
 import android.util.Log;
@@ -66,22 +67,24 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     private static DeviceStatsInfoStorageManager mInstance;
 
+    private Context mContext;
     private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
     private CircularArray<DeviceStatsInfo> mDLTPutCircularArray;
 
     private long mPivotRxBytes = Long.MIN_VALUE;
     private long mPivotTxBytes = Long.MIN_VALUE;
 
-    private DeviceStatsInfoStorageManager() {
+    private DeviceStatsInfoStorageManager(Context context) {
         this.mDeviceStatsRecordList = new LinkedList<>();
         this.mDLTPutCircularArray = new CircularArray<>();
+        this.mContext = context;
     }
     private ExecutorService mExecutorService = null;
     private static SimpleDateFormat mDateTimeFormatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
 
-    public static DeviceStatsInfoStorageManager getInstance() {
+    public static DeviceStatsInfoStorageManager getInstance(Context context) {
         if (mInstance == null) {
-            mInstance = new DeviceStatsInfoStorageManager();
+            mInstance = new DeviceStatsInfoStorageManager(context);
         }
         return mInstance;
     }
@@ -353,11 +356,11 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         DeviceStatsInfo sDeviceStatsInfo = new DeviceStatsInfo();
 
         sDeviceStatsInfo.setPackageName(packageName);
-        sDeviceStatsInfo.setNetworkType(networkType);
         sDeviceStatsInfo.setDirection(direction);
         sDeviceStatsInfo.setTimeStamp(System.currentTimeMillis());
         sDeviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(targetUid));
         sDeviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(targetUid));
+        sDeviceStatsInfo.setNetworkType(NetworkStatsReader.getNetworkTypeName(NetworkStatsReader.getNetworkType(this.mContext)));
         sDeviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(cpuTemperatureFilePath));
         sDeviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getInstance().getCpuFreq(cpuClockFilePath));
         sDeviceStatsInfo.setCpuUsage(CPUStatsReader.getInstance().getCpuUsage());

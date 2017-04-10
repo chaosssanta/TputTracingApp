@@ -93,8 +93,8 @@ public class DeviceLoggingService extends Service {
                     l.onLoggingStarted();
                 }
 
-                DeviceStatsInfoStorageManager.getInstance().migrateFromTPutCalculationBufferToRecordBuffer();
-                DeviceStatsInfoStorageManager.getInstance().addToStorage((DeviceStatsInfo) msg.obj);
+                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).migrateFromTPutCalculationBufferToRecordBuffer();
+                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToStorage((DeviceStatsInfo) msg.obj);
                 sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
                 break;
 
@@ -110,12 +110,12 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_LOG_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_LOG_CURRENT_STATS_INFO");
-                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
+                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
 
-                DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(sDeviceStatsInfo);
-                DeviceStatsInfoStorageManager.getInstance().addToStorage(sDeviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
+                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToStorage(sDeviceStatsInfo);
 
-                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mDirection) < TPUT_THRESHOLD) {
+                if (DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) < TPUT_THRESHOLD) {
                     sendEmptyMessage(EVENT_STOP_LOGGING);
                 } else {
                     sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
@@ -126,11 +126,11 @@ public class DeviceLoggingService extends Service {
             case EVENT_GET_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_GET_CURRENT_STATS_INFO");
 
-                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance().readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
-                DeviceStatsInfoStorageManager.getInstance().addToTPutCalculationBuffer(sDeviceStatsInfo);
+                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
+                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
 
                 // if the avg t-put exceeds threshold, it's time to start logging.
-                if (DeviceStatsInfoStorageManager.getInstance().getAvgTputFromTpuCalculationBuffer(mDirection) > TPUT_THRESHOLD) {
+                if (DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) > TPUT_THRESHOLD) {
                     Message eventMessage = this.obtainMessage(EVENT_START_LOGGING);
                     eventMessage.obj = sDeviceStatsInfo;
                     sendMessage(eventMessage);
@@ -210,7 +210,7 @@ public class DeviceLoggingService extends Service {
         }
 
         this.mDeviceLoggingStateListenerList = new ArrayList<>();
-        this.setOnLoggingStateChangedListener(DeviceStatsInfoStorageManager.getInstance());
+        this.setOnLoggingStateChangedListener(DeviceStatsInfoStorageManager.getInstance(this.getApplicationContext()));
 
         startMonitoringDeviceStats(sPackageName, sInterval, sCpuFilePath, sThermalFilePath, sThresholdTime, sDirection, sNetworkType);
         return START_STICKY;

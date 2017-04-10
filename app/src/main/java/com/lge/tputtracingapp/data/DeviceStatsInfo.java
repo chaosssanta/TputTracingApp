@@ -27,7 +27,7 @@ public class DeviceStatsInfo {
     @Setter @Getter private String mPackageName;
 
     /* Network Type */
-    @Setter @Getter private int mNetworkType;
+    @Setter @Getter private String mNetworkType;
 
     /* Direction */
     @Setter @Getter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
