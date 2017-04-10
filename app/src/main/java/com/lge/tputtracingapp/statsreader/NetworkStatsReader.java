@@ -6,9 +6,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 public class NetworkStatsReader {
-
     private static final String TAG = NetworkStatsReader.class.getSimpleName();
-    private static boolean mDebug = true;
     
     public static long getTxBytesByUid(int targetUid) {
         return TrafficStats.getUidTxBytes(targetUid);
@@ -19,62 +17,24 @@ public class NetworkStatsReader {
     }
 
     public static String getNetworkType(Context context) {
-        int networkType = ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getNetworkType();
-        String sNetworkType = null;
-        switch (networkType) {
-            case 7:
-                sNetworkType = "1xRTT";
-                break;
-            case 4:
-                sNetworkType = "CDMA";
-                break;
-            case 2:
-                sNetworkType = "EDGE";
-                break;
-            case 14:
-                sNetworkType = "eHRPD";
-                break;
-            case 5:
-                sNetworkType = "EVDO rev. 0";
-                break;
-            case 6:
-                sNetworkType = "EVDO rev. A";
-                break;
-            case 12:
-                sNetworkType = "EVDO rev. B";
-                break;
-            case 1:
-                sNetworkType = "GPRS";
-                break;
-            case 8:
-                sNetworkType = "HSDPA";
-                break;
-            case 10:
-                sNetworkType = "HSPA";
-                break;
-            case 15:
-                sNetworkType = "HSPA+";
-                break;
-            case 9:
-                sNetworkType = "HSUPA";
-                break;
-            case 11:
-                sNetworkType = "iDen";
-                break;
-            case 13:
-                sNetworkType = "LTE";
-                break;
-            case 3:
-                sNetworkType = "UMTS";
-                break;
-            case 0:
-                sNetworkType = "Unknown";
-                break;
+        switch (((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getNetworkType()) {
+            case TelephonyManager.NETWORK_TYPE_1xRTT: return "1xRTT";
+            case TelephonyManager.NETWORK_TYPE_CDMA: return "CDMA";
+            case TelephonyManager.NETWORK_TYPE_EDGE: return "EDGE";
+            case TelephonyManager.NETWORK_TYPE_EHRPD: return "eHRPD";
+            case TelephonyManager.NETWORK_TYPE_EVDO_0: return "EVDO rev. 0";
+            case TelephonyManager.NETWORK_TYPE_EVDO_A: return "EVDO rev. A";
+            case TelephonyManager.NETWORK_TYPE_EVDO_B: return "EVDO rev. B";
+            case TelephonyManager.NETWORK_TYPE_GPRS: return "GPRS";
+            case TelephonyManager.NETWORK_TYPE_HSDPA: return "HSDPA";
+            case TelephonyManager.NETWORK_TYPE_HSPA: return "HSPA";
+            case TelephonyManager.NETWORK_TYPE_HSPAP: return "HSPA+";
+            case TelephonyManager.NETWORK_TYPE_HSUPA: return "HSUPA";
+            case TelephonyManager.NETWORK_TYPE_IDEN: return "iDen";
+            case TelephonyManager.NETWORK_TYPE_LTE: return "LTE";
+            case TelephonyManager.NETWORK_TYPE_UMTS: return "UMTS";
+            case TelephonyManager.NETWORK_TYPE_UNKNOWN: return "Unknown";
+            default: return "invalid";
         }
-
-        if (mDebug) {
-            Log.d(TAG, "getNetworkType() returns " + sNetworkType);
-        }
-        return sNetworkType;
     }
 }
