@@ -3,10 +3,8 @@ package com.lge.tputtracingapp.statsreader;
 import android.content.Context;
 import android.net.TrafficStats;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 public class NetworkStatsReader {
-    private static final String TAG = NetworkStatsReader.class.getSimpleName();
     
     public static long getTxBytesByUid(int targetUid) {
         return TrafficStats.getUidTxBytes(targetUid);
