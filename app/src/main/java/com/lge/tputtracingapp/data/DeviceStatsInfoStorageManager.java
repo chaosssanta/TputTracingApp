@@ -39,6 +39,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private static final String mFileExtention = ".csv";
     private int mCpuCnt = -1; //initializing
 
+    private String mFileName = "";
+
     @Override
     public void onMonitoringStarted() {
         Log.d(TAG, "Monitoring started ");
@@ -46,8 +48,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     @Override
     public void onMonitoringStopped() {
-        Log.d(TAG, "Monitoring started stopped");
-
+        Log.d(TAG, "Monitoring stopped");
     }
 
     @Override
@@ -79,6 +80,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         this.mDLTPutCircularArray = new CircularArray<>();
         this.mContext = context;
     }
+
     private ExecutorService mExecutorService = null;
     private static SimpleDateFormat mDateTimeFormatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
 
@@ -318,16 +320,6 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
         for (int i = 0; i != this.mDLTPutCircularArray.size() - 1; ++i) {
             try{this.addToStorage(this.mDLTPutCircularArray.get(i).clone());} catch(Exception e){}
-        }
-
-        Log.d(TAG, "calcul ****************************");
-        for (int i = 0; i != this.mDLTPutCircularArray.size(); ++i) {
-            Log.d(TAG, this.mDLTPutCircularArray.get(i).toString());
-        }
-
-        Log.d(TAG, "record ****************************");
-        for (int i = 0; i != this.mDeviceStatsRecordList.size(); ++i) {
-            Log.d(TAG, this.mDeviceStatsRecordList.get(i).toString());
         }
     }
 

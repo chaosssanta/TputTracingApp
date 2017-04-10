@@ -62,7 +62,7 @@ public class DeviceLoggingService extends Service {
 
             switch (msg.what) {
             case EVENT_START_MONITORING:
-                Log.d(TAG, "EVENT_START_MONITORING handled");
+                Log.d(TAG, "EVENT_START_MONITORING ");
                 for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
                     l.onMonitoringStarted();
                 }
@@ -70,20 +70,30 @@ public class DeviceLoggingService extends Service {
                 break;
 
             case EVENT_STOP_MONITORING:
-                Log.d(TAG, "EVENT_STOP_MONITORING handled");
+                Log.d(TAG, "EVENT_STOP_MONITORING ");
 
-                for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
-                    l.onMonitoringStopped();
+                // if it's still in log recording state, we need to call logging stop call back
+                // to make the call sequence gets in order :
+                // monitoring start --> logging start --> logging stop --> monitoring stop
+                if (this.hasMessages(EVENT_LOG_CURRENT_STATS_INFO)) {
+                    Log.d(TAG, "it was in logging state, hence calling onLoggingStopped() callbacks");
+                    removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
+                    sendEmptyMessage(EVENT_STOP_LOGGING);
+                    sendEmptyMessage(EVENT_STOP_MONITORING);
+                    break;
+                } else {
+
+                    for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                        l.onMonitoringStopped();
+                    }
+
+                    // remove all messages
+                    removeMessages(EVENT_START_MONITORING);
+                    removeMessages(EVENT_START_LOGGING);;
+                    removeMessages(EVENT_GET_CURRENT_STATS_INFO);
+                    removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
                 }
 
-                // remove all messages
-                removeMessages(EVENT_START_MONITORING);
-                removeMessages(EVENT_START_LOGGING);
-                removeMessages(EVENT_STOP_LOGGING);
-                removeMessages(EVENT_GET_CURRENT_STATS_INFO);
-                removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
-
-                //DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
                 break;
 
             case EVENT_START_LOGGING:
@@ -104,7 +114,7 @@ public class DeviceLoggingService extends Service {
                 for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
                     l.onLoggingStopped();
                 }
-                //DeviceStatsInfoStorageManager.getInstance().exportToFile(System.currentTimeMillis() + "");
+
                 sendEmptyMessageDelayed(EVENT_START_MONITORING, mLoggingInterval);
                 break;
 
@@ -175,7 +185,7 @@ public class DeviceLoggingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         SharedPreferences sSharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-        String sPackageName, sCpuFilePath, sThermalFilePath, sSelectedPackageName;
+        String sPackageName, sCpuFilePath, sThermalFilePath;
         int sInterval, sThresholdTime;
         DeviceStatsInfoStorageManager.TEST_TYPE sDirection;
         //test start
@@ -184,7 +194,6 @@ public class DeviceLoggingService extends Service {
 
         if (intent == null) {
             sPackageName = sSharedPreferences.getString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME);
-//            selectedPackageName = sharedPreferences.getString(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, "");
             sCpuFilePath = sSharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_CLOCK_FILE_PATH);
             sThermalFilePath = sSharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
             sInterval = sSharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
@@ -192,7 +201,6 @@ public class DeviceLoggingService extends Service {
             sDirection = sSharedPreferences.getInt(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST : DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
         } else {
             sPackageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME);
-//            selectedPackageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME);
             sCpuFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH);
             sThermalFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH);
             sInterval = intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
@@ -219,9 +227,20 @@ public class DeviceLoggingService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
-        this.mServiceLogicHandler.removeMessages(EVENT_GET_CURRENT_STATS_INFO);
-        this.mServiceLogicHandler.removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
+        /*if (this.mServiceLogicHandler.hasMessages(EVENT_LOG_CURRENT_STATS_INFO)) {
+
+        }*/
+
+        /*this.mServiceLogicHandler.removeMessages(EVENT_GET_CURRENT_STATS_INFO);
+        this.mServiceLogicHandler.removeMessages(EVENT_LOG_CURRENT_STATS_INFO);*/
+        this.mServiceLogicHandler.sendEmptyMessage(EVENT_STOP_MONITORING);
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.d(TAG, "onUnbind()");
+        return super.onUnbind(intent);
     }
 
     // monitoring controller
