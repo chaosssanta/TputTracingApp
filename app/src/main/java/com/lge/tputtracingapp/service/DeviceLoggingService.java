@@ -120,7 +120,7 @@ public class DeviceLoggingService extends Service {
 
             case EVENT_LOG_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_LOG_CURRENT_STATS_INFO");
-                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
+                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
 
                 DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
                 DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToStorage(sDeviceStatsInfo);
@@ -136,7 +136,7 @@ public class DeviceLoggingService extends Service {
             case EVENT_GET_CURRENT_STATS_INFO: {
                 Log.d(TAG, "EVENT_GET_CURRENT_STATS_INFO");
 
-                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mNetworkType);
+                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
                 DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
 
                 // if the avg t-put exceeds threshold, it's time to start logging.
@@ -163,7 +163,7 @@ public class DeviceLoggingService extends Service {
     @Setter private String mCPUTemperatureFilePath;
     @Setter private int mDLCompleteDecisionTimeThreshold = 3;
     @Setter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
-    @Setter private int mNetworkType;
+    //@Setter private int mNetworkType;
 
     private ArrayList<DeviceLoggingStateChangedListener> mDeviceLoggingStateListenerList;
 
@@ -255,16 +255,14 @@ public class DeviceLoggingService extends Service {
         setCPUTemperatureFilePath(thermalFilePath);
         setDLCompleteDecisionTimeThreshold(dlCompleteDecisionTimeThreshold);
         setDirection(direction);
-        setNetworkType(networkType);
 
         Log.d(TAG, "Start Logging based on the following information :");
-        Log.d(TAG, "Direction : " + this.mDirection);
-        Log.d(TAG, "TargetPackageName : " + this.mTargetPackageName);
-        Log.d(TAG, "TargetUid : " + this.mTargetUid);
-        Log.d(TAG, "CPU Temperature file path : " + this.mCPUTemperatureFilePath);
-        Log.d(TAG, "CPU clock file path : " + this.mCPUClockFilePath);
-        Log.d(TAG, "DL Complete time threshold value : " + this.mDLCompleteDecisionTimeThreshold);
-        Log.d(TAG, "NetworkType : " + this.mNetworkType);
+        Log.d(TAG, "\t\tDirection : " + this.mDirection);
+        Log.d(TAG, "\t\tTargetPackageName : " + this.mTargetPackageName);
+        Log.d(TAG, "\t\tTargetUid : " + this.mTargetUid);
+        Log.d(TAG, "\t\tCPU Temperature file path : " + this.mCPUTemperatureFilePath);
+        Log.d(TAG, "\t\tCPU clock file path : " + this.mCPUClockFilePath);
+        Log.d(TAG, "\t\tDL Complete time threshold value : " + this.mDLCompleteDecisionTimeThreshold);
 
         this.mServiceLogicHandler.sendMessage(sMsg);
     }

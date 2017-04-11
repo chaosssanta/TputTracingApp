@@ -344,7 +344,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         return sTput;
     }
 
-    public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath, String packageName, DeviceStatsInfoStorageManager.TEST_TYPE direction, int networkType) {
+    public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath, String packageName, DeviceStatsInfoStorageManager.TEST_TYPE direction) {
         DeviceStatsInfo sDeviceStatsInfo = new DeviceStatsInfo();
 
         sDeviceStatsInfo.setPackageName(packageName);
