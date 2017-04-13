@@ -224,6 +224,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     private void makeColumns() {
         StringBuilder sSb = new StringBuilder();
         sSb.append("No").append(mSeperator)
+                .append("CallCnt").append(mSeperator)
                 .append("PackageName").append(mSeperator)
                 .append("Network").append(mSeperator)
                 .append("Direction").append(mSeperator)
@@ -259,6 +260,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         sDirection = (deviceStatsInfo.getDirection() == TEST_TYPE.DL_TEST ) ? "DL" : "UL";
 
         sSb.append(String.valueOf(cnt)).append(mSeperator)
+                .append(deviceStatsInfo.getCallCnt()).append(mSeperator)
                 .append(deviceStatsInfo.getPackageName()).append(mSeperator)
                 .append(deviceStatsInfo.getNetworkType()).append(mSeperator)
                 .append(sDirection).append(mSeperator)

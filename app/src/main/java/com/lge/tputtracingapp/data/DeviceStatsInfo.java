@@ -29,6 +29,9 @@ public class DeviceStatsInfo {
     /* Network Type */
     @Setter @Getter private String mNetworkType;
 
+    /* Call Count */
+    @Setter @Getter private int mCallCnt;
+
     /* Direction */
     @Setter @Getter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
 
