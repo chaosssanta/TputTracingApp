@@ -47,12 +47,18 @@ public class DeviceLoggingService extends Service {
 
     public static final String SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME = "selected_package_name";
 
-    private static final int EVENT_START_MONITORING = 0x10;
-    private static final int EVENT_STOP_MONITORING = 0x11;
-    private static final int EVENT_START_LOGGING = 0x12;
-    private static final int EVENT_STOP_LOGGING = 0x13;
-    private static final int EVENT_GET_CURRENT_STATS_INFO = 0x15;
-    private static final int EVENT_LOG_CURRENT_STATS_INFO = 0x16;
+    private static final int EVENT_FIRE_UP_MONITORING_LOOP = 0x10;
+    private static final int EVENT_TERMINATE_MONITORING_LOOP = 0x11;
+
+    private static final int EVENT_ENTER_IDLE_MONITORING_STATE = 0x12;
+    //private static final int EVENT_EXIT_IDLE_MONITORING_STATE = 0x13;
+
+    private static final int EVENT_ENTER_RECORDING_STATE = 0x14;
+    private static final int EVENT_EXIT_RECORDING_STATE = 0x15;
+
+    private static final int EVENT_READ_DEVICE_STATS_INFO = 0x18;
+    private static final int EVENT_RECORD_CURRENT_STATS_INFO = 0x19;
+
     private static final float TPUT_THRESHOLD = 1.0f;
 
     private Handler mServiceLogicHandler = new Handler() {
@@ -61,97 +67,100 @@ public class DeviceLoggingService extends Service {
         public void handleMessage(Message msg) {
 
             switch (msg.what) {
-            case EVENT_START_MONITORING:
-                Log.d(TAG, "EVENT_START_MONITORING ");
+                case EVENT_FIRE_UP_MONITORING_LOOP:
+                Log.d(TAG, "EVENT_FIRE_UP_MONITORING_LOOP");
                 for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
                     l.onMonitoringStarted();
                 }
-                sendEmptyMessage(EVENT_GET_CURRENT_STATS_INFO);
+                sendEmptyMessage(EVENT_ENTER_IDLE_MONITORING_STATE);
                 break;
 
-            case EVENT_STOP_MONITORING:
-                Log.d(TAG, "EVENT_STOP_MONITORING ");
+                case EVENT_TERMINATE_MONITORING_LOOP:
+                    Log.d(TAG, "EVENT_TERMINATE_MONITORING_LOOP");
+                    if (this.hasMessages(EVENT_RECORD_CURRENT_STATS_INFO)) {
+                        Log.d(TAG, "it was in logging state, hence calling onRecordingStopped() callbacks");
+                        removeMessages(EVENT_RECORD_CURRENT_STATS_INFO);
+                        sendEmptyMessage(EVENT_EXIT_RECORDING_STATE);
+                        //sendEmptyMessage(EVENT_EXIT_IDLE_MONITORING_STATE);
+                        break;
+                    } else {
 
-                // if it's still in log recording state, we need to call logging stop call back
-                // to make the call sequence gets in order :
-                // monitoring start --> logging start --> logging stop --> monitoring stop
-                if (this.hasMessages(EVENT_LOG_CURRENT_STATS_INFO)) {
-                    Log.d(TAG, "it was in logging state, hence calling onLoggingStopped() callbacks");
-                    removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
-                    sendEmptyMessage(EVENT_STOP_LOGGING);
-                    sendEmptyMessage(EVENT_STOP_MONITORING);
+                        for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                            l.onMonitoringStopped();
+                        }
+
+                        // remove all messages
+                        removeMessages(EVENT_ENTER_IDLE_MONITORING_STATE);
+                        removeMessages(EVENT_EXIT_RECORDING_STATE);
+                        removeMessages(EVENT_READ_DEVICE_STATS_INFO);
+                        removeMessages(EVENT_RECORD_CURRENT_STATS_INFO);
+                    }
                     break;
-                } else {
+
+                case EVENT_ENTER_IDLE_MONITORING_STATE:
+                    Log.d(TAG, "EVENT_ENTER_IDLE_MONITORING_STATE ");
+                    sendEmptyMessage(EVENT_READ_DEVICE_STATS_INFO);
+                    break;
+/*
+                case EVENT_EXIT_IDLE_MONITORING_STATE:
+                    Log.d(TAG, "EVENT_EXIT_IDLE_MONITORING_STATE ");
+                    break;*/
+
+                case EVENT_READ_DEVICE_STATS_INFO:
+                    Log.d(TAG, "EVENT_READ_DEVICE_STATS_INFO");
+
+                    DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
+                    DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
+
+                    // if the avg t-put exceeds threshold, it's time to start logging.
+                    if (DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) > TPUT_THRESHOLD) {
+                        Message eventMessage = this.obtainMessage(EVENT_ENTER_RECORDING_STATE);
+                        eventMessage.obj = sDeviceStatsInfo;
+                        sendMessage(eventMessage);
+                    } else {
+                        sendEmptyMessageDelayed(EVENT_READ_DEVICE_STATS_INFO, mLoggingInterval);
+                    }
+                    break;
+
+                case EVENT_ENTER_RECORDING_STATE:
+                    Log.d(TAG, "EVENT_START_RECORDING_DEVICE_STATS_INFO");
 
                     for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
-                        l.onMonitoringStopped();
+                        l.onRecordingStarted();
                     }
 
-                    // remove all messages
-                    removeMessages(EVENT_START_MONITORING);
-                    removeMessages(EVENT_START_LOGGING);;
-                    removeMessages(EVENT_GET_CURRENT_STATS_INFO);
-                    removeMessages(EVENT_LOG_CURRENT_STATS_INFO);
-                }
+                    DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).migrateFromTPutCalculationBufferToRecordBuffer();
+                    DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToStorage((DeviceStatsInfo) msg.obj);
+                    sendEmptyMessageDelayed(EVENT_RECORD_CURRENT_STATS_INFO, mLoggingInterval);
+                    break;
 
-                break;
+                case EVENT_RECORD_CURRENT_STATS_INFO:
+                    Log.d(TAG, "EVENT_RECORD_CURRENT_STATS_INFO");
+                    sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
 
-            case EVENT_START_LOGGING:
-                Log.d(TAG, "EVENT_START_LOGGING");
+                    DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
+                    DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToStorage(sDeviceStatsInfo);
 
-                for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
-                    l.onLoggingStarted();
-                }
+                    if (DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) < TPUT_THRESHOLD) {
+                        sendEmptyMessage(EVENT_EXIT_RECORDING_STATE);
+                    } else {
+                        sendEmptyMessageDelayed(EVENT_RECORD_CURRENT_STATS_INFO, mLoggingInterval);
+                    }
 
-                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).migrateFromTPutCalculationBufferToRecordBuffer();
-                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToStorage((DeviceStatsInfo) msg.obj);
-                sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
-                break;
+                    break;
 
-            case EVENT_STOP_LOGGING:
-                Log.d(TAG, "EVENT_STOP_LOGGING");
+                case EVENT_EXIT_RECORDING_STATE:
+                    Log.d(TAG, "EVENT_EXIT_RECORDING_STATE");
 
-                for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
-                    l.onLoggingStopped();
-                }
+                    for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                        l.onRecordingStopped();
+                    }
 
-                sendEmptyMessageDelayed(EVENT_START_MONITORING, mLoggingInterval);
-                break;
+                    sendEmptyMessageDelayed(EVENT_ENTER_IDLE_MONITORING_STATE, mLoggingInterval);
+                    break;
 
-            case EVENT_LOG_CURRENT_STATS_INFO: {
-                Log.d(TAG, "EVENT_LOG_CURRENT_STATS_INFO");
-                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
-
-                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
-                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToStorage(sDeviceStatsInfo);
-
-                if (DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) < TPUT_THRESHOLD) {
-                    sendEmptyMessage(EVENT_STOP_LOGGING);
-                } else {
-                    sendEmptyMessageDelayed(EVENT_LOG_CURRENT_STATS_INFO, mLoggingInterval);
-                }
-
-                break;
-            }
-            case EVENT_GET_CURRENT_STATS_INFO: {
-                Log.d(TAG, "EVENT_GET_CURRENT_STATS_INFO");
-
-                DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
-                DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
-
-                // if the avg t-put exceeds threshold, it's time to start logging.
-                if (DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) > TPUT_THRESHOLD) {
-                    Message eventMessage = this.obtainMessage(EVENT_START_LOGGING);
-                    eventMessage.obj = sDeviceStatsInfo;
-                    sendMessage(eventMessage);
-                } else {
-                    sendEmptyMessageDelayed(EVENT_GET_CURRENT_STATS_INFO, mLoggingInterval);
-                }
-            }
-                break;
-
-            default:
-                break;
+                default:
+                    break;
             }
         }
     };
@@ -227,13 +236,9 @@ public class DeviceLoggingService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
-        /*if (this.mServiceLogicHandler.hasMessages(EVENT_LOG_CURRENT_STATS_INFO)) {
 
-        }*/
-
-        /*this.mServiceLogicHandler.removeMessages(EVENT_GET_CURRENT_STATS_INFO);
-        this.mServiceLogicHandler.removeMessages(EVENT_LOG_CURRENT_STATS_INFO);*/
-        this.mServiceLogicHandler.sendEmptyMessage(EVENT_STOP_MONITORING);
+        //this.mServiceLogicHandler.sendEmptyMessage(EVENT_EXIT_IDLE_MONITORING_STATE);
+        this.mServiceLogicHandler.sendEmptyMessage(EVENT_TERMINATE_MONITORING_LOOP);
         super.onDestroy();
     }
 
@@ -246,7 +251,8 @@ public class DeviceLoggingService extends Service {
     // monitoring controller
     private void startMonitoringDeviceStats(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int dlCompleteDecisionTimeThreshold, DeviceStatsInfoStorageManager.TEST_TYPE direction, int networkType) {
         Message sMsg = this.mServiceLogicHandler.obtainMessage();
-        sMsg.what = EVENT_START_MONITORING;
+        //sMsg.what = EVENT_ENTER_IDLE_MONITORING_STATE;
+        sMsg.what = EVENT_FIRE_UP_MONITORING_LOOP;
 
         setTargetPackageName(targetPackageName);
         setTargetUid(DeviceLoggingService.getUidByPackageName(this, this.mTargetPackageName));

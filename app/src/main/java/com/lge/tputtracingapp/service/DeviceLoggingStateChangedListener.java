@@ -7,6 +7,6 @@ package com.lge.tputtracingapp.service;
 public interface DeviceLoggingStateChangedListener {
     void onMonitoringStarted();
     void onMonitoringStopped();
-    void onLoggingStarted();
-    void onLoggingStopped();
+    void onRecordingStarted();
+    void onRecordingStopped();
 }

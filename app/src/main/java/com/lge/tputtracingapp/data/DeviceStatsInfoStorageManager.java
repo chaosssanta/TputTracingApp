@@ -57,12 +57,12 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     @Override
-    public void onLoggingStarted() {
+    public void onRecordingStarted() {
         Log.d(TAG, "Logging Started");
     }
 
     @Override
-    public void onLoggingStopped() {
+    public void onRecordingStopped() {
         Log.d(TAG, "Logging Stopped");
         this.exportToFile(this.mFileName);
     }
