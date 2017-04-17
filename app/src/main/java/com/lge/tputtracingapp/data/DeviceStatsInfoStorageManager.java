@@ -46,7 +46,8 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     @Override
     public void onMonitoringStarted() {
-        this.mFileName += generateFileName();
+        this.mFileName = generateFileName();
+        Log.d(TAG, this.mFileName);
         Log.d(TAG, "Monitoring started ");
     }
 
@@ -366,7 +367,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     private static String generateFileName() {
-        return getDeviceName() + "_" + getSystemProperty("ro.lge.swversion_short", "unknown") + "_" + getDate(System.currentTimeMillis()) + "_" + TimeZone.getDefault().getID();
+        return getDeviceName() + "_" + getSystemProperty("ro.lge.swversion_short", "unknown") + "_" + getDate(System.currentTimeMillis()) + "_" + (TimeZone.getDefault().getID().replace("/", "_"));
     }
 
     public static String getDeviceName() {
