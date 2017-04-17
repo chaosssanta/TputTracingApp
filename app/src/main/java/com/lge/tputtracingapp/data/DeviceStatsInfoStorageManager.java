@@ -1,8 +1,10 @@
 package com.lge.tputtracingapp.data;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.support.v4.util.CircularArray;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.lge.tputtracingapp.service.DeviceLoggingStateChangedListener;
@@ -14,16 +16,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 /**
  * Created by wonsik.lee on 2017-03-14.
  */
@@ -43,6 +46,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     @Override
     public void onMonitoringStarted() {
+        this.mFileName += generateFileName();
         Log.d(TAG, "Monitoring started ");
     }
 
@@ -59,7 +63,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     @Override
     public void onLoggingStopped() {
         Log.d(TAG, "Logging Stopped");
-        this.exportToFile(this.generateFileName());
+        this.exportToFile(this.mFileName);
     }
 
     public enum TEST_TYPE {
@@ -82,7 +86,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     private ExecutorService mExecutorService = null;
-    private static SimpleDateFormat mDateTimeFormatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+    private static SimpleDateFormat mDateTimeFormatter = new SimpleDateFormat("yyyyMMdd_hh:mm:ss.SSS");
 
     public static DeviceStatsInfoStorageManager getInstance(Context context) {
         if (mInstance == null) {
@@ -362,10 +366,62 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
     }
 
     private static String generateFileName() {
-        return System.currentTimeMillis() + "";
+        return getDeviceName() + "_" + getSystemProperty("ro.lge.swversion_short", "unknown") + "_" + getDate(System.currentTimeMillis()) + "_" + TimeZone.getDefault().getID();
+    }
+
+    public static String getDeviceName() {
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+
+        if (model.startsWith(manufacturer)) {
+            return capitalize(model);
+        }
+        return model;
+    }
+
+    private static String capitalize(String str) {
+        if (TextUtils.isEmpty(str)) {
+            return str;
+        }
+        char[] arr = str.toCharArray();
+        boolean capitalizeNext = true;
+
+        StringBuilder phrase = new StringBuilder();
+        for (char c : arr) {
+            if (capitalizeNext && Character.isLetter(c)) {
+                phrase.append(Character.toUpperCase(c));
+                capitalizeNext = false;
+                continue;
+            } else if (Character.isWhitespace(c)) {
+                capitalizeNext = true;
+            }
+            phrase.append(c);
+        }
+
+        return phrase.toString();
     }
 
     private void flushStoredData() {
         this.mDeviceStatsRecordList.clear();
+    }
+
+
+    public static String getSystemProperty(String key, String defaultValue) {
+        String returnValue = "";
+        try {
+            @SuppressWarnings("rawtypes")
+            Class SystemProperties = Class.forName("android.os.SystemProperties");
+
+            Method getSystemProperty = SystemProperties.getMethod("get",
+                    new Class[] {String.class, String.class});
+            returnValue = (String)getSystemProperty.invoke(SystemProperties,
+                    new Object[] {key, defaultValue});
+
+        } catch (IllegalArgumentException iAE) {
+            throw iAE;
+        } catch (Exception e) {
+            returnValue = defaultValue;
+        }
+        return returnValue;
     }
 }
