@@ -33,61 +33,46 @@ import java.util.concurrent.Future;
 
 public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedListener {
     private static final String TAG = DeviceStatsInfoStorageManager.class.getSimpleName();
-    private static final int TPUT_CALCULATION_UNIT_TIME = 3000;
-    private static String[] mColumns = null;
+
     private static boolean DBG = true;
-    private static final String mLineFeed = "\n";
-    private static final String mCarriageReturn = "\r";
-    private static final String mSeperator = ",";
-    private static final String mFileExtention = ".csv";
-    private int mCpuCnt = -1; //initializing
 
-    private String mFileName = "";
+    private static final int TPUT_CALCULATION_UNIT_TIME = 3000;
+    private static final String LINE_FEED = "\n";
+    private static final String CARRIAGE_RETURN = "\r";
+    private static final String SEPERATOR = ",";
+    private static final String FILE_EXTENSION = ".csv";
+    private static final String SW_VERION_PROPERTY = "ro.lge.swversion_short";
 
-    @Override
-    public void onMonitoringStarted() {
-        this.mFileName = generateFileName();
-        Log.d(TAG, this.mFileName);
-        Log.d(TAG, "Monitoring started ");
-    }
-
-    @Override
-    public void onMonitoringStopped() {
-        Log.d(TAG, "Monitoring stopped");
-    }
-
-    @Override
-    public void onRecordingStarted() {
-        Log.d(TAG, "Logging Started");
-    }
-
-    @Override
-    public void onRecordingStopped() {
-        Log.d(TAG, "Logging Stopped");
-        this.exportToFile(this.mFileName);
-    }
-
-    public enum TEST_TYPE {
-        DL_TEST, UL_TEST
-    }
-
-    private static DeviceStatsInfoStorageManager mInstance;
+    private static SimpleDateFormat mDateTimeFormatter = new SimpleDateFormat("yyyyMMdd_hhmmss");
+    private static String[] mColumns = null;
 
     private Context mContext;
+    private static DeviceStatsInfoStorageManager mInstance;
+
+    // actual data will be stored in the following buffer
     private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
     private CircularArray<DeviceStatsInfo> mDLTPutCircularArray;
 
     private long mPivotRxBytes = Long.MIN_VALUE;
     private long mPivotTxBytes = Long.MIN_VALUE;
 
+    private int mCpuCnt = -1; //initializing
+
+    private String mFileName = "";
+    private int mCallCount;
+
+    private ExecutorService mExecutorService = null;
+
+    public enum TEST_TYPE {
+        DL_TEST, UL_TEST
+    }
+
     private DeviceStatsInfoStorageManager(Context context) {
         this.mDeviceStatsRecordList = new LinkedList<>();
         this.mDLTPutCircularArray = new CircularArray<>();
         this.mContext = context;
+        this.mCallCount = 0;
     }
-
-    private ExecutorService mExecutorService = null;
-    private static SimpleDateFormat mDateTimeFormatter = new SimpleDateFormat("yyyyMMdd_hh:mm:ss.SSS");
 
     public static DeviceStatsInfoStorageManager getInstance(Context context) {
         if (mInstance == null) {
@@ -96,6 +81,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         return mInstance;
     }
 
+    /* file exporting related methods STARTS */
     public int exportToFile(final String fileName) {
         final LinkedList<DeviceStatsInfo> sTargetList = this.mDeviceStatsRecordList;
         this.mDeviceStatsRecordList = new LinkedList<>();
@@ -172,7 +158,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         }
 
         //2. make file to write raw data
-        File sFile = new File(sDir, fileName + mFileExtention);
+        File sFile = new File(sDir, fileName + FILE_EXTENSION);
         boolean isExistFile = sFile.exists();
 
         //3. prepare OutputStream and BufferedOutputStream to write logs to file
@@ -228,30 +214,30 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
     private void makeColumns() {
         StringBuilder sSb = new StringBuilder();
-        sSb.append("No").append(mSeperator)
-                .append("CallCnt").append(mSeperator)
-                .append("PackageName").append(mSeperator)
-                .append("Network").append(mSeperator)
-                .append("Direction").append(mSeperator)
-                .append("Time").append(mSeperator)
-                .append("ReceivedBytes").append(mSeperator)
-                .append("SentBytes").append(mSeperator)
-                .append("Temperature").append(mSeperator)
-                .append("CPU_Usage(%)").append(mSeperator);
+        sSb.append("No").append(SEPERATOR)
+                .append("CallCnt").append(SEPERATOR)
+                .append("PackageName").append(SEPERATOR)
+                .append("Network").append(SEPERATOR)
+                .append("Direction").append(SEPERATOR)
+                .append("Time").append(SEPERATOR)
+                .append("ReceivedBytes").append(SEPERATOR)
+                .append("SentBytes").append(SEPERATOR)
+                .append("Temperature").append(SEPERATOR)
+                .append("CPU_Usage(%)").append(SEPERATOR);
 
         for (int i = 0; i < mCpuCnt; i++) {
-            sSb.append("CPU0_Freq" + i).append(mSeperator);
+            sSb.append("CPU0_Freq" + i).append(SEPERATOR);
         }
-        mColumns = sSb.toString().split(mSeperator);
+        mColumns = sSb.toString().split(SEPERATOR);
     }
 
     private byte[] makeColumnNameAsByte() {
         StringBuilder sColumns = new StringBuilder();
 
         for (int i=0; i<mColumns.length; i++) {
-            sColumns.append(mColumns[i]).append(mSeperator);
+            sColumns.append(mColumns[i]).append(SEPERATOR);
         }
-        sColumns.append(mCarriageReturn).append(mLineFeed);
+        sColumns.append(CARRIAGE_RETURN).append(LINE_FEED);
         return sColumns.toString().getBytes();
     }
 
@@ -264,22 +250,22 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
 
         sDirection = (deviceStatsInfo.getDirection() == TEST_TYPE.DL_TEST ) ? "DL" : "UL";
 
-        sSb.append(String.valueOf(cnt)).append(mSeperator)
-                .append(deviceStatsInfo.getCallCnt()).append(mSeperator)
-                .append(deviceStatsInfo.getPackageName()).append(mSeperator)
-                .append(deviceStatsInfo.getNetworkType()).append(mSeperator)
-                .append(sDirection).append(mSeperator)
-                //.append(getDate(deviceStatsInfo.getTimeStamp())).append(mSeperator)
-                .append(deviceStatsInfo.getTimeStamp()).append(mSeperator)
-                .append(String.valueOf(deviceStatsInfo.getRxBytes())).append(mSeperator)
-                .append(String.valueOf(deviceStatsInfo.getTxBytes())).append(mSeperator)
-                .append(deviceStatsInfo.getCpuTemperature()).append(mSeperator)
-                .append(deviceStatsInfo.getCpuUsage()).append(mSeperator);
+        sSb.append(String.valueOf(cnt)).append(SEPERATOR)
+                .append(deviceStatsInfo.getCallCnt()).append(SEPERATOR)
+                .append(deviceStatsInfo.getPackageName()).append(SEPERATOR)
+                .append(deviceStatsInfo.getNetworkType()).append(SEPERATOR)
+                .append(sDirection).append(SEPERATOR)
+                //.append(getDate(deviceStatsInfo.getTimeStamp())).append(SEPERATOR)
+                .append(deviceStatsInfo.getTimeStamp()).append(SEPERATOR)
+                .append(String.valueOf(deviceStatsInfo.getRxBytes())).append(SEPERATOR)
+                .append(String.valueOf(deviceStatsInfo.getTxBytes())).append(SEPERATOR)
+                .append(deviceStatsInfo.getCpuTemperature()).append(SEPERATOR)
+                .append(deviceStatsInfo.getCpuUsage()).append(SEPERATOR);
 
         for (int i=0; i<mCpuCnt; i++) {
-            sSb.append(deviceStatsInfo.getCpuFrequencyList().get(i)).append(mSeperator);
+            sSb.append(deviceStatsInfo.getCpuFrequencyList().get(i)).append(SEPERATOR);
         }
-        sSb.append(mCarriageReturn).append(mLineFeed);
+        sSb.append(CARRIAGE_RETURN).append(LINE_FEED);
 
         return sSb.toString().getBytes();
     }
@@ -289,6 +275,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         sCalendar.setTimeInMillis(milliSeconds);
         return mDateTimeFormatter.format(sCalendar.getTime());
     }
+    /* file exporting related methods ENDS */
 
     public void addToStorage(DeviceStatsInfo deviceStatsInfo) {
         try {
@@ -307,11 +294,12 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
                 this.mPivotRxBytes = sTempRx;
             }
             this.mDeviceStatsRecordList.add(sDeviceStatsInfo);
-        } catch(Exception e){};
+        } catch(Exception e){
+            Log.d(TAG, e.getMessage());
+        }
     }
 
     public void addToTPutCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
-
         if ((this.mDLTPutCircularArray.size() > 0) &&
             ((this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp()) >= TPUT_CALCULATION_UNIT_TIME)) {
                 this.mDLTPutCircularArray.popFirst();
@@ -326,7 +314,11 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         Log.d(TAG, "recordBufferSize : " + this.mDeviceStatsRecordList.size());
 
         for (int i = 0; i != this.mDLTPutCircularArray.size() - 1; ++i) {
-            try{this.addToStorage(this.mDLTPutCircularArray.get(i).clone());} catch(Exception e){}
+            try{
+                this.addToStorage(this.mDLTPutCircularArray.get(i).clone());
+            } catch(Exception e) {
+                Log.d(TAG, e.getMessage());
+            }
         }
     }
 
@@ -355,6 +347,7 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         DeviceStatsInfo sDeviceStatsInfo = new DeviceStatsInfo();
 
         sDeviceStatsInfo.setPackageName(packageName);
+        sDeviceStatsInfo.setCallCnt(this.mCallCount);
         sDeviceStatsInfo.setDirection(direction);
         sDeviceStatsInfo.setTimeStamp(System.currentTimeMillis());
         sDeviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(targetUid));
@@ -363,11 +356,12 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         sDeviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(cpuTemperatureFilePath));
         sDeviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getInstance().getCpuFreq(cpuClockFilePath));
         sDeviceStatsInfo.setCpuUsage(CPUStatsReader.getInstance().getCpuUsage());
+
         return sDeviceStatsInfo;
     }
 
     private static String generateFileName() {
-        return getDeviceName() + "_" + getSystemProperty("ro.lge.swversion_short", "unknown") + "_" + getDate(System.currentTimeMillis()) + "_" + (TimeZone.getDefault().getID().replace("/", "_"));
+        return getDeviceName() + "_" + getSystemProperty(SW_VERION_PROPERTY, "unknown") + "_" + getDate(System.currentTimeMillis()) + "_" + (TimeZone.getDefault().getID().replace("/", "_"));
     }
 
     public static String getDeviceName() {
@@ -406,7 +400,6 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
         this.mDeviceStatsRecordList.clear();
     }
 
-
     public static String getSystemProperty(String key, String defaultValue) {
         String returnValue = "";
         try {
@@ -424,5 +417,30 @@ public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedL
             returnValue = defaultValue;
         }
         return returnValue;
+    }
+
+    @Override
+    public void onMonitoringLoopStarted() {
+        this.mFileName = generateFileName();
+        Log.d(TAG, this.mFileName);
+        Log.d(TAG, "onMonitoringLoopStarted()");
+        this.mCallCount = 1;
+    }
+
+    @Override
+    public void onMonitoringLoopStopped() {
+        Log.d(TAG, "onMonitoringLoopStopped()");
+    }
+
+    @Override
+    public void onRecordingStarted() {
+        Log.d(TAG, "onRecordingStarted()");
+    }
+
+    @Override
+    public void onRecordingStopped() {
+        Log.d(TAG, "onRecordingStopped() !!!!!!");
+        this.exportToFile(this.mFileName);
+        this.mCallCount++;
     }
 }

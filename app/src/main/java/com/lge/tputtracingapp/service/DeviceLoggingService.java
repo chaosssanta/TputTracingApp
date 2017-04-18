@@ -51,7 +51,7 @@ public class DeviceLoggingService extends Service {
     private static final int EVENT_TERMINATE_MONITORING_LOOP = 0x11;
 
     private static final int EVENT_ENTER_IDLE_MONITORING_STATE = 0x12;
-    //private static final int EVENT_EXIT_IDLE_MONITORING_STATE = 0x13;
+    private static final int EVENT_EXIT_IDLE_MONITORING_STATE = 0x13;
 
     private static final int EVENT_ENTER_RECORDING_STATE = 0x14;
     private static final int EVENT_EXIT_RECORDING_STATE = 0x15;
@@ -70,7 +70,7 @@ public class DeviceLoggingService extends Service {
                 case EVENT_FIRE_UP_MONITORING_LOOP:
                 Log.d(TAG, "EVENT_FIRE_UP_MONITORING_LOOP");
                 for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
-                    l.onMonitoringStarted();
+                    l.onMonitoringLoopStarted();
                 }
                 sendEmptyMessage(EVENT_ENTER_IDLE_MONITORING_STATE);
                 break;
@@ -81,12 +81,11 @@ public class DeviceLoggingService extends Service {
                         Log.d(TAG, "it was in logging state, hence calling onRecordingStopped() callbacks");
                         removeMessages(EVENT_RECORD_CURRENT_STATS_INFO);
                         sendEmptyMessage(EVENT_EXIT_RECORDING_STATE);
-                        //sendEmptyMessage(EVENT_EXIT_IDLE_MONITORING_STATE);
+                        sendEmptyMessage(EVENT_EXIT_IDLE_MONITORING_STATE);
                         break;
                     } else {
-
                         for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
-                            l.onMonitoringStopped();
+                            l.onMonitoringLoopStopped();
                         }
 
                         // remove all messages
@@ -101,10 +100,17 @@ public class DeviceLoggingService extends Service {
                     Log.d(TAG, "EVENT_ENTER_IDLE_MONITORING_STATE ");
                     sendEmptyMessage(EVENT_READ_DEVICE_STATS_INFO);
                     break;
-/*
+
                 case EVENT_EXIT_IDLE_MONITORING_STATE:
                     Log.d(TAG, "EVENT_EXIT_IDLE_MONITORING_STATE ");
-                    break;*/
+                    removeMessages(EVENT_ENTER_IDLE_MONITORING_STATE);
+                    removeMessages(EVENT_FIRE_UP_MONITORING_LOOP);
+                    removeMessages(EVENT_ENTER_RECORDING_STATE);
+                    removeMessages(EVENT_READ_DEVICE_STATS_INFO);
+                    removeMessages(EVENT_RECORD_CURRENT_STATS_INFO);
+
+                    sendEmptyMessage(EVENT_TERMINATE_MONITORING_LOOP);
+                    break;
 
                 case EVENT_READ_DEVICE_STATS_INFO:
                     Log.d(TAG, "EVENT_READ_DEVICE_STATS_INFO");

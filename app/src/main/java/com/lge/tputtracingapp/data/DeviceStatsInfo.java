@@ -42,6 +42,7 @@ public class DeviceStatsInfo {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("CallCount : ").append(this.mCallCnt);
         sb.append("Time : ").append(this.mTimeStamp).append("\n");
         sb.append("Tx : ").append(this.mTxBytes);
         sb.append(", Rx : ").append(this.mRxBytes).append("\n");
@@ -63,6 +64,7 @@ public class DeviceStatsInfo {
     public DeviceStatsInfo clone() throws CloneNotSupportedException {
         DeviceStatsInfo cloned =  new DeviceStatsInfo();
         cloned.mTimeStamp = this.mTimeStamp;
+        cloned.mCallCnt = this.mCallCnt;
         cloned.mTxBytes = this.mTxBytes;
         cloned.mRxBytes = this.mRxBytes;
         cloned.mCpuFrequencyList = (ArrayList<Integer>) this.mCpuFrequencyList.clone();
