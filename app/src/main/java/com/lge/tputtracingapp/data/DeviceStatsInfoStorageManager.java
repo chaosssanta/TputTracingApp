@@ -7,7 +7,7 @@ import android.support.v4.util.CircularArray;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.lge.tputtracingapp.service.DeviceLoggingStateChangedListener;
+import com.lge.tputtracingapp.service.DeviceMonitoringStateChangedListener;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
 import com.lge.tputtracingapp.statsreader.NetworkStatsReader;
 
@@ -31,7 +31,7 @@ import java.util.concurrent.Future;
  * Created by wonsik.lee on 2017-03-14.
  */
 
-public class DeviceStatsInfoStorageManager implements DeviceLoggingStateChangedListener {
+public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChangedListener {
     private static final String TAG = DeviceStatsInfoStorageManager.class.getSimpleName();
 
     private static boolean DBG = true;

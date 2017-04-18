@@ -69,7 +69,7 @@ public class DeviceLoggingService extends Service {
             switch (msg.what) {
                 case EVENT_FIRE_UP_MONITORING_LOOP:
                 Log.d(TAG, "EVENT_FIRE_UP_MONITORING_LOOP");
-                for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
                     l.onMonitoringLoopStarted();
                 }
                 sendEmptyMessage(EVENT_ENTER_IDLE_MONITORING_STATE);
@@ -84,7 +84,7 @@ public class DeviceLoggingService extends Service {
                         sendEmptyMessage(EVENT_EXIT_IDLE_MONITORING_STATE);
                         break;
                     } else {
-                        for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                        for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
                             l.onMonitoringLoopStopped();
                         }
 
@@ -131,7 +131,7 @@ public class DeviceLoggingService extends Service {
                 case EVENT_ENTER_RECORDING_STATE:
                     Log.d(TAG, "EVENT_START_RECORDING_DEVICE_STATS_INFO");
 
-                    for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                    for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
                         l.onRecordingStarted();
                     }
 
@@ -158,7 +158,7 @@ public class DeviceLoggingService extends Service {
                 case EVENT_EXIT_RECORDING_STATE:
                     Log.d(TAG, "EVENT_EXIT_RECORDING_STATE");
 
-                    for (DeviceLoggingStateChangedListener l : mDeviceLoggingStateListenerList) {
+                    for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
                         l.onRecordingStopped();
                     }
 
@@ -180,7 +180,7 @@ public class DeviceLoggingService extends Service {
     @Setter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
     //@Setter private int mNetworkType;
 
-    private ArrayList<DeviceLoggingStateChangedListener> mDeviceLoggingStateListenerList;
+    private ArrayList<DeviceMonitoringStateChangedListener> mDeviceLoggingStateListenerList;
 
     // constructor
     public DeviceLoggingService() {
@@ -188,7 +188,7 @@ public class DeviceLoggingService extends Service {
         this.mLoggingInterval = 1000;
     }
 
-    public void setOnLoggingStateChangedListener(DeviceLoggingStateChangedListener dlsc) {
+    public void setOnLoggingStateChangedListener(DeviceMonitoringStateChangedListener dlsc) {
         this.mDeviceLoggingStateListenerList.add(dlsc);
     }
 
