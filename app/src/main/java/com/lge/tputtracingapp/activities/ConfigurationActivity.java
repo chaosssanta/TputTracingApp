@@ -245,14 +245,14 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreated()");
         setContentView(R.layout.activity_main);
+        loadPackageNames();
+        this.initUIControls();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume()");
-        loadPackageNames();
-        this.initUIControls();
     }
 
     @Override
