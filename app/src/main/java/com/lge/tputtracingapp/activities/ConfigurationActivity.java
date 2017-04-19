@@ -20,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.LGSetupWizard.R;
@@ -57,7 +58,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private ImageButton mInfoImage;
     private EditText mEditTxtThresholdTime;
 
-//    private TextView mTxtViewProgressResult;
+    private TextView mTxtViewResultSummary;
 
     private DeviceLoggingService mDeviceLoggingService;
 
@@ -78,7 +79,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onClick(View view) {
             UIValidationResult e  = getUIValidationResult();
-//            Log.d(TAG, Integer.toBinaryString(Integer.valueOf(e.toString())));
+
             boolean sSum = false;
             StringBuilder sb = new StringBuilder("아래의 입력 값을 확인하세요\n");
             if (e.isExceptionIncluded(UIValidationResult.UIException.PackageNameInvalid)) {
@@ -355,6 +356,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mRdoBtnThermalManual.setOnCheckedChangeListener(this);
         this.mRdoBtnThermalXoThermal.setChecked(true);
         this.mInfoImage.setOnClickListener(this);
+
+        this.mTxtViewResultSummary = (TextView) findViewById(R.id.txtView_resultSummary);
 
         this.refreshMonitoringBtn();
     }

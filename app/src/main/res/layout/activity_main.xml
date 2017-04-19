@@ -26,9 +26,10 @@
         android:id="@+id/spinner_package_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/textView2"
         android:gravity="center_vertical"
-        android:spinnerMode="dropdown" />
+        android:spinnerMode="dropdown"
+        android:layout_below="@+id/textView2"
+        android:layout_toEndOf="@+id/textView5" />
     <!--</LinearLayout>-->
 
     <EditText
@@ -198,68 +199,68 @@
     </LinearLayout>
 
     <LinearLayout
-    android:id="@+id/fl_thermal_selection"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_below="@+id/ll_chipset_selection"
-    android:orientation="horizontal"
-    android:paddingTop="10dp">
-
-    <TextView
-        android:id="@+id/textView_thermal_group"
-        android:layout_width="107dp"
-        android:layout_height="match_parent"
-        android:gravity="center_vertical"
-        android:text="Thermal option" />
-
-    <LinearLayout
+        android:id="@+id/fl_thermal_selection"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ll_chipset_selection"
+        android:orientation="horizontal"
+        android:paddingTop="10dp">
 
-        <RadioGroup
-            android:id="@+id/radioGroup_thermal"
+        <TextView
+            android:id="@+id/textView_thermal_group"
+            android:layout_width="107dp"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:text="Thermal option" />
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="fill_horizontal"
-            android:orientation="horizontal"
-            android:weightSum="1">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <RadioButton
-                android:id="@+id/radioButton_thermal_xo_therm"
+            <RadioGroup
+                android:id="@+id/radioGroup_thermal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill_horizontal"
+                android:orientation="horizontal"
+                android:weightSum="1">
+
+                <RadioButton
+                    android:id="@+id/radioButton_thermal_xo_therm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="xo_therm" />
+
+                <RadioButton
+                    android:id="@+id/radioButton_thermal_vts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="vts" />
+
+
+                <RadioButton
+                    android:id="@+id/radioButton_thermal_manual"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Manual" />
+
+            </RadioGroup>
+
+            <EditText
+                android:id="@+id/editText_thermal_path"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="xo_therm" />
-
-            <RadioButton
-                android:id="@+id/radioButton_thermal_vts"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="vts" />
-
-
-            <RadioButton
-                android:id="@+id/radioButton_thermal_manual"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Manual" />
-
-        </RadioGroup>
-
-        <EditText
-            android:id="@+id/editText_thermal_path"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:hint="/sys/class/hwmon/hwmon2/device/xo_therm"
-            android:inputType="text"
-            android:lines="1"
-            android:maxLines="1"
-            android:scrollHorizontally="true"
-            android:textSize="14sp"
-            android:visibility="gone"/>
+                android:ellipsize="end"
+                android:hint="/sys/class/hwmon/hwmon2/device/xo_therm"
+                android:inputType="text"
+                android:lines="1"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
+                android:textSize="14sp"
+                android:visibility="gone"/>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
 
     <LinearLayout
         android:id="@+id/direction_section"
@@ -303,5 +304,14 @@
             </RadioGroup>
         </LinearLayout>
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtView_resultSummary"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:paddingTop="10dp"
+        android:background="@color/colorPrimaryDark"
+        android:layout_below="@+id/btn_start_service"/>
 
 </RelativeLayout>
