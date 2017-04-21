@@ -37,6 +37,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
     private static String TAG = ConfigurationActivity.class.getSimpleName();
     private static final String mDefaultCpuInfoPath = "/sys/devices/system/cpu/";
@@ -153,41 +156,46 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onMonitoringStarted() throws RemoteException {
             Log.d(TAG, "onMonitoringStarted()");
+            ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStarted\n");
         }
 
         @Override
         public void onMonitoringStopped() throws RemoteException {
             Log.d(TAG, "onMonitoringStopped()");
+            ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStopped\n");
+
+            if (!ConfigurationActivity.this.isMyServiceRunning(DeviceMonitoringService.class)) {
+                Log.d(TAG, "Monitoring service is still up. unbind the service");
+                ConfigurationActivity.this.unbindService(mConnection);
+            }
         }
 
         @Override
         public void onRecordingStarted() throws RemoteException {
-            Log.d(TAG, "onDeviceRecordingStarted()");
+            Log.d(TAG, "onRecordingStarted()");
+            ConfigurationActivity.this.mTxtViewResult.append("onRecordingStarted\n");
         }
 
         @Override
         public void onRecordingStopped() throws RemoteException {
-            Log.d(TAG, "onDeviceRecordingStopped()");
+            Log.d(TAG, "onRecordingStopped()");
+            ConfigurationActivity.this.mTxtViewResult.append("onRecordingStopped\n");
         }
     };
 
     ServiceConnection mConnection = new ServiceConnection() {
+        public boolean mIsBound = false;
+
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             Log.d(TAG, "onServiceConnected() : " + componentName);
-
+            this.mIsBound = true;
             if (service != null) {
                 mDeviceLoggingService = IDeviceMonitoringService.Stub.asInterface(service);
             }
 
             try {
-                if (mCallback == null) {
-                    Log.d(TAG, "mCallback is null");
-                } else {
-                    Log.d(TAG, "calling registerCallback STARTS : " + mCallback.hashCode());
-                }
                 mDeviceLoggingService.registerCallback(mCallback);
-                Log.d(TAG, "calling registerCallback ENDS");
 
                 mDeviceLoggingService.fireupMonitoringLoop();
             } catch (RemoteException e) {
@@ -198,10 +206,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             Log.d(TAG, "onServiceDisconnected()");
+            this.mIsBound = false;
         }
     };
-
-
 
     static private class UIValidationResult {
         enum UIException {
@@ -314,8 +321,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
     @Override
     protected void onResume() {
-        super.onResume();
         Log.d(TAG, "onResume()");
+        super.onResume();
     }
 
     @Override
@@ -528,15 +535,21 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         });
     }
 
-
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy");
 
-        if (this.mDeviceLoggingService != null) {
-            Log.d(TAG, "unbinding Service");
-            this.unbindService(mConnection);
-        }
         super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause()");
+        try {
+            mDeviceLoggingService.unregisterCallback(mCallback);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        super.onPause();
     }
 }
