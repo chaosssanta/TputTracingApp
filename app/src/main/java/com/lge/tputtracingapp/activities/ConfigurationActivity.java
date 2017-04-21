@@ -15,6 +15,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -433,6 +434,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mInfoImage.setOnClickListener(this);
 
         this.mTxtViewResult = (TextView) findViewById(R.id.txtView_resultSummary);
+        this.mTxtViewResult.setMovementMethod(ScrollingMovementMethod.getInstance());
         this.mTxtViewResult.setText("Result Summary\n");
         //DeviceStatsInfoStorageManager.getInstance(this).registerResultView(this.mTxtViewResult);
 

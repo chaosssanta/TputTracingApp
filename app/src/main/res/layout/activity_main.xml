@@ -313,6 +313,7 @@
         android:paddingTop="10dp"
         android:background="@color/colorPrimaryDark"
         android:layout_below="@+id/btn_start_service"
-        android:textColor="#ffffffff"/>
+        android:textColor="#ffffffff"
+        android:scrollbars="vertical"/>
 
 </RelativeLayout>
