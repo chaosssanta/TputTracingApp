@@ -42,7 +42,7 @@ public class DeviceStatsInfo {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("CallCount : ").append(this.mCallCnt);
+        sb.append("CallCount : ").append(this.mCallCnt).append("\n");
         sb.append("Time : ").append(this.mTimeStamp).append("\n");
         sb.append("Tx : ").append(this.mTxBytes);
         sb.append(", Rx : ").append(this.mRxBytes).append("\n");

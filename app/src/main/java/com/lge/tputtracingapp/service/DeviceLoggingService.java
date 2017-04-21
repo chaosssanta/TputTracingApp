@@ -9,8 +9,12 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteCallbackList;
+import android.os.RemoteException;
 import android.util.Log;
 
+import com.lge.tputtracingapp.IDeviceMonitoringService;
+import com.lge.tputtracingapp.IDeviceMonitoringServiceCallback;
 import com.lge.tputtracingapp.data.DeviceStatsInfo;
 import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
 
@@ -61,6 +65,8 @@ public class DeviceLoggingService extends Service {
 
     private static final float TPUT_THRESHOLD = 1.0f;
 
+    private ArrayList<DeviceMonitoringStateChangedListener> mDeviceLoggingStateListenerList;
+
     private Handler mServiceLogicHandler = new Handler() {
 
         @Override
@@ -68,17 +74,29 @@ public class DeviceLoggingService extends Service {
 
             switch (msg.what) {
                 case EVENT_FIRE_UP_MONITORING_LOOP:
-                Log.d(TAG, "EVENT_FIRE_UP_MONITORING_LOOP");
-                for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
-                    l.onMonitoringLoopStarted();
-                }
-                sendEmptyMessage(EVENT_ENTER_IDLE_MONITORING_STATE);
+                    Log.d(TAG, "EVENT_FIRE_UP_MONITORING_LOOP");
+                    for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
+                        l.onMonitoringLoopStarted();
+                    }
+
+                    int N = mCallbacks.beginBroadcast();
+
+                    for (int i = 0; i < N; ++i) {
+                        try {
+                            mCallbacks.getBroadcastItem(i).onMonitoringStarted();
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    mCallbacks.finishBroadcast();
+
+                    sendEmptyMessage(EVENT_ENTER_IDLE_MONITORING_STATE);
                 break;
 
                 case EVENT_TERMINATE_MONITORING_LOOP:
                     Log.d(TAG, "EVENT_TERMINATE_MONITORING_LOOP");
                     if (this.hasMessages(EVENT_RECORD_CURRENT_STATS_INFO)) {
-                        Log.d(TAG, "it was in logging state, hence calling onRecordingStopped() callbacks");
+                        Log.d(TAG, "it was in logging state, hence calling onRecordingStopped() mCallbacks");
                         removeMessages(EVENT_RECORD_CURRENT_STATS_INFO);
                         sendEmptyMessage(EVENT_EXIT_RECORDING_STATE);
                         sendEmptyMessage(EVENT_EXIT_IDLE_MONITORING_STATE);
@@ -87,6 +105,17 @@ public class DeviceLoggingService extends Service {
                         for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
                             l.onMonitoringLoopStopped();
                         }
+
+                        N = mCallbacks.beginBroadcast();
+
+                        for (int i = 0; i < N; ++i) {
+                            try {
+                                mCallbacks.getBroadcastItem(i).onMonitoringStopped();
+                            } catch (RemoteException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        mCallbacks.finishBroadcast();
 
                         // remove all messages
                         removeMessages(EVENT_ENTER_IDLE_MONITORING_STATE);
@@ -98,6 +127,7 @@ public class DeviceLoggingService extends Service {
 
                 case EVENT_ENTER_IDLE_MONITORING_STATE:
                     Log.d(TAG, "EVENT_ENTER_IDLE_MONITORING_STATE ");
+
                     sendEmptyMessage(EVENT_READ_DEVICE_STATS_INFO);
                     break;
 
@@ -114,8 +144,10 @@ public class DeviceLoggingService extends Service {
 
                 case EVENT_READ_DEVICE_STATS_INFO:
                     Log.d(TAG, "EVENT_READ_DEVICE_STATS_INFO");
+                    DeviceStatsInfoStorageManager dsis = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext());
 
-                    DeviceStatsInfo sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
+                    DeviceStatsInfo sDeviceStatsInfo = dsis.readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
+                    Log.d(TAG, sDeviceStatsInfo.toString());
                     DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
 
                     // if the avg t-put exceeds threshold, it's time to start logging.
@@ -134,6 +166,17 @@ public class DeviceLoggingService extends Service {
                     for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
                         l.onRecordingStarted();
                     }
+
+                    N = mCallbacks.beginBroadcast();
+
+                    for (int i = 0; i < N; ++i) {
+                        try {
+                            mCallbacks.getBroadcastItem(i).onRecordingStarted();
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    mCallbacks.finishBroadcast();
 
                     DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).migrateFromTPutCalculationBufferToRecordBuffer();
                     DeviceStatsInfoStorageManager.getInstance(DeviceLoggingService.this.getApplicationContext()).addToStorage((DeviceStatsInfo) msg.obj);
@@ -162,6 +205,17 @@ public class DeviceLoggingService extends Service {
                         l.onRecordingStopped();
                     }
 
+                    N = mCallbacks.beginBroadcast();
+
+                    for (int i = 0; i < N; ++i) {
+                        try {
+                            mCallbacks.getBroadcastItem(i).onRecordingStopped();
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    mCallbacks.finishBroadcast();
+
                     sendEmptyMessageDelayed(EVENT_ENTER_IDLE_MONITORING_STATE, mLoggingInterval);
                     break;
 
@@ -178,9 +232,6 @@ public class DeviceLoggingService extends Service {
     @Setter private String mCPUTemperatureFilePath;
     @Setter private int mDLCompleteDecisionTimeThreshold = 3;
     @Setter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
-    //@Setter private int mNetworkType;
-
-    private ArrayList<DeviceMonitoringStateChangedListener> mDeviceLoggingStateListenerList;
 
     // constructor
     public DeviceLoggingService() {
@@ -189,84 +240,36 @@ public class DeviceLoggingService extends Service {
     }
 
     public void setOnLoggingStateChangedListener(DeviceMonitoringStateChangedListener dlsc) {
+        if (this.mDeviceLoggingStateListenerList == null) {
+            this.mDeviceLoggingStateListenerList = new ArrayList<>();
+        }
         this.mDeviceLoggingStateListenerList.add(dlsc);
+        Log.d(TAG, "setOnLoggingStateChangedListener()");
     }
 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate()");
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        SharedPreferences sSharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-        String sPackageName, sCpuFilePath, sThermalFilePath;
-        int sInterval, sThresholdTime;
-        DeviceStatsInfoStorageManager.TEST_TYPE sDirection;
-        //test start
-        int sNetworkType = 14; //hard coding, eg,.LTE is 14.
-        //test end
-
-        if (intent == null) {
-            sPackageName = sSharedPreferences.getString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, SHARED_PREFERENCES_DEFAULT_PACKAGE_NAME);
-            sCpuFilePath = sSharedPreferences.getString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, SHARED_PREFERENCES_DEFAULT_CPU_CLOCK_FILE_PATH);
-            sThermalFilePath = sSharedPreferences.getString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, SHARED_PREFERENCES_DEFAULT_THERMAL_FILE_PATH);
-            sInterval = sSharedPreferences.getInt(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
-            sThresholdTime = sSharedPreferences.getInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
-            sDirection = sSharedPreferences.getInt(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST : DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
-        } else {
-            sPackageName = intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME);
-            sCpuFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH);
-            sThermalFilePath = intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH);
-            sInterval = intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL);
-            sThresholdTime = intent.getIntExtra(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME);
-            sDirection = intent.getIntExtra(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST;
-
-            SharedPreferences.Editor sEditor = sSharedPreferences.edit();
-            sEditor.putString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, sPackageName);
-            sEditor.putString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, sCpuFilePath);
-            sEditor.putString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, sThermalFilePath);
-            sEditor.putInt(SHARED_PREFERENCES_KEY_INTERVAL, sInterval);
-            sEditor.putInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
-            sEditor.putInt(SHARED_PREFERENCES_KEY_TEST_TYPE, (sDirection == DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST) ? 0 : 1);
-            sEditor.commit();
-        }
-
-        this.mDeviceLoggingStateListenerList = new ArrayList<>();
         this.setOnLoggingStateChangedListener(DeviceStatsInfoStorageManager.getInstance(this.getApplicationContext()));
-
-        startMonitoringDeviceStats(sPackageName, sInterval, sCpuFilePath, sThermalFilePath, sThresholdTime, sDirection, sNetworkType);
-        return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
-
-        //this.mServiceLogicHandler.sendEmptyMessage(EVENT_EXIT_IDLE_MONITORING_STATE);
-        this.mServiceLogicHandler.sendEmptyMessage(EVENT_TERMINATE_MONITORING_LOOP);
         super.onDestroy();
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
         Log.d(TAG, "onUnbind()");
+        this.mServiceLogicHandler.sendEmptyMessage(EVENT_TERMINATE_MONITORING_LOOP);
         return super.onUnbind(intent);
     }
 
     // monitoring controller
-    private void startMonitoringDeviceStats(String targetPackageName, int loggingInterval, String cpuClockFilePath, String thermalFilePath, int dlCompleteDecisionTimeThreshold, DeviceStatsInfoStorageManager.TEST_TYPE direction, int networkType) {
+    private void startMonitoringDeviceStats() {
         Message sMsg = this.mServiceLogicHandler.obtainMessage();
-        //sMsg.what = EVENT_ENTER_IDLE_MONITORING_STATE;
         sMsg.what = EVENT_FIRE_UP_MONITORING_LOOP;
-
-        setTargetPackageName(targetPackageName);
-        setTargetUid(DeviceLoggingService.getUidByPackageName(this, this.mTargetPackageName));
-        setLoggingInterval(loggingInterval);
-        setCPUClockFilePath(cpuClockFilePath);
-        setCPUTemperatureFilePath(thermalFilePath);
-        setDLCompleteDecisionTimeThreshold(dlCompleteDecisionTimeThreshold);
-        setDirection(direction);
 
         Log.d(TAG, "Start Logging based on the following information :");
         Log.d(TAG, "\t\tDirection : " + this.mDirection);
@@ -279,9 +282,58 @@ public class DeviceLoggingService extends Service {
         this.mServiceLogicHandler.sendMessage(sMsg);
     }
 
+    RemoteCallbackList<IDeviceMonitoringServiceCallback> mCallbacks = new RemoteCallbackList<>();
+
+    private IDeviceMonitoringService.Stub mBinder = new IDeviceMonitoringService.Stub() {
+
+        @Override
+        public boolean registerCallback(IDeviceMonitoringServiceCallback callback) throws RemoteException {
+            Log.d(TAG, "registering callback " + callback);
+            boolean flag = false;
+            Log.d(TAG, callback.toString());
+            if(callback != null) {
+                flag = mCallbacks.register(callback);
+                Log.d(TAG, "registered callback count : " + mCallbacks.getRegisteredCallbackCount() + "");
+            }
+            return flag;
+        }
+
+        @Override
+        public void unregisterCallback(IDeviceMonitoringServiceCallback callback) throws RemoteException {
+            if (callback != null) mCallbacks.unregister(callback);
+        }
+
+        @Override
+        public void fireupMonitoringLoop() {
+            startMonitoringDeviceStats();
+        }
+    };
+
+
+
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        Log.d(TAG, "onBind()");
+        SharedPreferences sSharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+
+        setTargetPackageName(intent.getStringExtra(SHARED_PREFERENCES_KEY_PACKAGE_NAME));
+        setTargetUid(DeviceLoggingService.getUidByPackageName(this.getApplicationContext(), this.mTargetPackageName));
+        setCPUClockFilePath(intent.getStringExtra(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH));
+        setCPUTemperatureFilePath(intent.getStringExtra(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH));
+        setLoggingInterval(intent.getIntExtra(SHARED_PREFERENCES_KEY_INTERVAL, SHARED_PREFERENCES_DEFAULT_INTERVAL));
+        setDLCompleteDecisionTimeThreshold(intent.getIntExtra(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, SHARED_PREFERENCES_DEFAULT_THRESHOLD_TIME));
+        setDirection(intent.getIntExtra(SHARED_PREFERENCES_KEY_TEST_TYPE, SHARED_PREFERENCES_DL_DIRECTION) == SHARED_PREFERENCES_DL_DIRECTION ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST);
+
+        SharedPreferences.Editor sEditor = sSharedPreferences.edit();
+        sEditor.putString(SHARED_PREFERENCES_KEY_PACKAGE_NAME, mTargetPackageName);
+        sEditor.putString(SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, mCPUClockFilePath);
+        sEditor.putString(SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, mCPUTemperatureFilePath);
+        sEditor.putInt(SHARED_PREFERENCES_KEY_INTERVAL, mLoggingInterval);
+        sEditor.putInt(SHARED_PREFERENCES_KEY_THRESHOLD_TIME, mDLCompleteDecisionTimeThreshold);
+        sEditor.putInt(SHARED_PREFERENCES_KEY_TEST_TYPE, (mDirection == DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST) ? 0 : 1);
+        sEditor.commit();
+
+        return mBinder;
     }
 
     // static method

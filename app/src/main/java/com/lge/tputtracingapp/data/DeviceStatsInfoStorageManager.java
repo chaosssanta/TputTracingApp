@@ -6,6 +6,7 @@ import android.os.Environment;
 import android.support.v4.util.CircularArray;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.lge.tputtracingapp.service.DeviceMonitoringStateChangedListener;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
@@ -344,6 +345,7 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
     }
 
     public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath, String packageName, DeviceStatsInfoStorageManager.TEST_TYPE direction) {
+        Log.d(TAG, "readCurrentDeviceStatsInfo() : targetUID = " + targetUid);
         DeviceStatsInfo sDeviceStatsInfo = new DeviceStatsInfo();
 
         sDeviceStatsInfo.setPackageName(packageName);

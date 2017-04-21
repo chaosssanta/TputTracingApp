@@ -2,12 +2,18 @@ package com.lge.tputtracingapp.activities;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.RemoteException;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
@@ -24,15 +30,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.LGSetupWizard.R;
-import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
+import com.lge.tputtracingapp.IDeviceMonitoringService;
+import com.lge.tputtracingapp.IDeviceMonitoringServiceCallback;
 import com.lge.tputtracingapp.service.DeviceLoggingService;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
-
-import static com.lge.tputtracingapp.statsreader.CPUStatsReader.isFreqPathVaild;
 
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
     private static String TAG = ConfigurationActivity.class.getSimpleName();
@@ -58,9 +63,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private ImageButton mInfoImage;
     private EditText mEditTxtThresholdTime;
 
-    private TextView mTxtViewResultSummary;
+    private TextView mTxtViewResult;
 
-    private DeviceLoggingService mDeviceLoggingService;
+    private IDeviceMonitoringService mDeviceLoggingService;
 
     private Spinner mSpinnerCustom = null;
     ArrayList<String> mPackageNames = null;
@@ -70,7 +75,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         @Override
         public void onClick(View v) {
-            stopService(new Intent(ConfigurationActivity.this, DeviceLoggingService.class));
+            if (mDeviceLoggingService != null) {
+                unbindService(mConnection);
+            }
             refreshMonitoringBtn();
         }
     };
@@ -137,11 +144,66 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, mSelectedPackageName);
             startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_TEST_TYPE, mDirection);
 
-            startService(startIntent);
+            bindService(startIntent, mConnection, Context.BIND_AUTO_CREATE);
 
             refreshMonitoringBtn();
         }
     };
+
+    IDeviceMonitoringServiceCallback.Stub mCallback = new IDeviceMonitoringServiceCallback.Stub() {
+
+        @Override
+        public void onMonitoringStarted() throws RemoteException {
+            Log.d(TAG, "onMonitoringStarted()");
+        }
+
+        @Override
+        public void onMonitoringStopped() throws RemoteException {
+            Log.d(TAG, "onMonitoringStopped()");
+        }
+
+        @Override
+        public void onRecordingStarted() throws RemoteException {
+            Log.d(TAG, "onRecordingStarted()");
+        }
+
+        @Override
+        public void onRecordingStopped() throws RemoteException {
+            Log.d(TAG, "onRecordingStopped()");
+        }
+    };
+
+    ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            Log.d(TAG, "onServiceConnected() : " + componentName);
+
+            if (service != null) {
+                mDeviceLoggingService = IDeviceMonitoringService.Stub.asInterface(service);
+            }
+
+            try {
+                if (mCallback == null) {
+                    Log.d(TAG, "mCallback is null");
+                } else {
+                    Log.d(TAG, "calling registerCallback STARTS : " + mCallback.hashCode());
+                }
+                mDeviceLoggingService.registerCallback(mCallback);
+                Log.d(TAG, "calling registerCallback ENDS");
+
+                mDeviceLoggingService.fireupMonitoringLoop();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.d(TAG, "onServiceDisconnected()");
+        }
+    };
+
+
 
     static private class UIValidationResult {
         enum UIException {
@@ -230,11 +292,13 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
     private void refreshMonitoringBtn() {
         if (this.isMyServiceRunning(DeviceLoggingService.class)) {
+            Log.d(TAG, "DeviceLoggingService is running");
             // need to set the btn property to stop monitoring set.
             this.mBtnLoggingController.setText("Stop   Logging"); //set the text
             this.mBtnLoggingController.setOnClickListener(this.mStopMonitoringOnClickListener);
         } else {
             // otherwise,
+            Log.d(TAG, "DeviceLoggingService is NOT running");
             this.mBtnLoggingController.setText("Start Logging");
             this.mBtnLoggingController.setOnClickListener(this.mStartMonitoringOnClickListener);
         }
@@ -357,10 +421,12 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mRdoBtnThermalXoThermal.setChecked(true);
         this.mInfoImage.setOnClickListener(this);
 
-        this.mTxtViewResultSummary = (TextView) findViewById(R.id.txtView_resultSummary);
+        this.mTxtViewResult = (TextView) findViewById(R.id.txtView_resultSummary);
+        //DeviceStatsInfoStorageManager.getInstance(this).registerResultView(this.mTxtViewResult);
 
         this.refreshMonitoringBtn();
     }
+
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager sManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -377,7 +443,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private void loadPackageNames() {
         Log.d(TAG, "loadPackageNames() Entry.");
 
-        this.mPackageNames = new ArrayList<String>();
+        this.mPackageNames = new ArrayList<>();
         final List<PackageInfo> sPackageInfos = this.getPackageManager().getInstalledPackages(PackageManager.GET_PERMISSIONS);
         PriorityQueue<PackageNameInstallTime> queue = new PriorityQueue<>(sPackageInfos.size(), new Comparator<PackageNameInstallTime>() {
             @Override
@@ -418,7 +484,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         while (queue.iterator().hasNext()) {
             PackageNameInstallTime sPnit = queue.poll();
-            Log.d(TAG, "adding " + sPnit.sPackageName + ", install time : " + sPnit.sInstallTime);
+           // Log.d(TAG, "adding " + sPnit.sPackageName + ", install time : " + sPnit.sInstallTime);
             mPackageNames.add(sPnit.sPackageName);
         }
         mPackageNames.add("직접입력");
@@ -462,5 +528,17 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 }
             }
         });
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+
+        if (this.mDeviceLoggingService != null) {
+            Log.d(TAG, "unbinding Service");
+            this.unbindService(mConnection);
+        }
+        super.onDestroy();
     }
 }
