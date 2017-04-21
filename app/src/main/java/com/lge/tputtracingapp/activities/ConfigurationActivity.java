@@ -11,8 +11,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.os.RemoteException;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -32,7 +30,7 @@ import android.widget.Toast;
 import com.android.LGSetupWizard.R;
 import com.lge.tputtracingapp.IDeviceMonitoringService;
 import com.lge.tputtracingapp.IDeviceMonitoringServiceCallback;
-import com.lge.tputtracingapp.service.DeviceLoggingService;
+import com.lge.tputtracingapp.service.DeviceMonitoringService;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -133,16 +131,16 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             sTemp = mEditTxtThresholdTime.getText().toString();
             int sThresholdTime = (TextUtils.isEmpty(sTemp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(sTemp);
 
-            Intent startIntent = new Intent(ConfigurationActivity.this, DeviceLoggingService.class);
+            Intent startIntent = new Intent(ConfigurationActivity.this, DeviceMonitoringService.class);
             startIntent.setAction("com.lge.data.START_LOGGING");
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, sPackageName);
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
+            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, sPackageName);
+            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
+            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
 
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, mSelectedPackageName);
-            startIntent.putExtra(DeviceLoggingService.SHARED_PREFERENCES_KEY_TEST_TYPE, mDirection);
+            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
+            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
+            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, mSelectedPackageName);
+            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_TEST_TYPE, mDirection);
 
             bindService(startIntent, mConnection, Context.BIND_AUTO_CREATE);
 
@@ -164,12 +162,12 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         @Override
         public void onRecordingStarted() throws RemoteException {
-            Log.d(TAG, "onRecordingStarted()");
+            Log.d(TAG, "onDeviceRecordingStarted()");
         }
 
         @Override
         public void onRecordingStopped() throws RemoteException {
-            Log.d(TAG, "onRecordingStopped()");
+            Log.d(TAG, "onDeviceRecordingStopped()");
         }
     };
 
@@ -291,14 +289,14 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     }
 
     private void refreshMonitoringBtn() {
-        if (this.isMyServiceRunning(DeviceLoggingService.class)) {
-            Log.d(TAG, "DeviceLoggingService is running");
+        if (this.isMyServiceRunning(DeviceMonitoringService.class)) {
+            Log.d(TAG, "DeviceMonitoringService is running");
             // need to set the btn property to stop monitoring set.
             this.mBtnLoggingController.setText("Stop   Logging"); //set the text
             this.mBtnLoggingController.setOnClickListener(this.mStopMonitoringOnClickListener);
         } else {
             // otherwise,
-            Log.d(TAG, "DeviceLoggingService is NOT running");
+            Log.d(TAG, "DeviceMonitoringService is NOT running");
             this.mBtnLoggingController.setText("Start Logging");
             this.mBtnLoggingController.setOnClickListener(this.mStartMonitoringOnClickListener);
         }
@@ -352,10 +350,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 }
                 break;
             case R.id.radioButton_dl_direction:
-                mDirection = DeviceLoggingService.SHARED_PREFERENCES_DL_DIRECTION;
+                mDirection = DeviceMonitoringService.SHARED_PREFERENCES_DL_DIRECTION;
                 break;
             case R.id.radioButton_ul_direction:
-                mDirection = DeviceLoggingService.SHARED_PREFERENCES_UL_DIRECTION;
+                mDirection = DeviceMonitoringService.SHARED_PREFERENCES_UL_DIRECTION;
                 break;
 
             default:

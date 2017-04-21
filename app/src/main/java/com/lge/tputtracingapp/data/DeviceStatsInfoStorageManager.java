@@ -422,26 +422,26 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
     }
 
     @Override
-    public void onMonitoringLoopStarted() {
+    public void onDeviceMonitoringLoopStarted() {
         this.mFileName = generateFileName();
         Log.d(TAG, this.mFileName);
-        Log.d(TAG, "onMonitoringLoopStarted()");
+        Log.d(TAG, "onDeviceMonitoringLoopStarted()");
         this.mCallCount = 1;
     }
 
     @Override
-    public void onMonitoringLoopStopped() {
-        Log.d(TAG, "onMonitoringLoopStopped()");
+    public void onDeviceMonitoringLoopStopped() {
+        Log.d(TAG, "onDeviceMonitoringLoopStopped()");
     }
 
     @Override
-    public void onRecordingStarted() {
-        Log.d(TAG, "onRecordingStarted()");
+    public void onDeviceRecordingStarted() {
+        Log.d(TAG, "onDeviceRecordingStarted()");
     }
 
     @Override
-    public void onRecordingStopped() {
-        Log.d(TAG, "onRecordingStopped() !!!!!!");
+    public void onDeviceRecordingStopped() {
+        Log.d(TAG, "onDeviceRecordingStopped() !!!!!!");
         this.exportToFile(this.mFileName);
         this.mCallCount++;
     }

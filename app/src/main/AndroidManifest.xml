@@ -25,7 +25,7 @@
         </activity>
 
         <service
-            android:name="com.lge.tputtracingapp.service.DeviceLoggingService"
+            android:name="com.lge.tputtracingapp.service.DeviceMonitoringService"
             android:process=":remote">
             <action android:name="com.lge.data.START_LOGGING"/>
         </service>
