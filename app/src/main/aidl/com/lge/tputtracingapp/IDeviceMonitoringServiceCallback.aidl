@@ -7,5 +7,5 @@ interface IDeviceMonitoringServiceCallback {
         void onMonitoringStarted();
         void onMonitoringStopped();
         void onRecordingStarted();
-        void onRecordingStopped();
+        void onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount);
 }

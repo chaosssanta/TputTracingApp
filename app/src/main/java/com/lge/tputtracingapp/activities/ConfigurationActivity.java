@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -37,9 +38,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import lombok.Getter;
-import lombok.Setter;
-
 public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
     private static String TAG = ConfigurationActivity.class.getSimpleName();
     private static final String mDefaultCpuInfoPath = "/sys/devices/system/cpu/";
@@ -51,7 +49,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private RadioButton mRdoBtnChipsetVendorDefault;
     private RadioButton mRdoBtnChipsetVendorManual;
     private EditText mEditTxtCPUClockPath;
-    private String mCpuInfoPath;
     private RadioButton mRdoBtnThermalXoThermal;
     private RadioButton mRdoBtnThermalVts;
     private RadioButton mRdoBtnThermalManual;
@@ -70,145 +67,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
     private Spinner mSpinnerCustom = null;
     ArrayList<String> mPackageNames = null;
-    private String mSelectedPackageName = null;
-
-    private OnClickListener mStopMonitoringOnClickListener = new OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            if (mDeviceLoggingService != null) {
-                unbindService(mConnection);
-            }
-            refreshMonitoringBtn();
-        }
-    };
-
-    private OnClickListener mStartMonitoringOnClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            UIValidationResult e  = getUIValidationResult();
-
-            boolean sSum = false;
-            StringBuilder sb = new StringBuilder("아래의 입력 값을 확인하세요\n");
-            if (e.isExceptionIncluded(UIValidationResult.UIException.PackageNameInvalid)) {
-                sb.append("Package 명이 올바르지 않습니다.\n");
-                sSum = true;
-            }
-            if (e.isExceptionIncluded(UIValidationResult.UIException.IntervalValueInvalid)) {
-                sb.append("Interval 값이 올바르지 않습니다.\n");
-                sSum = true;
-            }
-            if (e.isExceptionIncluded(UIValidationResult.UIException.ThresholdTimeInvalid)) {
-                sb.append("Threshold 값이 올바르지 않습니다.\n");
-                sSum = true;
-            }
-            if (e.isExceptionIncluded(UIValidationResult.UIException.CPUFreqPathInvalid)) {
-                sb.append("CPU Frequency path 가 올바르지 않습니다.\n");
-                sSum = true;
-            }
-            if (e.isExceptionIncluded(UIValidationResult.UIException.CPUThermalPathInvalid)) {
-                sb.append("CPU Thermal path가 올바르지 않습니다.");
-                sSum = true;
-            }
-
-            if (sSum) {
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ConfigurationActivity.this);
-                alertDialogBuilder.setTitle("Invalid UI settings!!").setMessage(sb.toString()).setCancelable(false).setPositiveButton("확인",new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog,int id) {}});
-                AlertDialog alertDialog = alertDialogBuilder.create();
-                alertDialog.show();
-                return;
-            }
-
-            String sTemp = "";
-            String sPackageName = mEditTxtPackageName.getText().toString();
-
-            sTemp = mEditTxtInterval.getText().toString();
-            int interval = (TextUtils.isEmpty(sTemp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(sTemp);
-
-            sTemp = mEditTxtCPUClockPath.getText().toString();
-            String cpuClockFilePath = (TextUtils.isEmpty(sTemp)) ? mEditTxtCPUClockPath.getHint().toString() : sTemp;
-
-            sTemp = mEditTxtCPUTemperaturePath.getText().toString();
-            String cpuThermalFilePath = (TextUtils.isEmpty(sTemp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : sTemp;
-
-            sTemp = mEditTxtThresholdTime.getText().toString();
-            int sThresholdTime = (TextUtils.isEmpty(sTemp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(sTemp);
-
-            Intent startIntent = new Intent(ConfigurationActivity.this, DeviceMonitoringService.class);
-            startIntent.setAction("com.lge.data.START_LOGGING");
-            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_PACKAGE_NAME, sPackageName);
-            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_INTERVAL, interval);
-            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_CPU_CLOCK_FILE_PATH, cpuClockFilePath);
-
-            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_THERMAL_FILE_PATH, cpuThermalFilePath);
-            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_THRESHOLD_TIME, sThresholdTime);
-            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_SELECTED_PACKAGE_NAME, mSelectedPackageName);
-            startIntent.putExtra(DeviceMonitoringService.SHARED_PREFERENCES_KEY_TEST_TYPE, mDirection);
-
-            bindService(startIntent, mConnection, Context.BIND_AUTO_CREATE);
-
-            refreshMonitoringBtn();
-        }
-    };
-
-    IDeviceMonitoringServiceCallback.Stub mCallback = new IDeviceMonitoringServiceCallback.Stub() {
-
-        @Override
-        public void onMonitoringStarted() throws RemoteException {
-            Log.d(TAG, "onMonitoringStarted()");
-            ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStarted\n");
-        }
-
-        @Override
-        public void onMonitoringStopped() throws RemoteException {
-            Log.d(TAG, "onMonitoringStopped()");
-            ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStopped\n");
-
-            if (!ConfigurationActivity.this.isMyServiceRunning(DeviceMonitoringService.class)) {
-                Log.d(TAG, "Monitoring service is still up. unbind the service");
-                ConfigurationActivity.this.unbindService(mConnection);
-            }
-        }
-
-        @Override
-        public void onRecordingStarted() throws RemoteException {
-            Log.d(TAG, "onRecordingStarted()");
-            ConfigurationActivity.this.mTxtViewResult.append("onRecordingStarted\n");
-        }
-
-        @Override
-        public void onRecordingStopped() throws RemoteException {
-            Log.d(TAG, "onRecordingStopped()");
-            ConfigurationActivity.this.mTxtViewResult.append("onRecordingStopped\n");
-        }
-    };
-
-    ServiceConnection mConnection = new ServiceConnection() {
-        public boolean mIsBound = false;
-
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder service) {
-            Log.d(TAG, "onServiceConnected() : " + componentName);
-            this.mIsBound = true;
-            if (service != null) {
-                mDeviceLoggingService = IDeviceMonitoringService.Stub.asInterface(service);
-            }
-
-            try {
-                mDeviceLoggingService.registerCallback(mCallback);
-
-                mDeviceLoggingService.fireupMonitoringLoop();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            Log.d(TAG, "onServiceDisconnected()");
-            this.mIsBound = false;
-        }
-    };
 
     static private class UIValidationResult {
         enum UIException {
@@ -295,6 +153,126 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         return e;
     }
 
+    private OnClickListener mStopMonitoringOnClickListener = new OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            if (mDeviceLoggingService != null) {
+                unbindService(mConnection);
+            }
+            refreshMonitoringBtn();
+        }
+    };
+
+    private OnClickListener mStartMonitoringOnClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            UIValidationResult e  = getUIValidationResult();
+
+            boolean sSum = false;
+            StringBuilder sb = new StringBuilder("아래의 입력 값을 확인하세요\n");
+            if (e.isExceptionIncluded(UIValidationResult.UIException.PackageNameInvalid)) {
+                sb.append("Package 명이 올바르지 않습니다.\n");
+                sSum = true;
+            }
+            if (e.isExceptionIncluded(UIValidationResult.UIException.IntervalValueInvalid)) {
+                sb.append("Interval 값이 올바르지 않습니다.\n");
+                sSum = true;
+            }
+            if (e.isExceptionIncluded(UIValidationResult.UIException.ThresholdTimeInvalid)) {
+                sb.append("Threshold 값이 올바르지 않습니다.\n");
+                sSum = true;
+            }
+            if (e.isExceptionIncluded(UIValidationResult.UIException.CPUFreqPathInvalid)) {
+                sb.append("CPU Frequency path 가 올바르지 않습니다.\n");
+                sSum = true;
+            }
+            if (e.isExceptionIncluded(UIValidationResult.UIException.CPUThermalPathInvalid)) {
+                sb.append("CPU Thermal path가 올바르지 않습니다.");
+                sSum = true;
+            }
+
+            if (sSum) {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ConfigurationActivity.this);
+                alertDialogBuilder.setTitle("Invalid UI settings!!").setMessage(sb.toString()).setCancelable(false).setPositiveButton("확인",new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog,int id) {}});
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+                return;
+            }
+
+            String sTemp = "";
+            String sPackageName = mEditTxtPackageName.getText().toString();
+
+            sTemp = mEditTxtInterval.getText().toString();
+            int sInterval = (TextUtils.isEmpty(sTemp)) ? Integer.valueOf(mEditTxtInterval.getHint().toString()) : Integer.valueOf(sTemp);
+
+            sTemp = mEditTxtCPUClockPath.getText().toString();
+            String sCpuClockFilePath = (TextUtils.isEmpty(sTemp)) ? mEditTxtCPUClockPath.getHint().toString() : sTemp;
+
+            sTemp = mEditTxtCPUTemperaturePath.getText().toString();
+            String sCpuThermalFilePath = (TextUtils.isEmpty(sTemp)) ? mEditTxtCPUTemperaturePath.getHint().toString() : sTemp;
+
+            sTemp = mEditTxtThresholdTime.getText().toString();
+            int sThresholdTime = (TextUtils.isEmpty(sTemp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(sTemp);
+
+            try {
+                ConfigurationActivity.this.mDeviceLoggingService.fireupMonitoringLoop(sPackageName, sInterval, sCpuClockFilePath, sCpuThermalFilePath, sThresholdTime, mDirection);
+            } catch (RemoteException e1) {
+                e1.printStackTrace();
+            }
+
+            refreshMonitoringBtn();
+        }
+    };
+
+    IDeviceMonitoringServiceCallback.Stub mCallback = new IDeviceMonitoringServiceCallback.Stub() {
+
+        @Override
+        public void onMonitoringStarted() throws RemoteException {
+            Log.d(TAG, "onMonitoringStarted()");
+            ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStarted\n" + "" );
+        }
+
+        @Override
+        public void onMonitoringStopped() throws RemoteException {
+            Log.d(TAG, "onMonitoringStopped()");
+            ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStopped\n");
+        }
+
+        @Override
+        public void onRecordingStarted() throws RemoteException {
+            Log.d(TAG, "onRecordingStarted()");
+            ConfigurationActivity.this.mTxtViewResult.append("onRecordingStarted\n");
+        }
+
+        @Override
+        public void onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount) throws RemoteException {
+            Log.d(TAG, "onRecordingStopped()");
+            ConfigurationActivity.this.mTxtViewResult.append("\n" + "Test Completed \n" + "CallCount : " + callCount + "     TPut : " + overallTput + " Mbps\n\n");
+        }
+    };
+
+    ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            Log.d(TAG, "onServiceConnected() : " + componentName);
+            try {
+                if (service != null) {
+                    mDeviceLoggingService = IDeviceMonitoringService.Stub.asInterface(service);
+                    mDeviceLoggingService.registerCallback(mCallback);
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.d(TAG, "onServiceDisconnected()");
+        }
+    };
+
     private void refreshMonitoringBtn() {
         if (this.isMyServiceRunning(DeviceMonitoringService.class)) {
             Log.d(TAG, "DeviceMonitoringService is running");
@@ -310,6 +288,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mBtnLoggingController.setEnabled(true);
     }
 
+    /*  activity method override STARTS */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -317,6 +296,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         setContentView(R.layout.activity_main);
         loadPackageNames();
         this.initUIControls();
+
+        Intent startIntent = new Intent(ConfigurationActivity.this, DeviceMonitoringService.class);
+        startIntent.setAction("com.lge.data.START_LOGGING");
+        bindService(startIntent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -327,8 +310,31 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
     @Override
     protected void onPostResume() {
+        Log.d(TAG, "onPostResume()");
         super.onPostResume();
     }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause()");
+
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+       /* try {
+            if (mDeviceLoggingService != null && this.mIsBoundToService) {
+                mDeviceLoggingService.unregisterCallback(mCallback);
+                this.unbindService(this.mConnection);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }*/
+        super.onDestroy();
+    }
+    /*  activity method override ENDS */
 
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -427,6 +433,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mInfoImage.setOnClickListener(this);
 
         this.mTxtViewResult = (TextView) findViewById(R.id.txtView_resultSummary);
+        this.mTxtViewResult.setText("Result Summary\n");
         //DeviceStatsInfoStorageManager.getInstance(this).registerResultView(this.mTxtViewResult);
 
         this.refreshMonitoringBtn();
@@ -521,7 +528,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                     return;
                 }
 
-                mSelectedPackageName = sItem;
                 mEditTxtPackageName.setText(sItem);
                 mEditTxtPackageName.setVisibility(View.GONE);
             }
@@ -533,23 +539,5 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 }
             }
         });
-    }
-
-    @Override
-    protected void onDestroy() {
-        Log.d(TAG, "onDestroy");
-
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onPause() {
-        Log.d(TAG, "onPause()");
-        try {
-            mDeviceLoggingService.unregisterCallback(mCallback);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        super.onPause();
     }
 }

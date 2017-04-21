@@ -345,7 +345,6 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
     }
 
     public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath, String packageName, DeviceStatsInfoStorageManager.TEST_TYPE direction) {
-        Log.d(TAG, "readCurrentDeviceStatsInfo() : targetUID = " + targetUid);
         DeviceStatsInfo sDeviceStatsInfo = new DeviceStatsInfo();
 
         sDeviceStatsInfo.setPackageName(packageName);
