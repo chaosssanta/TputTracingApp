@@ -242,13 +242,13 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onRecordingStarted() throws RemoteException {
             Log.d(TAG, "onRecordingStarted()");
-            ConfigurationActivity.this.mTxtViewResult.append("onRecordingStarted\n");
+            ConfigurationActivity.this.mTxtViewResult.append("Test Started!!!\n");
         }
 
         @Override
         public void onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount) throws RemoteException {
             Log.d(TAG, "onRecordingStopped()");
-            ConfigurationActivity.this.mTxtViewResult.append("\n" + "Test Completed \n" + "CallCount : " + callCount + "     TPut : " + overallTput + " Mbps\n\n");
+            ConfigurationActivity.this.mTxtViewResult.append("Test Completed \n" + "CallCount : " + callCount + "     TPut : " + overallTput + " Mbps\n\n");
         }
     };
 
