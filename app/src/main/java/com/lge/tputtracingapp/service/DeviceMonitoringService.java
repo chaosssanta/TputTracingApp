@@ -206,6 +206,7 @@ public class DeviceMonitoringService extends Service {
 
                     for (int i = 0; i < N; ++i) {
                         try {
+                            // onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount)
                             mCallbacks.getBroadcastItem(i).onRecordingStopped(100.0f, 101, 102, 103, 2);
                         } catch (RemoteException e) {
                             e.printStackTrace();
@@ -339,6 +340,7 @@ public class DeviceMonitoringService extends Service {
             setCPUTemperatureFilePath(cpuThermalPath);
             setLoggingInterval(interval);
             setDLCompleteDecisionTimeThreshold(dlCompleteThresholdTime);
+            DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).setDLCompleteDecisionTimeThreshold(mDLCompleteDecisionTimeThreshold);
             setDirection((direction == SHARED_PREFERENCES_DL_DIRECTION) ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST);
 
             startMonitoringDeviceStats();

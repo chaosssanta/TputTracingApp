@@ -6,7 +6,6 @@ import android.os.Environment;
 import android.support.v4.util.CircularArray;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.lge.tputtracingapp.service.DeviceMonitoringStateChangedListener;
 import com.lge.tputtracingapp.statsreader.CPUStatsReader;
@@ -28,16 +27,21 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
 /**
  * Created by wonsik.lee on 2017-03-14.
  */
 
+@Accessors(prefix = "m")
 public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChangedListener {
     private static final String TAG = DeviceStatsInfoStorageManager.class.getSimpleName();
 
     private static boolean DBG = true;
 
-    private static final int TPUT_CALCULATION_UNIT_TIME = 3000;
+    @Setter private static int mDLCompleteDecisionTimeThreshold;
     private static final String LINE_FEED = "\n";
     private static final String CARRIAGE_RETURN = "\r";
     private static final String SEPERATOR = ",";
@@ -302,7 +306,7 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
 
     public void addToTPutCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
         if ((this.mDLTPutCircularArray.size() > 0) &&
-            ((this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp()) >= TPUT_CALCULATION_UNIT_TIME)) {
+            ((this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp()) >= mDLCompleteDecisionTimeThreshold)) {
                 this.mDLTPutCircularArray.popFirst();
         }
         this.mDLTPutCircularArray.addLast(deviceStatsInfo);
