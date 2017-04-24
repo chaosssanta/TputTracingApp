@@ -198,21 +198,22 @@ public class DeviceMonitoringService extends Service {
                 case EVENT_EXIT_RECORDING_STATE:
                     Log.d(TAG, "EVENT_EXIT_RECORDING_STATE");
 
-                    for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
-                        l.onDeviceRecordingStopped();
-                    }
-
                     N = mCallbacks.beginBroadcast();
 
                     for (int i = 0; i < N; ++i) {
                         try {
                             // onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount)
+
                             mCallbacks.getBroadcastItem(i).onRecordingStopped(100.0f, 101, 102, 103, 2);
                         } catch (RemoteException e) {
                             e.printStackTrace();
                         }
                     }
                     mCallbacks.finishBroadcast();
+
+                    for (DeviceMonitoringStateChangedListener l : mDeviceLoggingStateListenerList) {
+                        l.onDeviceRecordingStopped();
+                    }
 
                     sendEmptyMessageDelayed(EVENT_ENTER_IDLE_MONITORING_STATE, mLoggingInterval);
                     break;
