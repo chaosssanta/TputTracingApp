@@ -123,7 +123,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         try {
             int sInterval = ("".equals(this.mEditTxtInterval.getText().toString())) ? Integer.valueOf(this.mEditTxtInterval.getHint().toString()) : Integer.valueOf(this.mEditTxtInterval.getText().toString());
             Log.d(TAG, "interval : " + sInterval);
-            if (sInterval < 500 || sInterval > 5000) {
+            if (sInterval < 100 || sInterval > 5000) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {

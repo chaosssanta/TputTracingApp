@@ -19,6 +19,7 @@ import com.lge.tputtracingapp.data.DeviceStatsInfo;
 import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -202,9 +203,28 @@ public class DeviceMonitoringService extends Service {
 
                     for (int i = 0; i < N; ++i) {
                         try {
+                            DeviceStatsInfoStorageManager manager = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext());
                             // onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount)
 
-                            mCallbacks.getBroadcastItem(i).onRecordingStopped(100.0f, 101, 102, 103, 2);
+
+                            Log.d(TAG, "*********************** Test Result Start ******************************");
+                            LinkedList<DeviceStatsInfo> list = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getDeviceStatsRecordList();
+                            int index = 0;
+                            for (DeviceStatsInfo info : list) {
+                                Log.d(TAG, index++ + "i : " + info.getTimeStamp() + ", " + info.getRxBytes());
+                            }
+                            Log.d(TAG, "");
+                            float tput = manager.getCurrentTestAvgTput(mDirection);
+                            long duration = manager.getCurrentTestDurationTime(mDirection);
+                            long tx = manager.getCurrentTestTotalTxBytes();
+                            long rx = manager.getCurrentTestTotalRxBytes();
+                            Log.d(TAG, "");
+                            Log.d(TAG, "");
+                            Log.d(TAG, "rx : " + rx + ", duration : " + duration + "");
+                            Log.d(TAG, "tput : " + tput + " Mbps");
+                            Log.d(TAG, "*********************** Test Result End *************************************");
+
+                            mCallbacks.getBroadcastItem(i).onRecordingStopped(tput, duration, tx, rx, manager.getCurrentTestCallCount());
                         } catch (RemoteException e) {
                             e.printStackTrace();
                         }
@@ -229,7 +249,7 @@ public class DeviceMonitoringService extends Service {
     @Setter private int mTargetUid;
     @Setter private String mCPUClockFilePath;
     @Setter private String mCPUTemperatureFilePath;
-    @Setter private int mDLCompleteDecisionTimeThreshold = 3;
+    @Setter private int mDLCompleteDecisionTimeThreshold;
     @Setter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
 
     // constructor

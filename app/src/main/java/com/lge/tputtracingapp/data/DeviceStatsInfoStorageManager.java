@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -55,7 +56,7 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
     private static DeviceStatsInfoStorageManager mInstance;
 
     // actual data will be stored in the following buffer
-    private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
+    @Getter private LinkedList<DeviceStatsInfo> mDeviceStatsRecordList;
     private CircularArray<DeviceStatsInfo> mDLTPutCircularArray;
 
     private long mPivotRxBytes = Long.MIN_VALUE;
@@ -340,13 +341,71 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
                     sBytes = this.mDLTPutCircularArray.getLast().getTxBytes() - this.mDLTPutCircularArray.getFirst().getTxBytes();
                 }
 
-                sTput = (sBytes / 1024 / 1024 * 8)/(sDuration / 1000.0f);
+                sTput = (sBytes / 1000 / 1000 * 8)/(sDuration / 1000.0f);
+            }
+        }
+        return sTput;
+    }
+
+    // onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount)
+    public float getCurrentTestAvgTput(TEST_TYPE type) {
+        long targetBytes = (type == TEST_TYPE.DL_TEST) ? this.getCurrentTestTotalRxBytes(): this.getCurrentTestTotalTxBytes();
+        Log.d(TAG, "targetBytes : " + targetBytes + " bytes");
+        return (targetBytes * 8.0f /1024/1024) / (this.getCurrentTestDurationTime(type) / 1000);
+    }
+
+    public long getCurrentTestDurationTime(TEST_TYPE type) {
+        int sStartIndex = 0;
+        int sEndIndex = this.mDeviceStatsRecordList.size() - 1;
+
+        for (int i = 0; i != this.mDeviceStatsRecordList.size(); ++i) {
+            if (((type == TEST_TYPE.DL_TEST) ? this.mDeviceStatsRecordList.get(i).getRxBytes() : this.mDeviceStatsRecordList.get(i).getTxBytes()) != 0) {
+                sStartIndex = i;
+                break;
             }
         }
 
-        Log.d(TAG, "T-put : " + sTput);
-        return sTput;
+        if (sStartIndex < 0) {
+            sStartIndex = 0;
+        }
+
+        for (int i = this.mDeviceStatsRecordList.size() - 1; i >= 0; --i) {
+            if (((type == TEST_TYPE.DL_TEST) ? this.mDeviceStatsRecordList.get(i).getRxBytes() : this.mDeviceStatsRecordList.get(i).getTxBytes()) != 0) {
+                sEndIndex = i;
+                break;
+            }
+        }
+
+        if (sEndIndex > this.mDeviceStatsRecordList.size()) {
+            sEndIndex = this.mDeviceStatsRecordList.size() - 1;
+        }
+
+        Log.d(TAG, "EndIndex : " + sEndIndex + " == >" + this.mDeviceStatsRecordList.get(sEndIndex).getRxBytes());
+        Log.d(TAG, "startIndex : " + sStartIndex + " ==> "  + this.mDeviceStatsRecordList.get(sStartIndex).getRxBytes());
+
+        return this.mDeviceStatsRecordList.get(sEndIndex).getTimeStamp() - this.mDeviceStatsRecordList.get(sStartIndex).getTimeStamp();
     }
+
+    public long getCurrentTestTotalTxBytes() {
+        long sum = 0;
+        for (int i = 0; i != this.mDeviceStatsRecordList.size(); ++i) {
+            sum += this.mDeviceStatsRecordList.get(i).getTxBytes();
+        }
+        return sum;
+    }
+
+    public long getCurrentTestTotalRxBytes() {
+        long sum = 0;
+        for (int i = 0; i != this.mDeviceStatsRecordList.size(); ++i) {
+            sum += this.mDeviceStatsRecordList.get(i).getRxBytes();
+        }
+        return sum;
+    }
+
+    public int getCurrentTestCallCount() {
+        return this.mCallCount;
+    }
+
 
     public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath, String packageName, DeviceStatsInfoStorageManager.TEST_TYPE direction) {
         DeviceStatsInfo sDeviceStatsInfo = new DeviceStatsInfo();
