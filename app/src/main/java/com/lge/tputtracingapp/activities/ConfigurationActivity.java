@@ -195,7 +195,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
             if (sSum) {
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ConfigurationActivity.this);
-                alertDialogBuilder.setTitle("Invalid UI settings!!").setMessage(sb.toString()).setCancelable(false).setPositiveButton("확인",new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog,int id) {}});
+                alertDialogBuilder.setTitle("Invalid UI settings!!").setMessage(sb.toString()).setCancelable(false).setPositiveButton("확인",new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog,int id) {}});
                 AlertDialog alertDialog = alertDialogBuilder.create();
                 alertDialog.show();
                 return;
@@ -216,7 +216,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             sTemp = mEditTxtThresholdTime.getText().toString();
             int sThresholdTime = (TextUtils.isEmpty(sTemp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(sTemp);
 
+            mDirection = mRdoBtnDL.isChecked() ? 0 : 1;
             try {
+                Log.d(TAG, "mDirection : " + mDirection);
                 ConfigurationActivity.this.mDeviceLoggingService.fireupMonitoringLoop(sPackageName, sInterval, sCpuClockFilePath, sCpuThermalFilePath, sThresholdTime, mDirection);
             } catch (RemoteException e1) {
                 e1.printStackTrace();
@@ -365,9 +367,11 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 break;
             case R.id.radioButton_dl_direction:
                 mDirection = DeviceMonitoringService.SHARED_PREFERENCES_DL_DIRECTION;
+                Log.d(TAG, "mDirection in DL btn : " + mDirection + "");
                 break;
             case R.id.radioButton_ul_direction:
                 mDirection = DeviceMonitoringService.SHARED_PREFERENCES_UL_DIRECTION;
+                Log.d(TAG, "mDirection in UL btn : " + mDirection);
                 break;
 
             default:
@@ -414,6 +418,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         this.mSpinnerCustom = (Spinner) findViewById(R.id.spinner_package_name);
         this.mEditTxtPackageName.setVisibility(View.GONE);
+
 
         this.mRdoBtnDL = (RadioButton) findViewById(R.id.radioButton_dl_direction);
         this.mRdoBtnUL = (RadioButton) findViewById(R.id.radioButton_ul_direction);

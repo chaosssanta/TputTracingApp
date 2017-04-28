@@ -341,7 +341,7 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
                     sBytes = this.mDLTPutCircularArray.getLast().getTxBytes() - this.mDLTPutCircularArray.getFirst().getTxBytes();
                 }
 
-                sTput = (sBytes / 1000 / 1000 * 8)/(sDuration / 1000.0f);
+                sTput = (sBytes / 1024 / 1024 * 8)/(sDuration / 1000.0f);
             }
         }
         return sTput;

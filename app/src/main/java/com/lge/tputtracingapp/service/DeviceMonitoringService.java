@@ -149,6 +149,8 @@ public class DeviceMonitoringService extends Service {
                     DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
 
                     // if the avg t-put exceeds threshold, it's time to start logging.
+                    Log.d(TAG, "t-put : " + DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) + " MBps");
+
                     if (DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) > TPUT_THRESHOLD) {
                         Message eventMessage = this.obtainMessage(EVENT_ENTER_RECORDING_STATE);
                         eventMessage.obj = sDeviceStatsInfo;
@@ -363,7 +365,8 @@ public class DeviceMonitoringService extends Service {
             setDLCompleteDecisionTimeThreshold(dlCompleteThresholdTime);
             DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).setDLCompleteDecisionTimeThreshold(mDLCompleteDecisionTimeThreshold);
             setDirection((direction == SHARED_PREFERENCES_DL_DIRECTION) ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST);
-
+            Log.d(TAG, "direction : " + direction);
+            Log.d(TAG, "mDirection : " + mDirection);
             startMonitoringDeviceStats();
         }
     };
