@@ -216,7 +216,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             sTemp = mEditTxtThresholdTime.getText().toString();
             int sThresholdTime = (TextUtils.isEmpty(sTemp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(sTemp);
 
-            mDirection = mRdoBtnDL.isChecked() ? 0 : 1;
+            mDirection = mRdoBtnDL.isChecked() ? DeviceMonitoringService.SHARED_PREFERENCES_DL_DIRECTION : DeviceMonitoringService.SHARED_PREFERENCES_UL_DIRECTION;
             try {
                 ConfigurationActivity.this.mDeviceLoggingService.fireupMonitoringLoop(sPackageName, sInterval, sCpuClockFilePath, sCpuThermalFilePath, sThresholdTime, mDirection);
             } catch (RemoteException e1) {
