@@ -217,7 +217,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             int sThresholdTime = (TextUtils.isEmpty(sTemp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(sTemp);
 
             mDirection = mRdoBtnDL.isChecked() ? DeviceMonitoringService.SHARED_PREFERENCES_DL_DIRECTION : DeviceMonitoringService.SHARED_PREFERENCES_UL_DIRECTION;
-
             try {
                 ConfigurationActivity.this.mDeviceLoggingService.fireupMonitoringLoop(sPackageName, sInterval, sCpuClockFilePath, sCpuThermalFilePath, sThresholdTime, mDirection);
             } catch (RemoteException e1) {
@@ -366,8 +365,10 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 }
                 break;
             case R.id.radioButton_dl_direction:
+                mDirection = DeviceMonitoringService.SHARED_PREFERENCES_DL_DIRECTION;
                 break;
             case R.id.radioButton_ul_direction:
+                mDirection = DeviceMonitoringService.SHARED_PREFERENCES_UL_DIRECTION;
                 break;
 
             default:
