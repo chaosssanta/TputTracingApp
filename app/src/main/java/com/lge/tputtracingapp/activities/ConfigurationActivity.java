@@ -1,7 +1,6 @@
 package com.lge.tputtracingapp.activities;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -159,7 +157,11 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onClick(View v) {
             if (mDeviceLoggingService != null) {
-                unbindService(mConnection);
+                try {
+                    mDeviceLoggingService.finishMonitoringLoop();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
             refreshMonitoringBtn();
         }
@@ -218,7 +220,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
             mDirection = mRdoBtnDL.isChecked() ? DeviceMonitoringService.SHARED_PREFERENCES_DL_DIRECTION : DeviceMonitoringService.SHARED_PREFERENCES_UL_DIRECTION;
             try {
-                ConfigurationActivity.this.mDeviceLoggingService.fireupMonitoringLoop(sPackageName, sInterval, sCpuClockFilePath, sCpuThermalFilePath, sThresholdTime, mDirection);
+                ConfigurationActivity.this.mDeviceLoggingService.fireUpMonitoringLoop(sPackageName, sInterval, sCpuClockFilePath, sCpuThermalFilePath, sThresholdTime, mDirection);
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -233,12 +235,14 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         public void onMonitoringStarted() throws RemoteException {
             Log.d(TAG, "onMonitoringStarted()");
             ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStarted\n" + "" );
+            refreshMonitoringBtn();
         }
 
         @Override
         public void onMonitoringStopped() throws RemoteException {
             Log.d(TAG, "onMonitoringStopped()");
             ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStopped\n");
+            refreshMonitoringBtn();
         }
 
         @Override
@@ -263,6 +267,8 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 if (service != null) {
                     mDeviceLoggingService = IDeviceMonitoringService.Stub.asInterface(service);
                     mDeviceLoggingService.registerCallback(mCallback);
+                    mBtnLoggingController.setEnabled(true);
+                    refreshMonitoringBtn();
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -276,18 +282,27 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     };
 
     private void refreshMonitoringBtn() {
-        if (this.isMyServiceRunning(DeviceMonitoringService.class)) {
-            Log.d(TAG, "DeviceMonitoringService is running");
-            // need to set the btn property to stop monitoring set.
-            this.mBtnLoggingController.setText("Stop   Logging"); //set the text
-            this.mBtnLoggingController.setOnClickListener(this.mStopMonitoringOnClickListener);
-        } else {
-            // otherwise,
-            Log.d(TAG, "DeviceMonitoringService is NOT running");
-            this.mBtnLoggingController.setText("Start Logging");
-            this.mBtnLoggingController.setOnClickListener(this.mStartMonitoringOnClickListener);
+        Log.d(TAG, "refreshMonitoringBtn()");
+        if (this.mDeviceLoggingService == null) {
+            this.mBtnLoggingController.setEnabled(false);
+            return;
         }
-        this.mBtnLoggingController.setEnabled(true);
+
+        try {
+            if (this.mDeviceLoggingService.isInDeviceMonitoringState()) {
+                Log.d(TAG, "DeviceMonitoringService is running");
+                // need to set the btn property to stop monitoring set.
+                this.mBtnLoggingController.setText("Stop   Logging"); //set the text
+                this.mBtnLoggingController.setOnClickListener(this.mStopMonitoringOnClickListener);
+            } else {
+                // otherwise,
+                Log.d(TAG, "DeviceMonitoringService is NOT running");
+                this.mBtnLoggingController.setText("Start Logging");
+                this.mBtnLoggingController.setOnClickListener(this.mStartMonitoringOnClickListener);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     /*  activity method override STARTS */
@@ -440,18 +455,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         //DeviceStatsInfoStorageManager.getInstance(this).registerResultView(this.mTxtViewResult);
 
         this.refreshMonitoringBtn();
-    }
-
-
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager sManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-
-        for (ActivityManager.RunningServiceInfo service : sManager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     //test start
