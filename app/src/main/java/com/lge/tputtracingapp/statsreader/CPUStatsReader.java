@@ -119,7 +119,7 @@ public class CPUStatsReader {
                 mTotalT = mTotal - mTotalBefore;
                 mWorkT = mWork - mWorkBefore;
                 mCpuTotal = restrictPercentage(mWorkT * 100 / (float) mTotalT);
-                Log.d(TAG, "CPU Usage: " + restrictPercentage(mWorkT * 100 / (float) mTotalT) + "%");
+                //Log.d(TAG, "CPU Usage: " + restrictPercentage(mWorkT * 100 / (float) mTotalT) + "%");
             }
             mTotalBefore = mTotal;
             mWorkBefore = mWork;

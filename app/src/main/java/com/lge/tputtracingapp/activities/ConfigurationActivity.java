@@ -17,6 +17,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -37,7 +38,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
-public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener {
+public class ConfigurationActivity extends Activity implements CompoundButton.OnCheckedChangeListener, OnClickListener, View.OnFocusChangeListener {
     private static String TAG = ConfigurationActivity.class.getSimpleName();
     private static final String mDefaultCpuInfoPath = "/sys/devices/system/cpu/";
 
@@ -65,7 +66,30 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private IDeviceMonitoringService mDeviceLoggingService;
 
     private Spinner mSpinnerCustom = null;
-    ArrayList<String> mPackageNames = null;
+    private ArrayList<String> mPackageNames = null;
+
+    @Override
+    public void onFocusChange(View view, boolean b) {
+
+        switch (view.getId()) {
+            case R.id.editText_cpu_path:
+            case R.id.editText_thermal_path:
+            case R.id.editTxt_interval:
+            case R.id.editTxt_package_name:
+                Log.d(TAG, "onFocusChanged() : " + b);
+                if (!b) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromInputMethod(view.getWindowToken(), 0);
+                } else {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(view, 0);
+                }
+                break;
+            default:
+                break;
+        }
+
+    }
 
     static private class UIValidationResult {
         enum UIException {
@@ -91,7 +115,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             this.mExceptinoCode = this.mExceptinoCode | exception.getValue();
         }
 
-        public void removceException(UIException exception) {
+        public void removeException(UIException exception) {
             this.mExceptinoCode =this.mExceptinoCode & ~(exception.getValue());
         }
 
@@ -234,27 +258,27 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onMonitoringStarted() throws RemoteException {
             Log.d(TAG, "onMonitoringStarted()");
-            ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStarted\n" + "" );
+            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nMonitoring Started...");
             refreshMonitoringBtn();
         }
 
         @Override
         public void onMonitoringStopped() throws RemoteException {
             Log.d(TAG, "onMonitoringStopped()");
-            ConfigurationActivity.this.mTxtViewResult.append("onMonitoringStopped\n");
+            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nMonitoring Stopped...");
             refreshMonitoringBtn();
         }
 
         @Override
         public void onRecordingStarted() throws RemoteException {
             Log.d(TAG, "onRecordingStarted()");
-            ConfigurationActivity.this.mTxtViewResult.append("Test Started!!!\n");
+            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nRecording Started...");
         }
 
         @Override
         public void onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount) throws RemoteException {
             Log.d(TAG, "onRecordingStopped()");
-            ConfigurationActivity.this.mTxtViewResult.append("Test Completed \n" + "CallCount : " + callCount + "     TPut : " + overallTput + " Mbps\n\n");
+            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nRecording Stopped...\n" + "CallCount : " + callCount + "     TPut : " + overallTput + " Mbps\n\n");
         }
     };
 
@@ -414,22 +438,25 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         this.mEditTxtPackageName = (EditText) findViewById(R.id.editTxt_package_name);
         this.mEditTxtInterval = (EditText) findViewById(R.id.editTxt_interval);
-//        this.mTxtViewProgressResult = (TextView) findViewById(R.id.textView_progress_result);
+        this.mEditTxtInterval.setOnFocusChangeListener(this);
 
         this.mRdoBtnChipsetVendorDefault = (RadioButton) findViewById(R.id.radioButton_chipset_default);
         this.mRdoBtnChipsetVendorManual = (RadioButton) findViewById(R.id.radioButton_chipset_manual);
         this.mEditTxtCPUClockPath = (EditText) findViewById(R.id.editText_cpu_path);
+        this.mEditTxtCPUClockPath.setOnFocusChangeListener(this);
 
         this.mRdoBtnThermalXoThermal = (RadioButton) findViewById(R.id.radioButton_thermal_xo_therm);
         this.mRdoBtnThermalVts = (RadioButton) findViewById(R.id.radioButton_thermal_vts);
         this.mRdoBtnThermalManual = (RadioButton) findViewById(R.id.radioButton_thermal_manual);
         this.mEditTxtCPUTemperaturePath = (EditText) findViewById(R.id.editText_thermal_path);
         this.mEditTxtThresholdTime = (EditText) findViewById(R.id.thresholdTimeEditText);
+        this.mEditTxtThresholdTime.setOnFocusChangeListener(this);
 
         this.mInfoImage = (ImageButton) findViewById(R.id.infoImageView);
 
         this.mSpinnerCustom = (Spinner) findViewById(R.id.spinner_package_name);
         this.mEditTxtPackageName.setVisibility(View.GONE);
+        this.mEditTxtPackageName.setOnFocusChangeListener(this);
 
         this.mRdoBtnDL = (RadioButton) findViewById(R.id.radioButton_dl_direction);
         this.mRdoBtnUL = (RadioButton) findViewById(R.id.radioButton_ul_direction);
@@ -452,7 +479,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mTxtViewResult = (TextView) findViewById(R.id.txtView_resultSummary);
         this.mTxtViewResult.setMovementMethod(ScrollingMovementMethod.getInstance());
         this.mTxtViewResult.setText("Result Summary\n");
-        //DeviceStatsInfoStorageManager.getInstance(this).registerResultView(this.mTxtViewResult);
 
         this.refreshMonitoringBtn();
     }
