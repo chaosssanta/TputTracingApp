@@ -112,6 +112,7 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/direction_section"
         android:enabled="false"
+        android:focusable="true"
         android:text="Binding Log Service..." />
 
     <!--<TextView-->

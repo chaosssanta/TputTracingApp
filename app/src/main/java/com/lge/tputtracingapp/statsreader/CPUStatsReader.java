@@ -150,7 +150,12 @@ public class CPUStatsReader {
             }
             sProcess.destroy();
             sInputStream.close();
-            return sCmdReturn.toString();
+
+            if (sCmdReturn.toString().isEmpty()) {
+                return -1 + "";
+            } else {
+                return sCmdReturn.toString();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

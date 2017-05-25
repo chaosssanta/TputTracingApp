@@ -28,7 +28,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.LGSetupWizard.R;
+import com.lge.tputtracingapp.R;
 import com.lge.tputtracingapp.IDeviceMonitoringService;
 import com.lge.tputtracingapp.IDeviceMonitoringServiceCallback;
 import com.lge.tputtracingapp.service.DeviceMonitoringService;
@@ -272,13 +272,13 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onRecordingStarted() throws RemoteException {
             Log.d(TAG, "onRecordingStarted()");
-            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nRecording Started...");
+            //ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nRecording Started...");
         }
 
         @Override
         public void onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount) throws RemoteException {
             Log.d(TAG, "onRecordingStopped()");
-            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nRecording Stopped...\n" + "CallCount : " + callCount + "     TPut : " + overallTput + " Mbps\n\n");
+            //ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nRecording Stopped...\n" + "CallCount : " + callCount + "     TPut : " + overallTput + " Mbps\n\n");
         }
     };
 
