@@ -28,7 +28,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.lge.tputtracingapp.R;
+import com.android.LGSetupWizard.R;
 import com.lge.tputtracingapp.IDeviceMonitoringService;
 import com.lge.tputtracingapp.IDeviceMonitoringServiceCallback;
 import com.lge.tputtracingapp.service.DeviceMonitoringService;
@@ -258,14 +258,14 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onMonitoringStarted() throws RemoteException {
             Log.d(TAG, "onMonitoringStarted()");
-            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nMonitoring Started...");
+            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nMonitoring Started...\n");
             refreshMonitoringBtn();
         }
 
         @Override
         public void onMonitoringStopped() throws RemoteException {
             Log.d(TAG, "onMonitoringStopped()");
-            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nMonitoring Stopped...");
+            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nMonitoring Stopped...\n");
             refreshMonitoringBtn();
         }
 
@@ -278,7 +278,7 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         @Override
         public void onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount) throws RemoteException {
             Log.d(TAG, "onRecordingStopped()");
-            //ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "\nRecording Stopped...\n" + "CallCount : " + callCount + "     TPut : " + overallTput + " Mbps\n\n");
+            ConfigurationActivity.this.mTxtViewResult.setText(ConfigurationActivity.this.mTxtViewResult.getText().toString() + "CallCount : " + callCount + "     TPut : " + overallTput + " Mbps\n\n");
         }
     };
 

@@ -184,8 +184,9 @@ public class DeviceMonitoringService extends Service {
                     break;
 
                 case EVENT_RECORD_CURRENT_STATS_INFO:
-                    Log.d(TAG, "EVENT_RECORD_CURRENT_STATS_INFO");
                     sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
+
+                    Log.d(TAG, "EVENT_RECORD_CURRENT_STATS_INFO : " + DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) + " Mbps");
 
                     DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
                     DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToStorage(sDeviceStatsInfo);
