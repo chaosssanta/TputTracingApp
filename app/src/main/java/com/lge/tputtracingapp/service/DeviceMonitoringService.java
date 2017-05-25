@@ -149,7 +149,7 @@ public class DeviceMonitoringService extends Service {
                     DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
 
                     // if the avg t-put exceeds threshold, it's time to start logging.
-                    Log.d(TAG, "t-put : " + DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) + " MBps");
+                    Log.d(TAG, "t-put : " + DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) + " Mbps");
 
                     if (DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) > TPUT_THRESHOLD) {
                         Message eventMessage = this.obtainMessage(EVENT_ENTER_RECORDING_STATE);
@@ -184,8 +184,9 @@ public class DeviceMonitoringService extends Service {
                     break;
 
                 case EVENT_RECORD_CURRENT_STATS_INFO:
-                    Log.d(TAG, "EVENT_RECORD_CURRENT_STATS_INFO");
                     sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
+
+                    Log.d(TAG, "EVENT_RECORD_CURRENT_STATS_INFO : " + DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) + " Mbps");
 
                     DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
                     DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToStorage(sDeviceStatsInfo);
@@ -253,6 +254,8 @@ public class DeviceMonitoringService extends Service {
     @Setter private String mCPUTemperatureFilePath;
     @Setter private int mDLCompleteDecisionTimeThreshold;
     @Setter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
+
+    private boolean mIsInMonitoring = false;
 
     // constructor
     public DeviceMonitoringService() {
@@ -349,7 +352,7 @@ public class DeviceMonitoringService extends Service {
         }
 
         @Override
-        public void fireupMonitoringLoop(String packageName, int interval, String cpuFreqPath, String cpuThermalPath, int dlCompleteThresholdTime, int direction) {
+        public void fireUpMonitoringLoop(String packageName, int interval, String cpuFreqPath, String cpuThermalPath, int dlCompleteThresholdTime, int direction) {
             Log.d(TAG, "PackageName : " + packageName);
             Log.d(TAG, "SamplingInterval : " + interval);
             Log.d(TAG, "CPU Freq path : " + cpuFreqPath);
@@ -367,7 +370,51 @@ public class DeviceMonitoringService extends Service {
             setDirection((direction == SHARED_PREFERENCES_DL_DIRECTION) ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST);
             Log.d(TAG, "direction : " + direction);
             Log.d(TAG, "mDirection : " + mDirection);
+
+            mIsInMonitoring = true;
             startMonitoringDeviceStats();
+        }
+
+        @Override
+        public void finishMonitoringLoop() {
+            mIsInMonitoring = false;
+            mServiceLogicHandler.sendEmptyMessage(EVENT_TERMINATE_MONITORING_LOOP);
+        }
+
+        @Override
+        public boolean isInDeviceMonitoringState() {
+            if (mIsInMonitoring) {
+                return true;
+            } else {
+                return false;
+            }
+            /*if (mServiceLogicHandler.hasMessages(EVENT_ENTER_IDLE_MONITORING_STATE)) {
+                Log.d(TAG, "EVENT_ENTER_IDLE_MONITORING_STATE");
+                return true;
+            }
+            if (mServiceLogicHandler.hasMessages(EVENT_EXIT_IDLE_MONITORING_STATE)) {
+                Log.d(TAG, "EVENT_EXIT_IDLE_MONITORING_STATE");
+                return true;
+            }
+            if (mServiceLogicHandler.hasMessages(EVENT_EXIT_RECORDING_STATE)) {
+                Log.d(TAG, "EVENT_EXIT_RECORDING_STATE");
+                return true;
+            }
+            if (mServiceLogicHandler.hasMessages(EVENT_FIRE_UP_MONITORING_LOOP)) {
+                Log.d(TAG, "EVENT_FIRE_UP_MONITORING_LOOP");
+                return true;
+            }
+            if (mServiceLogicHandler.hasMessages(EVENT_READ_DEVICE_STATS_INFO)) {
+                Log.d(TAG, "EVENT_READ_DEVICE_STATS_INFO");
+                return true;
+            }
+            if (mServiceLogicHandler.hasMessages(EVENT_RECORD_CURRENT_STATS_INFO)) {
+                Log.d(TAG, "EVENT_RECORD_CURRENT_STATS_INFO");
+                return true;
+            }
+
+            Log.d(TAG, "not monitoring !!!!");
+            return false;*/
         }
     };
 
