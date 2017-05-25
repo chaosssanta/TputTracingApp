@@ -186,6 +186,10 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
             return;
         }
 
+        //For media scanning.
+        //After file writing is completed, we should notify file's information to android system to see result file through file browser.
+        MediaScanning sMediaScanning = new MediaScanning(mContext, sFile);
+
         //4. write raw data using BufferedOutputStream to file created before
         try {
             if (!isExistFile) {
