@@ -73,6 +73,10 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
         DL_TEST, UL_TEST
     }
 
+    public enum THERMAL_TYPE {
+        THERMAL_XO, THERMAL_VTS
+    }
+
     private DeviceStatsInfoStorageManager(Context context) {
         this.mDeviceStatsRecordList = new LinkedList<>();
         this.mDLTPutCircularArray = new CircularArray<>();
@@ -411,7 +415,7 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
     }
 
 
-    public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath, String packageName, DeviceStatsInfoStorageManager.TEST_TYPE direction) {
+    public DeviceStatsInfo readCurrentDeviceStatsInfo(int targetUid, String cpuTemperatureFilePath, String cpuClockFilePath, String packageName, TEST_TYPE direction, THERMAL_TYPE thermalType) {
         DeviceStatsInfo sDeviceStatsInfo = new DeviceStatsInfo();
 
         sDeviceStatsInfo.setPackageName(packageName);
@@ -421,7 +425,7 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
         sDeviceStatsInfo.setTxBytes(NetworkStatsReader.getTxBytesByUid(targetUid));
         sDeviceStatsInfo.setRxBytes(NetworkStatsReader.getRxBytesByUid(targetUid));
         sDeviceStatsInfo.setNetworkType(NetworkStatsReader.getNetworkTypeName(NetworkStatsReader.getNetworkType(this.mContext)));
-        sDeviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(cpuTemperatureFilePath));
+        sDeviceStatsInfo.setCpuTemperature(CPUStatsReader.getThermalInfo(cpuTemperatureFilePath, thermalType));
         sDeviceStatsInfo.setCpuFrequencyList(CPUStatsReader.getInstance().getCpuFreq(cpuClockFilePath));
         sDeviceStatsInfo.setCpuUsage(CPUStatsReader.getInstance().getCpuUsage());
 

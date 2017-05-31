@@ -50,6 +50,9 @@ public class DeviceMonitoringService extends Service {
     public static final int SHARED_PREFERENCES_DL_DIRECTION = 0;
     public static final int SHARED_PREFERENCES_UL_DIRECTION = 1;
 
+    public static final int THEMRMAL_XO = 0;
+    public static final int THERMAL_VTS = 1;
+
     private static final int EVENT_FIRE_UP_MONITORING_LOOP = 0x10;
     private static final int EVENT_TERMINATE_MONITORING_LOOP = 0x11;
 
@@ -145,7 +148,7 @@ public class DeviceMonitoringService extends Service {
                     Log.d(TAG, "EVENT_READ_DEVICE_STATS_INFO");
                     DeviceStatsInfoStorageManager dsis = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext());
 
-                    DeviceStatsInfo sDeviceStatsInfo = dsis.readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
+                    DeviceStatsInfo sDeviceStatsInfo = dsis.readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mThermalType);
                     DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
 
                     // if the avg t-put exceeds threshold, it's time to start logging.
@@ -184,7 +187,7 @@ public class DeviceMonitoringService extends Service {
                     break;
 
                 case EVENT_RECORD_CURRENT_STATS_INFO:
-                    sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection);
+                    sDeviceStatsInfo = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mThermalType) ;
 
                     Log.d(TAG, "EVENT_RECORD_CURRENT_STATS_INFO : " + DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) + " Mbps");
 
@@ -208,7 +211,6 @@ public class DeviceMonitoringService extends Service {
                         try {
                             DeviceStatsInfoStorageManager manager = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext());
                             // onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount)
-
 
                             Log.d(TAG, "*********************** Test Result Start ******************************");
                             LinkedList<DeviceStatsInfo> list = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getDeviceStatsRecordList();
@@ -254,6 +256,7 @@ public class DeviceMonitoringService extends Service {
     @Setter private String mCPUTemperatureFilePath;
     @Setter private int mDLCompleteDecisionTimeThreshold;
     @Setter private DeviceStatsInfoStorageManager.TEST_TYPE mDirection;
+    @Setter private DeviceStatsInfoStorageManager.THERMAL_TYPE mThermalType;
 
     private boolean mIsInMonitoring = false;
 
@@ -352,13 +355,14 @@ public class DeviceMonitoringService extends Service {
         }
 
         @Override
-        public void fireUpMonitoringLoop(String packageName, int interval, String cpuFreqPath, String cpuThermalPath, int dlCompleteThresholdTime, int direction) {
+        public void fireUpMonitoringLoop(String packageName, int interval, String cpuFreqPath, String cpuThermalPath, int dlCompleteThresholdTime, int direction, int thermalType) {
             Log.d(TAG, "PackageName : " + packageName);
             Log.d(TAG, "SamplingInterval : " + interval);
             Log.d(TAG, "CPU Freq path : " + cpuFreqPath);
             Log.d(TAG, "CPU Thermal path : " + cpuThermalPath);
             Log.d(TAG, "dl complete threshold : " + dlCompleteThresholdTime);
             Log.d(TAG, "Direction : " + direction);
+            Log.d(TAG, "thermalType : " + thermalType);
 
             setTargetPackageName(packageName);
             setTargetUid(DeviceMonitoringService.getUidByPackageName(getApplicationContext(), DeviceMonitoringService.this.mTargetPackageName));
@@ -368,8 +372,7 @@ public class DeviceMonitoringService extends Service {
             setDLCompleteDecisionTimeThreshold(dlCompleteThresholdTime);
             DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).setDLCompleteDecisionTimeThreshold(mDLCompleteDecisionTimeThreshold);
             setDirection((direction == SHARED_PREFERENCES_DL_DIRECTION) ? DeviceStatsInfoStorageManager.TEST_TYPE.DL_TEST: DeviceStatsInfoStorageManager.TEST_TYPE.UL_TEST);
-            Log.d(TAG, "direction : " + direction);
-            Log.d(TAG, "mDirection : " + mDirection);
+            setThermalType((thermalType == THERMAL_VTS) ? DeviceStatsInfoStorageManager.THERMAL_TYPE.THERMAL_VTS : DeviceStatsInfoStorageManager.THERMAL_TYPE.THERMAL_XO);
 
             mIsInMonitoring = true;
             startMonitoringDeviceStats();

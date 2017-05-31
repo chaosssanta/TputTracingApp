@@ -18,7 +18,7 @@ public class DeviceStatsInfo {
 
     /* CPU Info */
     @Setter @Getter private ArrayList<Integer> mCpuFrequencyList;
-    @Setter @Getter private int mCpuTemperature;
+    @Setter @Getter private float mCpuTemperature;
 
     /* CPU Usage */
     @Setter @Getter private float mCpuUsage;

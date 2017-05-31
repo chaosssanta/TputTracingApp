@@ -8,7 +8,7 @@ import com.lge.tputtracingapp.IDeviceMonitoringServiceCallback;
 interface IDeviceMonitoringService {
     boolean registerCallback(IDeviceMonitoringServiceCallback callback);
     void unregisterCallback(IDeviceMonitoringServiceCallback callback);
-    void fireUpMonitoringLoop(String packageName, int interval, String cpuFreqPath, String cpuThermalPath, int dlCompleteThresholdTime, int direction);
+    void fireUpMonitoringLoop(String packageName, int interval, String cpuFreqPath, String cpuThermalPath, int dlCompleteThresholdTime, int direction, int thermalType);
     void finishMonitoringLoop();
     boolean isInDeviceMonitoringState();
 }

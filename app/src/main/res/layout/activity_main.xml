@@ -240,11 +240,11 @@
                     android:text="vts" />
 
 
-                <RadioButton
+               <!-- <RadioButton
                     android:id="@+id/radioButton_thermal_manual"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Manual" />
+                    android:text="Manual" />-->
 
             </RadioGroup>
 
@@ -258,8 +258,7 @@
                 android:lines="1"
                 android:maxLines="1"
                 android:scrollHorizontally="true"
-                android:textSize="14sp"
-                android:visibility="gone"/>
+                android:textSize="14sp"/>
         </LinearLayout>
     </LinearLayout>
 

@@ -2,6 +2,8 @@ package com.lge.tputtracingapp.statsreader;
 
 import android.util.Log;
 
+import com.lge.tputtracingapp.data.DeviceStatsInfoStorageManager;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -54,9 +56,15 @@ public class CPUStatsReader {
         }
     }
 
-    public static int getThermalInfo(String filePath) {
+
+
+    public static float getThermalInfo(String filePath, DeviceStatsInfoStorageManager.THERMAL_TYPE thermalType) {
         try {
-            return Integer.valueOf(cmdCat(filePath).split(":")[1].split(" ")[0]);
+            if (thermalType == DeviceStatsInfoStorageManager.THERMAL_TYPE.THERMAL_VTS) {
+                return Float.valueOf(cmdCat(filePath)) / 10.0f;
+            } else {
+                return Integer.valueOf(cmdCat(filePath).split(":")[1].split(" ")[0]);
+            }
         } catch (IndexOutOfBoundsException e) {
             return -1;
         }

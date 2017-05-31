@@ -51,12 +51,12 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
     private EditText mEditTxtCPUClockPath;
     private RadioButton mRdoBtnThermalXoThermal;
     private RadioButton mRdoBtnThermalVts;
-    private RadioButton mRdoBtnThermalManual;
     private EditText mEditTxtCPUTemperaturePath;
 
     private RadioButton mRdoBtnDL;
     private RadioButton mRdoBtnUL;
     private int mDirection;
+    private int mThermalType;
 
     private ImageButton mInfoImage;
     private EditText mEditTxtThresholdTime;
@@ -243,8 +243,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
             int sThresholdTime = (TextUtils.isEmpty(sTemp))? Integer.valueOf(mEditTxtThresholdTime.getHint().toString()) : Integer.valueOf(sTemp);
 
             mDirection = mRdoBtnDL.isChecked() ? DeviceMonitoringService.SHARED_PREFERENCES_DL_DIRECTION : DeviceMonitoringService.SHARED_PREFERENCES_UL_DIRECTION;
+            mThermalType = mRdoBtnThermalXoThermal.isChecked() ? DeviceMonitoringService.THEMRMAL_XO : DeviceMonitoringService.THERMAL_VTS;
             try {
-                ConfigurationActivity.this.mDeviceLoggingService.fireUpMonitoringLoop(sPackageName, sInterval, sCpuClockFilePath, sCpuThermalFilePath, sThresholdTime, mDirection);
+                ConfigurationActivity.this.mDeviceLoggingService.fireUpMonitoringLoop(sPackageName, sInterval, sCpuClockFilePath, sCpuThermalFilePath, sThresholdTime, mDirection, mThermalType);
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -393,14 +394,13 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
                 break;
 
             case R.id.radioButton_thermal_xo_therm:
+                if (isChecked) {
+                    this.mEditTxtCPUTemperaturePath.setText("/sys/class/hwmon/hwmon2/device/xo_therm");
+                }
                 break;
             case R.id.radioButton_thermal_vts:
-                break;
-            case R.id.radioButton_thermal_manual:
                 if (isChecked) {
-                    this.mEditTxtCPUTemperaturePath.setVisibility(View.VISIBLE);
-                } else {
-                    this.mEditTxtCPUTemperaturePath.setVisibility(View.GONE);
+                    this.mEditTxtCPUTemperaturePath.setText("/sys/class/thermal/thermal_zone34/temp");
                 }
                 break;
             case R.id.radioButton_dl_direction:
@@ -447,7 +447,6 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
 
         this.mRdoBtnThermalXoThermal = (RadioButton) findViewById(R.id.radioButton_thermal_xo_therm);
         this.mRdoBtnThermalVts = (RadioButton) findViewById(R.id.radioButton_thermal_vts);
-        this.mRdoBtnThermalManual = (RadioButton) findViewById(R.id.radioButton_thermal_manual);
         this.mEditTxtCPUTemperaturePath = (EditText) findViewById(R.id.editText_thermal_path);
         this.mEditTxtThresholdTime = (EditText) findViewById(R.id.thresholdTimeEditText);
         this.mEditTxtThresholdTime.setOnFocusChangeListener(this);
@@ -472,8 +471,9 @@ public class ConfigurationActivity extends Activity implements CompoundButton.On
         this.mRdoBtnUL.setOnCheckedChangeListener(this);
         this.mRdoBtnDL.setChecked(true);
 
-        this.mRdoBtnThermalManual.setOnCheckedChangeListener(this);
-        this.mRdoBtnThermalXoThermal.setChecked(true);
+        this.mRdoBtnThermalVts.setOnCheckedChangeListener(this);
+        this.mRdoBtnThermalXoThermal.setOnCheckedChangeListener(this);
+        this.mRdoBtnThermalVts.setChecked(true);
         this.mInfoImage.setOnClickListener(this);
 
         this.mTxtViewResult = (TextView) findViewById(R.id.txtView_resultSummary);
