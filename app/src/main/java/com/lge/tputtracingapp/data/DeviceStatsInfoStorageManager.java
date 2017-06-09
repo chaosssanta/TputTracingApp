@@ -315,10 +315,11 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
 
     public void addToTPutCalculationBuffer(DeviceStatsInfo deviceStatsInfo) {
         if ((this.mDLTPutCircularArray.size() > 0) &&
-            ((this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp()) >= mDLCompleteDecisionTimeThreshold)) {
+            ((this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp()) >= (mDLCompleteDecisionTimeThreshold * 1000 - 300))) {
                 this.mDLTPutCircularArray.popFirst();
         }
         this.mDLTPutCircularArray.addLast(deviceStatsInfo);
+        Log.d(TAG, "TPut Calculation buffer : " + this.mDLTPutCircularArray.size());
     }
 
     public void migrateFromTPutCalculationBufferToRecordBuffer() {
@@ -334,6 +335,10 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
                 Log.d(TAG, e.getMessage());
             }
         }
+    }
+
+    public long getTimeLengthFromTputCalculationBuffer() {
+        return this.mDLTPutCircularArray.getLast().getTimeStamp() - this.mDLTPutCircularArray.getFirst().getTimeStamp();
     }
 
     public float getAvgTputFromTpuCalculationBuffer(TEST_TYPE type) {

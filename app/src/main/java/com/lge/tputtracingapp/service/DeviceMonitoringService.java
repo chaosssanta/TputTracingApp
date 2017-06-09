@@ -65,7 +65,7 @@ public class DeviceMonitoringService extends Service {
     private static final int EVENT_READ_DEVICE_STATS_INFO = 0x18;
     private static final int EVENT_RECORD_CURRENT_STATS_INFO = 0x19;
 
-    private static final float TPUT_THRESHOLD = 1.0f;
+    //private static final float TPUT_THRESHOLD = 1.0f;
 
     private ArrayList<DeviceMonitoringStateChangedListener> mDeviceLoggingStateListenerList;
 
@@ -149,12 +149,15 @@ public class DeviceMonitoringService extends Service {
                     DeviceStatsInfoStorageManager dsis = DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext());
 
                     DeviceStatsInfo sDeviceStatsInfo = dsis.readCurrentDeviceStatsInfo(mTargetUid, mCPUTemperatureFilePath, mCPUClockFilePath, mTargetPackageName, mDirection, mThermalType);
-                    DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
+                    dsis.addToTPutCalculationBuffer(sDeviceStatsInfo);
 
                     // if the avg t-put exceeds threshold, it's time to start logging.
-                    Log.d(TAG, "t-put : " + DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) + " Mbps");
+                    Log.d(TAG, "t-put : " + dsis.getAvgTputFromTpuCalculationBuffer(mDirection) + " Mbps");
+                    Log.d(TAG, "time duration length : " + dsis.getTimeLengthFromTputCalculationBuffer());
 
-                    if (DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) > TPUT_THRESHOLD) {
+                    Log.d(TAG, "mDLCompleteDecisionTimeThreshold : " + mDLCompleteDecisionTimeThreshold);
+
+                    if (dsis.getAvgTputFromTpuCalculationBuffer(mDirection) > 1.00f) {
                         Message eventMessage = this.obtainMessage(EVENT_ENTER_RECORDING_STATE);
                         eventMessage.obj = sDeviceStatsInfo;
                         sendMessage(eventMessage);
@@ -194,7 +197,7 @@ public class DeviceMonitoringService extends Service {
                     DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToTPutCalculationBuffer(sDeviceStatsInfo);
                     DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).addToStorage(sDeviceStatsInfo);
 
-                    if (DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) < TPUT_THRESHOLD) {
+                    if (DeviceStatsInfoStorageManager.getInstance(DeviceMonitoringService.this.getApplicationContext()).getAvgTputFromTpuCalculationBuffer(mDirection) < mDLCompleteDecisionTimeThreshold) {
                         sendEmptyMessage(EVENT_EXIT_RECORDING_STATE);
                     } else {
                         sendEmptyMessageDelayed(EVENT_RECORD_CURRENT_STATS_INFO, mLoggingInterval);
