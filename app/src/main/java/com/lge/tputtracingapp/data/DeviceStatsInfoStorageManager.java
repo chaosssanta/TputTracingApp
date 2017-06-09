@@ -358,8 +358,11 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
     // onRecordingStopped(float overallTput, long duration, long totalTxBytes, long totalRxBytes, int callCount)
     public float getCurrentTestAvgTput(TEST_TYPE type) {
         long targetBytes = (type == TEST_TYPE.DL_TEST) ? this.getCurrentTestTotalRxBytes(): this.getCurrentTestTotalTxBytes();
-        Log.d(TAG, "targetBytes : " + targetBytes + " bytes");
-        return (targetBytes * 8.0f /1024/1024) / (this.getCurrentTestDurationTime(type) / 1000);
+
+        Log.d("WONSIK", "1024 : " + (targetBytes * 8.0f /1024/1024) / (this.getCurrentTestDurationTime(type) / 1000));
+        Log.d("WONSIK", "1000 : " + (targetBytes * 8.0f /1000/1000) / (this.getCurrentTestDurationTime(type) / 1000));
+
+        return (targetBytes * 8.0f /1024/1024) / (this.getCurrentTestDurationTime(type) / 1000.0f);
     }
 
     public long getCurrentTestDurationTime(TEST_TYPE type) {
@@ -368,7 +371,7 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
 
         for (int i = 0; i != this.mDeviceStatsRecordList.size(); ++i) {
             if (((type == TEST_TYPE.DL_TEST) ? this.mDeviceStatsRecordList.get(i).getRxBytes() : this.mDeviceStatsRecordList.get(i).getTxBytes()) != 0) {
-                sStartIndex = i;
+                sStartIndex = ((i -1) < 0) ? 0 : i -1;
                 break;
             }
         }
@@ -388,9 +391,11 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
             sEndIndex = this.mDeviceStatsRecordList.size() - 1;
         }
 
+        Log.d(TAG, "******************* Time Duration ********************");
         Log.d(TAG, "EndIndex : " + sEndIndex + " == >" + this.mDeviceStatsRecordList.get(sEndIndex).getRxBytes());
         Log.d(TAG, "startIndex : " + sStartIndex + " ==> "  + this.mDeviceStatsRecordList.get(sStartIndex).getRxBytes());
-
+        Log.d(TAG, "duration : " + (this.mDeviceStatsRecordList.get(sEndIndex).getTimeStamp() - this.mDeviceStatsRecordList.get(sStartIndex).getTimeStamp()));
+        Log.d(TAG, "******************************************************");
         return this.mDeviceStatsRecordList.get(sEndIndex).getTimeStamp() - this.mDeviceStatsRecordList.get(sStartIndex).getTimeStamp();
     }
 
@@ -404,9 +409,14 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
 
     public long getCurrentTestTotalRxBytes() {
         long sum = 0;
+
+        Log.d(TAG, "list size : " + this.mDeviceStatsRecordList.size() + "");
+        Log.d(TAG, "start index 0, end index : " + (this.mDeviceStatsRecordList.size() -1));
         for (int i = 0; i != this.mDeviceStatsRecordList.size(); ++i) {
             sum += this.mDeviceStatsRecordList.get(i).getRxBytes();
+            Log.d(TAG, " mDeviceStatsRecordingList.get(" + i + ") -> " + this.mDeviceStatsRecordList.get(i).getRxBytes() + " bytes");
         }
+        Log.d(TAG, "total  : " + sum + " bytes");
         return sum;
     }
 

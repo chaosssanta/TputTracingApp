@@ -218,13 +218,13 @@ public class DeviceMonitoringService extends Service {
                             for (DeviceStatsInfo info : list) {
                                 Log.d(TAG, index++ + "i : " + info.getTimeStamp() + ", " + info.getRxBytes());
                             }
-                            Log.d(TAG, "");
+                            Log.d(TAG, " ");
                             float tput = manager.getCurrentTestAvgTput(mDirection);
                             long duration = manager.getCurrentTestDurationTime(mDirection);
                             long tx = manager.getCurrentTestTotalTxBytes();
                             long rx = manager.getCurrentTestTotalRxBytes();
-                            Log.d(TAG, "");
-                            Log.d(TAG, "");
+                            Log.d(TAG, " ");
+                            Log.d(TAG, " ");
                             Log.d(TAG, "rx : " + rx + ", duration : " + duration + "");
                             Log.d(TAG, "tput : " + tput + " Mbps");
                             Log.d(TAG, "*********************** Test Result End *************************************");
