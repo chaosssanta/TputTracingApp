@@ -359,10 +359,10 @@ public class DeviceStatsInfoStorageManager implements DeviceMonitoringStateChang
     public float getCurrentTestAvgTput(TEST_TYPE type) {
         long targetBytes = (type == TEST_TYPE.DL_TEST) ? this.getCurrentTestTotalRxBytes(): this.getCurrentTestTotalTxBytes();
 
-        Log.d("WONSIK", "1024 : " + (targetBytes * 8.0f /1024/1024) / (this.getCurrentTestDurationTime(type) / 1000));
-        Log.d("WONSIK", "1000 : " + (targetBytes * 8.0f /1000/1000) / (this.getCurrentTestDurationTime(type) / 1000));
+        Log.d(TAG, "devided by 1024 : " + (targetBytes * 8.0f /1024/1024) / (this.getCurrentTestDurationTime(type) / 1000));
+        Log.d(TAG, "devided by 1000 : " + (targetBytes * 8.0f /1000/1000) / (this.getCurrentTestDurationTime(type) / 1000));
 
-        return (targetBytes * 8.0f /1024/1024) / (this.getCurrentTestDurationTime(type) / 1000.0f);
+        return (targetBytes * 8.0f /1000/1000) / (this.getCurrentTestDurationTime(type) / 1000.0f);
     }
 
     public long getCurrentTestDurationTime(TEST_TYPE type) {
